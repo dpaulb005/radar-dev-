@@ -1,0 +1,10 @@
+{
+  "_comment": "Node positions in meters in your own local frame (pick a corner of the flight area as origin, x east, y north, z up). Measure with a tape measure. rssi0 = median RSSI at 1 m from that node (run calibrate.py); path_loss_n ~2.0 open field, ~2.5 cluttered.",
+  "path_loss_n": 2.1,
+  "drone_z": 1.5,
+  "nodes": {
+    "1": { "pos": [0.0, 0.0, 1.0], "rssi0": -38.0 },
+    "2": { "pos": [8.0, 0.0, 1.0], "rssi0": -38.0 },
+    "3": { "pos": [4.0, 7.0, 1.0], "rssi0": -38.0 }
+  }
+}
