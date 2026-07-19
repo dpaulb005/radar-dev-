@@ -15,7 +15,7 @@
 #include <esp_now.h>
 #include <esp_wifi.h>
 
-#define WIFI_CHANNEL 6   // must match drone_beacon / rx_node
+#define WIFI_CHANNEL 7   // must match rx_node (7 = espnow-rclink default)
 
 typedef struct __attribute__((packed)) {
   uint8_t  node_id;

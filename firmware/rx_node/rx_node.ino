@@ -20,7 +20,7 @@
 
 // ---------------- configuration ----------------
 #define NODE_ID        1        // UNIQUE per node: 1, 2, 3, 4...
-#define WIFI_CHANNEL   6        // must match drone_beacon / hub_node
+#define WIFI_CHANNEL   7        // channel the drone transmits on; 7 = espnow-rclink default (verify with mac_scanner)
 
 // STA MAC printed by drone_beacon.ino at boot:
 static const uint8_t DRONE_MAC[6] = {0x24, 0x6F, 0x28, 0x00, 0x00, 0x00};

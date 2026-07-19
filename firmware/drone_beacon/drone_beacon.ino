@@ -11,10 +11,11 @@
  * On boot it prints its own MAC — copy that into DRONE_MAC in the
  * rx_node firmware.
  *
- * This sketch is standalone; if your flight controller talks to the
- * ESP32 over UART you can merge setup()/loop() bodies into your
- * existing sketch — the beacon only needs WiFi initialized once and
- * sendBeacon() called on a timer.
+ * This sketch is standalone. If your drone's main ESP32 runs dedicated
+ * flight firmware you can't merge this into (e.g. ESP-FC on the
+ * ESP-BLAST), either apply the alive-interval patch described in
+ * docs/espblast.md instead, or flash this onto a small piggyback board
+ * (ESP32-C3 Super Mini) powered from the drone's 5 V rail.
  */
 
 #include <WiFi.h>
@@ -22,7 +23,7 @@
 #include <esp_wifi.h>
 
 // ---------------- configuration ----------------
-#define WIFI_CHANNEL   6        // must match rx_node / hub_node
+#define WIFI_CHANNEL   7        // must match rx_node / hub_node; 7 = espnow-rclink default (see docs/espblast.md)
 #define BEACON_HZ      25       // beacon rate; 20-50 is plenty
 #define FTM_SSID       "drone-ftm"
 #define FTM_PASS       "ftmftmftm"   // >=8 chars; FTM works without association anyway
