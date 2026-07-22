@@ -1,0 +1,450 @@
+#!/usr/bin/env python3
+"""
+server.py — radar ground station with web GUI.
+
+Runs the solver from locate.py and serves a real-time operator console
+(web/) over HTTP + WebSocket on http://localhost:8080.
+
+Usage:
+    python server.py                  # start idle; connect from the GUI
+    python server.py --hub /dev/ttyUSB0
+    python server.py --sim            # synthetic flight, no hardware
+    python server.py --port 9000
+
+The GUI can: pick/connect serial ports, toggle sim mode, edit node
+positions and path-loss config (persisted to config.json), run the
+per-node RSSI calibration wizard, record sessions to JSONL, and shows a
+PPI-style tactical plot plus node health with RSSI sparklines.
+"""
+
+import argparse
+import asyncio
+import json
+import math
+import pathlib
+import queue
+import threading
+import time
+
+import numpy as np
+from aiohttp import web, WSMsgType
+
+from locate import (
+    rssi_to_distance,
+    rssi_distance_sigma,
+    solve_position,
+    RSSI_SIGMA_DB,
+    FTM_SIGMA_M,
+)
+
+BASE = pathlib.Path(__file__).resolve().parent
+CONFIG_PATH = BASE / "config.json"
+REC_DIR = BASE / "recordings"
+
+SOLVE_HZ = 10.0
+STATE_HZ = 10.0
+MEAS_MAX_AGE_S = 1.0
+EMA_ALPHA = 0.35
+
+
+# ----------------------------------------------------------------------
+# data sources (serial / sim) — threads feeding a queue, like locate.py
+# ----------------------------------------------------------------------
+
+class Sources:
+    def __init__(self, station):
+        self.station = station
+        self.q = queue.Queue()
+        self._serial_stop = threading.Event()
+        self._serial_thread = None
+        self._sim_stop = threading.Event()
+        self._sim_thread = None
+        self.port = None
+        self.serial_ok = False
+
+    # -- serial ---------------------------------------------------------
+    def connect(self, port, baud=115200):
+        self.disconnect()
+        self._serial_stop = threading.Event()
+        self.port = port
+        self._serial_thread = threading.Thread(
+            target=self._serial_loop, args=(port, baud, self._serial_stop),
+            daemon=True)
+        self._serial_thread.start()
+
+    def disconnect(self):
+        if self._serial_thread:
+            self._serial_stop.set()
+            self._serial_thread = None
+        self.port = None
+        self.serial_ok = False
+
+    def _serial_loop(self, port, baud, stop):
+        import serial
+        while not stop.is_set():
+            try:
+                with serial.Serial(port, baud, timeout=1) as ser:
+                    self.serial_ok = True
+                    self.station.log(f"serial open: {port}")
+                    while not stop.is_set():
+                        line = ser.readline().decode(errors="replace").strip()
+                        if not line.startswith("{"):
+                            continue
+                        try:
+                            self.q.put(json.loads(line))
+                        except json.JSONDecodeError:
+                            pass
+            except Exception as e:
+                if self.serial_ok or True:
+                    self.station.log(f"serial: {e}")
+                self.serial_ok = False
+                stop.wait(2)
+        self.serial_ok = False
+
+    # -- sim ------------------------------------------------------------
+    def sim(self, on):
+        if on and not self._sim_thread:
+            self._sim_stop = threading.Event()
+            self._sim_thread = threading.Thread(
+                target=self._sim_loop, args=(self._sim_stop,), daemon=True)
+            self._sim_thread.start()
+            self.station.log("sim: started")
+        elif not on and self._sim_thread:
+            self._sim_stop.set()
+            self._sim_thread = None
+            self.station.log("sim: stopped")
+
+    @property
+    def sim_on(self):
+        return self._sim_thread is not None
+
+    def _sim_loop(self, stop):
+        rng = np.random.default_rng()
+        t0 = time.time()
+        while not stop.is_set():
+            cfg = self.station.cfg
+            n = cfg["path_loss_n"]
+            nodes = cfg["nodes"]
+            anch = np.array([v["pos"] for v in nodes.values()])
+            cx, cy = anch[:, 0].mean(), anch[:, 1].mean()
+            r = max(2.5, 0.35 * (anch[:, :2].max() - anch[:, :2].min()))
+            t = time.time() - t0
+            true = np.array([cx + r * math.cos(0.35 * t),
+                             cy + r * math.sin(0.55 * t),
+                             cfg.get("drone_z", 1.5)])
+            for nid, nc in nodes.items():
+                d = float(np.linalg.norm(true - np.array(nc["pos"])))
+                rssi = nc["rssi0"] - 10 * n * math.log10(max(d, 0.1))
+                rssi += rng.normal(0, RSSI_SIGMA_DB)
+                self.q.put({"node": int(nid), "rssi": round(rssi, 1), "n": 6})
+            self.q.put({"_true": true.tolist()})
+            stop.wait(0.25)
+
+
+# ----------------------------------------------------------------------
+# station core — measurements, solver, calibration, recording
+# ----------------------------------------------------------------------
+
+class Station:
+    def __init__(self):
+        self.cfg = json.loads(CONFIG_PATH.read_text())
+        self.cfg["nodes"] = {str(k): v for k, v in self.cfg["nodes"].items()}
+        self.sources = Sources(self)
+        self.latest = {}        # node_id(str) -> dict(rssi, dist, sigma, ts, count, hz)
+        self.rate_win = {}      # node_id -> [timestamps]
+        self.fix = None         # dict(x,y,z,resid,nodes_used,t)
+        self.est = None         # np.array(3), smoothed
+        self.vel = np.zeros(2)
+        self.true = None        # sim ground truth
+        self.logbuf = []
+        self.clients = set()
+        self.cal = None         # active calibration dict
+        self.rec_file = None
+        self.rec_path = None
+
+    # -- logging --------------------------------------------------------
+    def log(self, msg):
+        entry = {"t": round(time.time(), 1), "msg": msg}
+        self.logbuf.append(entry)
+        self.logbuf = self.logbuf[-200:]
+        print(f"[{time.strftime('%H:%M:%S')}] {msg}", flush=True)
+
+    # -- config ---------------------------------------------------------
+    def save_cfg(self):
+        CONFIG_PATH.write_text(json.dumps(self.cfg, indent=2) + "\n")
+
+    def update_cfg(self, patch):
+        if "path_loss_n" in patch:
+            self.cfg["path_loss_n"] = float(patch["path_loss_n"])
+        if "drone_z" in patch:
+            self.cfg["drone_z"] = float(patch["drone_z"])
+        for nid, nc in patch.get("nodes", {}).items():
+            node = self.cfg["nodes"].setdefault(str(nid), {"pos": [0, 0, 1], "rssi0": -40})
+            if "pos" in nc:
+                node["pos"] = [float(v) for v in nc["pos"]]
+            if "rssi0" in nc:
+                node["rssi0"] = float(nc["rssi0"])
+        for nid in patch.get("remove_nodes", []):
+            self.cfg["nodes"].pop(str(nid), None)
+            self.latest.pop(str(nid), None)
+        self.save_cfg()
+        self.log("config updated")
+
+    # -- ingest ---------------------------------------------------------
+    def ingest(self, msg, now):
+        if "_true" in msg:
+            self.true = msg["_true"]
+            return
+        if "node" not in msg:
+            return
+        nid = str(msg["node"])
+        if nid not in self.cfg["nodes"]:
+            return
+        nc = self.cfg["nodes"][nid]
+        rec = self.latest.get(nid, {})
+        if "dist" in msg:
+            rec.update(dist=float(msg["dist"]), sigma=FTM_SIGMA_M,
+                       rssi=None, ts=now)
+        elif "rssi" in msg:
+            rssi = float(msg["rssi"])
+            d = rssi_to_distance(rssi, nc["rssi0"], self.cfg["path_loss_n"])
+            rec.update(rssi=rssi, dist=d,
+                       sigma=rssi_distance_sigma(d, self.cfg["path_loss_n"]),
+                       ts=now)
+            if self.cal and self.cal["node"] == nid:
+                self.cal["samples"].append(rssi)
+        else:
+            return
+        rec["count"] = rec.get("count", 0) + 1
+        self.latest[nid] = rec
+        win = self.rate_win.setdefault(nid, [])
+        win.append(now)
+        self.rate_win[nid] = [t for t in win if now - t < 3.0]
+
+        if self.rec_file:
+            self.rec_file.write(json.dumps({"t": now, **msg}) + "\n")
+
+    # -- solve ----------------------------------------------------------
+    def solve(self, now):
+        meas = []
+        for nid, rec in self.latest.items():
+            if now - rec["ts"] <= MEAS_MAX_AGE_S:
+                meas.append((np.array(self.cfg["nodes"][nid]["pos"]),
+                             rec["dist"], rec["sigma"]))
+        if len(meas) < 3:
+            return
+        if self.est is None:
+            anch = np.array([v["pos"] for v in self.cfg["nodes"].values()])
+            self.est = np.array([anch[:, 0].mean(), anch[:, 1].mean(),
+                                 self.cfg.get("drone_z", 1.5)])
+        prev = self.est.copy()
+        pos, resid = solve_position(meas, self.est, self.cfg.get("drone_z", 1.5),
+                                    solve_3d=False)
+        self.est = EMA_ALPHA * pos + (1 - EMA_ALPHA) * self.est
+        dt = 1.0 / SOLVE_HZ
+        self.vel = 0.3 * ((self.est[:2] - prev[:2]) / dt) + 0.7 * self.vel
+        self.fix = {"x": round(float(self.est[0]), 2),
+                    "y": round(float(self.est[1]), 2),
+                    "z": round(float(self.est[2]), 2),
+                    "vx": round(float(self.vel[0]), 2),
+                    "vy": round(float(self.vel[1]), 2),
+                    "resid": round(resid, 2),
+                    "nodes_used": len(meas),
+                    "t": round(now, 2)}
+        if self.rec_file:
+            self.rec_file.write(json.dumps({"fix": self.fix}) + "\n")
+
+    # -- calibration ----------------------------------------------------
+    def cal_start(self, nid, dist, seconds):
+        self.cal = {"node": str(nid), "dist": float(dist),
+                    "seconds": float(seconds), "t0": time.time(),
+                    "samples": []}
+        self.log(f"calibration: node {nid} @ {dist} m for {seconds:.0f}s")
+
+    def cal_poll(self, now):
+        """Returns a result dict when the capture window ends, else None."""
+        if not self.cal or now - self.cal["t0"] < self.cal["seconds"]:
+            return None
+        cal, self.cal = self.cal, None
+        s = sorted(cal["samples"])
+        if not s:
+            self.log("calibration: no samples received")
+            return {"node": cal["node"], "ok": False, "n": 0}
+        med = s[len(s) // 2]
+        rssi0 = med + 10.0 * self.cfg["path_loss_n"] * math.log10(cal["dist"])
+        self.log(f"calibration: node {cal['node']} median {med:.1f} dBm "
+                 f"-> rssi0 {rssi0:.1f} ({len(s)} samples)")
+        return {"node": cal["node"], "ok": True, "n": len(s),
+                "median": round(med, 1), "rssi0": round(rssi0, 1)}
+
+    # -- recording ------------------------------------------------------
+    def record(self, on):
+        if on and not self.rec_file:
+            REC_DIR.mkdir(exist_ok=True)
+            self.rec_path = REC_DIR / time.strftime("rec-%Y%m%d-%H%M%S.jsonl")
+            self.rec_file = open(self.rec_path, "w")
+            self.log(f"recording -> {self.rec_path.name}")
+        elif not on and self.rec_file:
+            self.rec_file.close()
+            self.rec_file = None
+            self.log(f"recording stopped ({self.rec_path.name})")
+
+    # -- state snapshot for the GUI -------------------------------------
+    def state(self, now):
+        nodes = {}
+        for nid, nc in self.cfg["nodes"].items():
+            rec = self.latest.get(nid, {})
+            age = now - rec["ts"] if "ts" in rec else None
+            nodes[nid] = {
+                "pos": nc["pos"], "rssi0": nc["rssi0"],
+                "rssi": rec.get("rssi"), "dist": round(rec["dist"], 2) if "dist" in rec else None,
+                "age": round(age, 2) if age is not None else None,
+                "hz": round(len(self.rate_win.get(nid, [])) / 3.0, 1),
+            }
+        fix = None
+        if self.fix and now - self.fix["t"] < 2.0:
+            fix = self.fix
+        return {"type": "state", "t": round(now, 2),
+                "fix": fix, "nodes": nodes,
+                "true": self.true if self.sources.sim_on else None,
+                "cfg": {"path_loss_n": self.cfg["path_loss_n"],
+                        "drone_z": self.cfg.get("drone_z", 1.5)},
+                "link": {"port": self.sources.port,
+                         "serial_ok": self.sources.serial_ok,
+                         "sim": self.sources.sim_on},
+                "cal": ({"node": self.cal["node"],
+                         "progress": min(1.0, (now - self.cal["t0"]) / self.cal["seconds"]),
+                         "n": len(self.cal["samples"])} if self.cal else None),
+                "recording": self.rec_path.name if self.rec_file else None,
+                "log": self.logbuf[-40:]}
+
+
+# ----------------------------------------------------------------------
+# web app
+# ----------------------------------------------------------------------
+
+def list_ports():
+    try:
+        from serial.tools import list_ports as lp
+        return [{"device": p.device, "desc": p.description} for p in lp.comports()]
+    except Exception:
+        return []
+
+
+async def ws_handler(request):
+    st: Station = request.app["station"]
+    ws = web.WebSocketResponse(heartbeat=20)
+    await ws.prepare(request)
+    st.clients.add(ws)
+    await ws.send_json({"type": "hello", "ports": list_ports(),
+                        "cfg_full": st.cfg})
+    try:
+        async for msg in ws:
+            if msg.type != WSMsgType.TEXT:
+                continue
+            try:
+                m = json.loads(msg.data)
+            except json.JSONDecodeError:
+                continue
+            cmd = m.get("cmd")
+            if cmd == "ports":
+                await ws.send_json({"type": "ports", "ports": list_ports()})
+            elif cmd == "connect":
+                st.sources.connect(m["port"], int(m.get("baud", 115200)))
+            elif cmd == "disconnect":
+                st.sources.disconnect()
+                st.log("serial disconnected")
+            elif cmd == "sim":
+                st.sources.sim(bool(m.get("on")))
+            elif cmd == "cfg":
+                st.update_cfg(m.get("patch", {}))
+                await broadcast(st, {"type": "cfg_full", "cfg_full": st.cfg})
+            elif cmd == "calibrate":
+                st.cal_start(m["node"], m.get("dist", 1.0), m.get("seconds", 15))
+            elif cmd == "cal_cancel":
+                st.cal = None
+                st.log("calibration cancelled")
+            elif cmd == "record":
+                st.record(bool(m.get("on")))
+    finally:
+        st.clients.discard(ws)
+    return ws
+
+
+async def broadcast(st, payload):
+    dead = []
+    for ws in st.clients:
+        try:
+            await ws.send_json(payload)
+        except Exception:
+            dead.append(ws)
+    for ws in dead:
+        st.clients.discard(ws)
+
+
+async def pump(app):
+    """Main loop: drain sources, solve, push state to clients."""
+    st: Station = app["station"]
+    solve_dt = 1.0 / SOLVE_HZ
+    last_solve = 0.0
+    try:
+        while True:
+            now = time.time()
+            try:
+                while True:
+                    st.ingest(st.sources.q.get_nowait(), time.time())
+            except queue.Empty:
+                pass
+            if now - last_solve >= solve_dt:
+                last_solve = now
+                st.solve(now)
+                res = st.cal_poll(now)
+                if res:
+                    await broadcast(st, {"type": "cal_result", **res})
+                await broadcast(st, st.state(now))
+            await asyncio.sleep(0.02)
+    except asyncio.CancelledError:
+        pass
+
+
+async def on_startup(app):
+    app["pump"] = asyncio.create_task(pump(app))
+
+
+async def on_cleanup(app):
+    app["pump"].cancel()
+    st: Station = app["station"]
+    st.record(False)
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--hub", help="serial port to connect at startup")
+    ap.add_argument("--sim", action="store_true", help="start in sim mode")
+    ap.add_argument("--host", default="127.0.0.1")
+    ap.add_argument("--port", type=int, default=8080)
+    args = ap.parse_args()
+
+    st = Station()
+    if args.hub:
+        st.sources.connect(args.hub)
+    if args.sim:
+        st.sources.sim(True)
+
+    app = web.Application()
+    app["station"] = st
+    app.router.add_get("/ws", ws_handler)
+
+    async def index(_):
+        return web.FileResponse(BASE / "web" / "index.html")
+    app.router.add_get("/", index)
+    app.router.add_static("/", BASE / "web", show_index=False)
+
+    app.on_startup.append(on_startup)
+    app.on_cleanup.append(on_cleanup)
+    st.log(f"ground station on http://{args.host}:{args.port}")
+    web.run_app(app, host=args.host, port=args.port, print=None)
+
+
+if __name__ == "__main__":
+    main()

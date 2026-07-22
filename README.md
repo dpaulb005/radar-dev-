@@ -54,12 +54,28 @@ to WiFi channel 7, which is now the default across this repo's firmware.
 - **`firmware/mac_scanner/`** — helper: sweeps channels 1–13 and prints
   every transmitter MAC with frame rate and RSSI, so you can identify your
   drone's MAC and channel before configuring the sniffers.
-- **`ground_station/locate.py`** — converts RSSI → distance (log-distance
-  path-loss model), solves position by weighted nonlinear least squares,
-  smooths with an EMA, prints JSON fixes and optionally live-plots.
+- **`ground_station/server.py`** — the radar console: a local web GUI
+  (Python asyncio + WebSocket + canvas) with a PPI-style scope (range
+  rings, phosphor trail, velocity vector, uncertainty halo), per-node
+  health cards with RSSI sparklines, serial port picker, sim mode, session
+  recording, drag-to-place node layout, and a built-in calibration wizard.
+  `python server.py` → <http://localhost:8080>.
+- **`ground_station/locate.py`** — headless CLI: converts RSSI → distance
+  (log-distance path-loss model), solves position by weighted nonlinear
+  least squares, smooths with an EMA, prints JSON fixes. `server.py`
+  imports its solver, so both share one implementation.
 
 Hardware shopping list with prices: [`hardware/BOM.md`](hardware/BOM.md)
 (~$56 core system).
+
+**Full step-by-step build plan with checkpoints: [`docs/SETUP.md`](docs/SETUP.md).**
+
+Try the GUI right now with zero hardware:
+
+```bash
+cd ground_station && pip install -r requirements.txt
+python server.py --sim        # then open http://localhost:8080
+```
 
 ## Quickstart
 
