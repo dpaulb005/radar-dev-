@@ -36,6 +36,7 @@ from locate import (
     RSSI_SIGMA_DB,
     FTM_SIGMA_M,
 )
+import guidance
 
 BASE = pathlib.Path(__file__).resolve().parent
 CONFIG_PATH = BASE / "config.json"
@@ -121,6 +122,11 @@ class Sources:
     def _sim_loop(self, stop):
         rng = np.random.default_rng()
         t0 = time.time()
+        # interceptor state for the optional pursuit demo (horizontal plane)
+        p_i = None
+        v_i = np.zeros(2)
+        a_state = np.zeros(2)
+        t_prev = t0
         while not stop.is_set():
             cfg = self.station.cfg
             n = cfg["path_loss_n"]
@@ -138,6 +144,42 @@ class Sources:
                 rssi += rng.normal(0, RSSI_SIGMA_DB)
                 self.q.put({"node": int(nid), "rssi": round(rssi, 1), "n": 6})
             self.q.put({"_true": true.tolist()})
+
+            # -------- optional interceptor pursuit demo --------
+            if self.station.pursuit:
+                if p_i is None:
+                    p_i = anch[0, :2].astype(float).copy()
+                    v_i = np.zeros(2)
+                    a_state = np.zeros(2)
+                a_max = guidance.max_accel(35.0)
+                v_max = 12.0
+                drag = a_max / v_max
+                # noisy estimates of both drones (what the radar would give)
+                est_i = p_i + rng.normal(0, 1.2, 2)
+                est_t = true[:2] + rng.normal(0, 1.2, 2)
+                # crude target velocity from the sim's analytic motion
+                vt = np.array([-r * 0.35 * math.sin(0.35 * t),
+                               r * 0.55 * math.cos(0.55 * t)])
+                a_cmd = guidance.track(est_i, v_i, est_t, vt,
+                                       v_max=v_max, a_max=a_max)
+                # integrate a few physics substeps over this tick
+                dt = min(0.3, time.time() - t_prev)
+                sub = 6
+                h = dt / sub
+                for _ in range(sub):
+                    a_state += (a_cmd - a_state) * (h / (0.15 + h))
+                    v_i = v_i + (a_state - drag * v_i) * h
+                    p_i = p_i + v_i * h
+                rng_m = float(np.linalg.norm(true[:2] - p_i))
+                self.q.put({"_pursuit": {
+                    "i_true": [float(p_i[0]), float(p_i[1])],
+                    "i_est": [float(est_i[0]), float(est_i[1])],
+                    "t_est": [float(est_t[0]), float(est_t[1])],
+                    "speed": float(np.linalg.norm(v_i)),
+                    "range": round(rng_m, 2)}})
+            else:
+                p_i = None
+            t_prev = time.time()
             stop.wait(0.25)
 
 
@@ -161,6 +203,8 @@ class Station:
         self.cal = None         # active calibration dict
         self.rec_file = None
         self.rec_path = None
+        self.pursuit = False    # two-drone pursuit demo (sim only)
+        self.pursuit_state = None
 
     # -- logging --------------------------------------------------------
     def log(self, msg):
@@ -194,6 +238,9 @@ class Station:
     def ingest(self, msg, now):
         if "_true" in msg:
             self.true = msg["_true"]
+            return
+        if "_pursuit" in msg:
+            self.pursuit_state = msg["_pursuit"]
             return
         if "node" not in msg:
             return
@@ -316,6 +363,7 @@ class Station:
                          "progress": min(1.0, (now - self.cal["t0"]) / self.cal["seconds"]),
                          "n": len(self.cal["samples"])} if self.cal else None),
                 "recording": self.rec_path.name if self.rec_file else None,
+                "pursuit": self.pursuit_state if self.pursuit else None,
                 "log": self.logbuf[-40:]}
 
 
@@ -356,6 +404,11 @@ async def ws_handler(request):
                 st.log("serial disconnected")
             elif cmd == "sim":
                 st.sources.sim(bool(m.get("on")))
+            elif cmd == "pursuit":
+                st.pursuit = bool(m.get("on"))
+                if not st.pursuit:
+                    st.pursuit_state = None
+                st.log(f"pursuit demo {'on' if st.pursuit else 'off'}")
             elif cmd == "cfg":
                 st.update_cfg(m.get("patch", {}))
                 await broadcast(st, {"type": "cfg_full", "cfg_full": st.cfg})

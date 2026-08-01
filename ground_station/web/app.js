@@ -16,6 +16,7 @@ const S = {
   state: null,          // last state message
   cfgFull: null,        // full config incl. node positions
   trail: [],            // [{x,y,t}]
+  puTrail: [],          // interceptor trail [{x,y,t}]
   spark: {},            // nodeId -> [{t,rssi}]
   rateWin: [],          // fix timestamps for solver-rate pill
   render: { x: 0, y: 0, has: false },   // interpolated blip
@@ -59,6 +60,12 @@ function onState(m) {
     S.trail = S.trail.filter(p => now - p.t < 12);
     S.rateWin = S.rateWin.filter(t => now - t < 3);
   }
+  if (m.pursuit) {
+    S.puTrail.push({ x: m.pursuit.i_true[0], y: m.pursuit.i_true[1], t: now });
+    S.puTrail = S.puTrail.filter(p => now - p.t < 8);
+  } else if (S.puTrail.length) {
+    S.puTrail = [];
+  }
   for (const [nid, n] of Object.entries(m.nodes)) {
     if (n.rssi != null && n.age != null && n.age < 1.5) {
       const arr = S.spark[nid] = S.spark[nid] || [];
@@ -88,6 +95,7 @@ function updatePanels(m) {
   $("pill-rec").classList.toggle("hidden", !m.recording);
   $("btn-record").classList.toggle("on", !!m.recording);
   $("btn-sim").classList.toggle("on", m.link.sim);
+  $("btn-pursuit").classList.toggle("on", !!m.pursuit);
   const conn = $("btn-connect");
   conn.textContent = m.link.port ? "Disconnect" : "Connect";
   conn.classList.toggle("on", !!m.link.port);
@@ -240,6 +248,11 @@ function wireControls() {
   };
   $("btn-sim").onclick = () => send({ cmd: "sim", on: !S.state?.link?.sim });
   $("btn-record").onclick = () => send({ cmd: "record", on: !S.state?.recording });
+  $("btn-pursuit").onclick = () => {
+    const on = !(S.state && S.state.pursuit);
+    if (on && !S.state?.link?.sim) send({ cmd: "sim", on: true });  // demo needs sim
+    send({ cmd: "pursuit", on });
+  };
   $("btn-cal").onclick = () => {
     if (S.state?.cal) send({ cmd: "cal_cancel" });
     else send({ cmd: "calibrate", node: $("cal-node").value,
@@ -446,6 +459,47 @@ function drawScope(tNow) {
     sctx.fillText("DRONE", bx + 10 * DPR, by - 8 * DPR);
   } else {
     S.render.has = false;
+  }
+
+  // --- pursuit demo: interceptor blip + intercept line ---
+  if (S.state?.pursuit) {
+    const pu = S.state.pursuit;
+    const tgt = S.state.true || (S.state.fix ? [S.state.fix.x, S.state.fix.y] : pu.t_est);
+    const [ix, iy] = W2S(pu.i_true[0], pu.i_true[1]);
+    const [tx, ty] = W2S(tgt[0], tgt[1]);
+    const GREEN = "#0ca30c";
+
+    sctx.strokeStyle = GREEN; sctx.globalAlpha = 0.7; sctx.lineWidth = 1.5 * DPR;
+    sctx.setLineDash([5 * DPR, 5 * DPR]);
+    sctx.beginPath(); sctx.moveTo(ix, iy); sctx.lineTo(tx, ty); sctx.stroke();
+    sctx.setLineDash([]); sctx.globalAlpha = 1;
+
+    for (const p of S.puTrail) {
+      const a = Math.max(0, 1 - (S.state.t - p.t) / 8);
+      const [px, py] = W2S(p.x, p.y);
+      sctx.fillStyle = GREEN; sctx.globalAlpha = 0.4 * a * a;
+      sctx.beginPath(); sctx.arc(px, py, 2.3 * DPR, 0, Math.PI * 2); sctx.fill();
+    }
+    sctx.globalAlpha = 1;
+
+    const s = 6 * DPR;                       // interceptor diamond
+    sctx.fillStyle = GREEN;
+    sctx.beginPath();
+    sctx.moveTo(ix, iy - s); sctx.lineTo(ix + s, iy);
+    sctx.lineTo(ix, iy + s); sctx.lineTo(ix - s, iy); sctx.closePath();
+    sctx.fill();
+    sctx.strokeStyle = C("--page"); sctx.lineWidth = 2 * DPR; sctx.stroke();
+    sctx.fillStyle = C("--ink"); sctx.font = `600 ${11 * DPR}px system-ui`;
+    sctx.fillText("INTERCEPTOR", ix + 9 * DPR, iy + 4 * DPR);
+
+    sctx.fillStyle = GREEN; sctx.font = `600 ${11 * DPR}px system-ui`;
+    sctx.fillText(`${pu.range.toFixed(1)} m`, (ix + tx) / 2 + 4 * DPR, (iy + ty) / 2 - 4 * DPR);
+
+    sctx.fillStyle = C("--ink-2"); sctx.font = `${12 * DPR}px system-ui`;
+    sctx.textAlign = "center";
+    sctx.fillText(`PURSUIT  ·  range ${pu.range.toFixed(1)} m  ·  interceptor ${pu.speed.toFixed(1)} m/s`,
+                  w / 2, 24 * DPR);
+    sctx.textAlign = "left";
   }
 
   requestAnimationFrame(drawScope);
