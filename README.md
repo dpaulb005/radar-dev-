@@ -1,7 +1,9 @@
 # radar-dev — passive RF localization for an ESP32 drone
 
 Locates an ESP32-equipped drone within a ~5–10 m flight area using its own
-2.4 GHz transmissions, for well under $150.
+2.4 GHz transmissions, for well under $150 — and, as the end goal, uses that
+radar to fly one drone to another (**two-drone interception**, see
+[`docs/interception.md`](docs/interception.md)).
 
 **Important scope note:** the original idea — a true passive radar detecting
 *reflections* of the controller's signal off the drone — is not physically
@@ -67,6 +69,33 @@ to WiFi channel 7, which is now the default across this repo's firmware.
 
 Hardware shopping list with prices: [`hardware/BOM.md`](hardware/BOM.md)
 (~$56 core system).
+
+### Interception (the end goal)
+
+Because both drones are ESP32 emitters, the same ground radar can track **both**
+and fly one to the other. ESP-FC has no autonomous navigation, so **the laptop
+is the autopilot**: it multilaterates both drones, runs a guidance law, and
+streams RC channels to the interceptor via a tethered "commander" ESP32 (which
+*is* the drone's radio over espnow-rclink). Full architecture, verified against
+the esp-fc / espnow-rclink source, plus the honest performance envelope and the
+safety/legal bright lines, is in [`docs/interception.md`](docs/interception.md).
+
+- **`ground_station/guidance.py`** — guidance laws (position+velocity tracking
+  with target-velocity feed-forward and latency compensation; pure pursuit;
+  proportional navigation) and the world-accel → attitude → RC-channel mapping.
+- **`ground_station/pursuit_sim.py`** — closed-loop interception simulation
+  reusing the real solver and RSSI noise model (Monte-Carlo, envelope sweep,
+  plots). Empirically: reliably arrives within ~2 m of a slow/hovering target;
+  the ESP-BLAST at top speed is uncatchable with RSSI.
+- **`ground_station/autopilot.py`** — the host pilot (fixes → guidance → RC
+  frame → commander), defaulting to DISARMED + dry-run, with geofence/fail-safe.
+- **`firmware/commander/commander.ino`** — the espnow-rclink transmitter bridge.
+- GUI **Pursuit demo** — live two-drone visualization in the radar console.
+
+What it can do: **fly to and loiter within a couple of metres of a hovering or
+slowly-drifting (≤~3 m/s) target, scored by range.** What it can't: catch a
+fast drone, or make physical contact (that needs UWB or onboard terminal
+guidance). This is a *tracking* system — never weaponized, see the doc.
 
 **Full step-by-step build plan with checkpoints: [`docs/SETUP.md`](docs/SETUP.md).**
 

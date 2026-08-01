@@ -36,11 +36,20 @@ def _unit(v):
     return v / n if n > 1e-9 else np.zeros_like(v)
 
 
+def predict(p_t, v_t, lead):
+    """Latency-compensate: propagate the target forward through the total
+    loop delay (sensor + age-of-fix + tilt-to-accel lag, ~0.4-0.7 s) so the
+    interceptor aims where the target *will* be, not where it was."""
+    if v_t is None or lead <= 0:
+        return np.asarray(p_t, float)
+    return np.asarray(p_t, float) + np.asarray(v_t, float) * lead
+
+
 # ----------------------------------------------------------------------
 # guidance laws → desired world-frame acceleration (horizontal, 2-vector)
 # ----------------------------------------------------------------------
 
-def track(p_i, v_i, p_t, v_t=None, kp=1.6, kv=2.6, v_max=12.0, a_max=None):
+def track(p_i, v_i, p_t, v_t=None, kp=1.6, kv=2.6, v_max=12.0, a_max=None, lead=0.0):
     """Cascaded position+velocity tracking with target-velocity feed-forward.
 
         v_des = v_t + kp * (p_t - p_i)         (clamped to v_max)
@@ -54,7 +63,7 @@ def track(p_i, v_i, p_t, v_t=None, kp=1.6, kv=2.6, v_max=12.0, a_max=None):
     """
     p_i = np.asarray(p_i, float); v_i = np.asarray(v_i, float)
     ff = np.zeros(2) if v_t is None else np.asarray(v_t, float)
-    v_des = ff + kp * (np.asarray(p_t, float) - p_i)
+    v_des = ff + kp * (predict(p_t, v_t, lead) - p_i)
     s = np.linalg.norm(v_des)
     if s > v_max:
         v_des = v_des / s * v_max
@@ -189,7 +198,7 @@ def attitude_to_rc(roll, pitch, throttle01, yaw_rate=0.0,
 
 def compute_rc(p_i, v_i, p_t, v_t, yaw, *, law="track",
                speed_cmd=10.0, max_lean_deg=35.0, throttle_hover=0.5,
-               yaw_to_target=True, N=4.0):
+               yaw_to_target=True, N=4.0, lead=0.0):
     """End-to-end: states -> RC channels for the interceptor.
 
     Throttle is held near hover here (open-loop); real altitude hold needs
@@ -198,13 +207,19 @@ def compute_rc(p_i, v_i, p_t, v_t, yaw, *, law="track",
     body-frame rather than world-frame).
     """
     a_max = max_accel(max_lean_deg)
+    p_t_lead = predict(p_t, v_t, lead)
     if law == "pro_nav":
-        a_h = pro_nav(p_i, v_i, p_t, v_t, N=N, speed_cmd=speed_cmd, a_max=a_max)
+        a_h = pro_nav(p_i, v_i, p_t_lead, v_t, N=N, speed_cmd=speed_cmd, a_max=a_max)
     elif law == "pure_pursuit":
-        a_h = pure_pursuit(p_i, v_i, p_t, speed_cmd, a_max=a_max)
+        a_h = pure_pursuit(p_i, v_i, p_t_lead, speed_cmd, a_max=a_max)
     else:  # track (default)
-        a_h = track(p_i, v_i, p_t, v_t, v_max=speed_cmd, a_max=a_max)
+        a_h = track(p_i, v_i, p_t, v_t, v_max=speed_cmd, a_max=a_max, lead=lead)
 
+    # NOTE: accel_to_attitude splits the world-frame accel into roll/pitch
+    # using `yaw`. The SIGN of the roll term depends on your roll convention
+    # (positive-roll-right vs -left) — a wrong sign flies the drone AWAY from
+    # the target. Resolve it empirically on the bench (calibration dance)
+    # before any free flight. See docs/interception.md sec. Heading.
     roll, pitch = accel_to_attitude(a_h, yaw, max_lean_deg)
 
     yaw_rate = 0.0
