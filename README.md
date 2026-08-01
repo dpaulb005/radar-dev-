@@ -97,7 +97,9 @@ slowly-drifting (≤~3 m/s) target, scored by range.** What it can't: catch a
 fast drone, or make physical contact (that needs UWB or onboard terminal
 guidance). This is a *tracking* system — never weaponized, see the doc.
 
-**Full step-by-step build plan with checkpoints: [`docs/SETUP.md`](docs/SETUP.md).**
+**Master build guide (whole system: both drones + radar + interception, with a
+priced parts list and ordered steps): [`docs/BUILD.md`](docs/BUILD.md).**
+Radar-only setup detail is in [`docs/SETUP.md`](docs/SETUP.md).
 
 Try the GUI right now with zero hardware:
 
