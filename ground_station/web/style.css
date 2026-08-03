@@ -76,7 +76,9 @@ h1 { font-size: 14px; letter-spacing: 0.12em; color: var(--ink); font-weight: 65
 main { flex: 1; display: flex; min-height: 0; }
 
 #scope-wrap { flex: 1; position: relative; background: var(--page); min-width: 0; }
-#scope { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: crosshair; }
+#scope, #scope-overlay { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+#scope { cursor: crosshair; }
+#scope-overlay { pointer-events: none; }   /* crisp text/HUD, above the glow layer */
 
 #scope-hud { position: absolute; top: 10px; left: 12px; display: flex; gap: 8px; }
 #scope-readout {

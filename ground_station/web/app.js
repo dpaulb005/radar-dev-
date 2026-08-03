@@ -1,6 +1,8 @@
 /* Radar ground station console — WebSocket client + canvas PPI scope. */
 "use strict";
 
+import { ScopeGL } from "./scope-gl.js";
+
 const $ = id => document.getElementById(id);
 /* Validated categorical order (dark column); drone track = slot 1 blue.
  * Node identity is never color-alone: every marker carries its N# label. */
@@ -278,13 +280,32 @@ function wireControls() {
 /* scope rendering                                                    */
 /* ------------------------------------------------------------------ */
 const scope = $("scope");
-const sctx = scope.getContext("2d");
+const overlay = $("scope-overlay");
+const octx = overlay.getContext("2d");   // crisp text/HUD layer, never persisted
 let DPR = 1;
+
+// The emissive 2D scene (glow: sweep, blips, trails, rings, markers) is drawn
+// to an offscreen canvas, then post-processed by the WebGL phosphor/bloom
+// layer onto the visible canvas. Text/HUD go on the crisp overlay above it.
+// If WebGL2 is unavailable, fall back to drawing straight to the screen.
+const sceneCanvas = document.createElement("canvas");
+let scopeGL = new ScopeGL(scope, { decay: 0.84, bloomThresh: 0.34,
+                                   bloomIntensity: 1.1, scan: 0.04, vignette: 0.32 });
+let sctx;
+if (scopeGL.ok) {
+  sctx = sceneCanvas.getContext("2d");
+} else {
+  scopeGL = null;
+  sctx = scope.getContext("2d");   // graceful 2D fallback
+}
 
 function resize() {
   DPR = window.devicePixelRatio || 1;
-  scope.width = scope.clientWidth * DPR;
-  scope.height = scope.clientHeight * DPR;
+  const w = Math.max(1, Math.floor(scope.clientWidth * DPR));
+  const h = Math.max(1, Math.floor(scope.clientHeight * DPR));
+  scope.width = w; scope.height = h;
+  overlay.width = w; overlay.height = h;
+  sceneCanvas.width = w; sceneCanvas.height = h;
 }
 window.addEventListener("resize", resize);
 
@@ -321,6 +342,8 @@ function drawScope(tNow) {
   fitView();
   const w = scope.width, h = scope.height;
   sctx.clearRect(0, 0, w, h);
+  octx.clearRect(0, 0, w, h);
+  octx.textAlign = "left";
   const cs = getComputedStyle(document.documentElement);
   const C = n => cs.getPropertyValue(n).trim();
 
@@ -345,13 +368,13 @@ function drawScope(tNow) {
     const [pcx, pcy] = W2S(rcx, rcy);
     const ringStep = niceStep(70 * S.view.mpp);
     sctx.strokeStyle = C("--baseline");
-    sctx.fillStyle = C("--ink-muted");
-    sctx.font = `${10 * DPR}px ${C("--font") || "system-ui"}`;
+    octx.fillStyle = C("--ink-muted");
+    octx.font = `${10 * DPR}px system-ui`;
     for (let r = ringStep; r <= ringStep * 6; r += ringStep) {
       sctx.beginPath();
       sctx.arc(pcx, pcy, r / S.view.mpp * DPR, 0, Math.PI * 2);
       sctx.stroke();
-      sctx.fillText(`${r} m`, pcx + 4 * DPR, pcy - r / S.view.mpp * DPR - 4 * DPR);
+      octx.fillText(`${r} m`, pcx + 4 * DPR, pcy - r / S.view.mpp * DPR - 4 * DPR);
     }
 
     // --- sweep (cosmetic phosphor wedge) ---
@@ -402,9 +425,9 @@ function drawScope(tNow) {
         sctx.moveTo(px, py - s + 3 * DPR); sctx.lineTo(px + s - 3 * DPR, py + s - 2 * DPR);
         sctx.lineTo(px - s + 3 * DPR, py + s - 2 * DPR); sctx.closePath(); sctx.fill();
       }
-      sctx.fillStyle = C("--ink-2");
-      sctx.font = `600 ${11 * DPR}px system-ui`;
-      sctx.fillText(`N${nid}`, px + 10 * DPR, py + 4 * DPR);
+      octx.fillStyle = C("--ink-2");
+      octx.font = `600 ${11 * DPR}px system-ui`;
+      octx.fillText(`N${nid}`, px + 10 * DPR, py + 4 * DPR);
     }
   }
 
@@ -433,13 +456,14 @@ function drawScope(tNow) {
     sctx.globalAlpha = 1;
 
     const [bx, by] = W2S(S.render.x, S.render.y);
-    // uncertainty halo from residual
-    const rpx = Math.max(10 * DPR, (f.resid || 0.5) / S.view.mpp * DPR);
-    const halo = sctx.createRadialGradient(bx, by, 0, bx, by, rpx);
-    halo.addColorStop(0, "rgba(57,135,229,0.25)");
-    halo.addColorStop(1, "rgba(57,135,229,0)");
-    sctx.fillStyle = halo;
-    sctx.beginPath(); sctx.arc(bx, by, rpx, 0, Math.PI * 2); sctx.fill();
+    // uncertainty ring from residual — crisp on the overlay, so it doesn't
+    // bloom into a blob. A soft inner core stays on the emissive layer.
+    const rpx = Math.max(8 * DPR, (f.resid || 0.5) / S.view.mpp * DPR);
+    octx.strokeStyle = "rgba(57,135,229,0.5)";
+    octx.lineWidth = 1 * DPR;
+    octx.setLineDash([3 * DPR, 4 * DPR]);
+    octx.beginPath(); octx.arc(bx, by, rpx, 0, Math.PI * 2); octx.stroke();
+    octx.setLineDash([]);
 
     // velocity vector (1 s lookahead)
     const sp = Math.hypot(f.vx, f.vy);
@@ -454,9 +478,9 @@ function drawScope(tNow) {
     sctx.strokeStyle = C("--page"); sctx.lineWidth = 2 * DPR;   // surface ring
     sctx.stroke();
 
-    sctx.fillStyle = C("--ink");
-    sctx.font = `600 ${11 * DPR}px system-ui`;
-    sctx.fillText("DRONE", bx + 10 * DPR, by - 8 * DPR);
+    octx.fillStyle = C("--ink");
+    octx.font = `600 ${11 * DPR}px system-ui`;
+    octx.fillText("DRONE", bx + 10 * DPR, by - 8 * DPR);
   } else {
     S.render.has = false;
   }
@@ -489,19 +513,20 @@ function drawScope(tNow) {
     sctx.lineTo(ix, iy + s); sctx.lineTo(ix - s, iy); sctx.closePath();
     sctx.fill();
     sctx.strokeStyle = C("--page"); sctx.lineWidth = 2 * DPR; sctx.stroke();
-    sctx.fillStyle = C("--ink"); sctx.font = `600 ${11 * DPR}px system-ui`;
-    sctx.fillText("INTERCEPTOR", ix + 9 * DPR, iy + 4 * DPR);
+    octx.fillStyle = C("--ink"); octx.font = `600 ${11 * DPR}px system-ui`;
+    octx.fillText("INTERCEPTOR", ix + 9 * DPR, iy + 4 * DPR);
 
-    sctx.fillStyle = GREEN; sctx.font = `600 ${11 * DPR}px system-ui`;
-    sctx.fillText(`${pu.range.toFixed(1)} m`, (ix + tx) / 2 + 4 * DPR, (iy + ty) / 2 - 4 * DPR);
+    octx.fillStyle = GREEN; octx.font = `600 ${11 * DPR}px system-ui`;
+    octx.fillText(`${pu.range.toFixed(1)} m`, (ix + tx) / 2 + 4 * DPR, (iy + ty) / 2 - 4 * DPR);
 
-    sctx.fillStyle = C("--ink-2"); sctx.font = `${12 * DPR}px system-ui`;
-    sctx.textAlign = "center";
-    sctx.fillText(`PURSUIT  ·  range ${pu.range.toFixed(1)} m  ·  interceptor ${pu.speed.toFixed(1)} m/s`,
+    octx.fillStyle = C("--ink-2"); octx.font = `${12 * DPR}px system-ui`;
+    octx.textAlign = "center";
+    octx.fillText(`PURSUIT  ·  range ${pu.range.toFixed(1)} m  ·  interceptor ${pu.speed.toFixed(1)} m/s`,
                   w / 2, 24 * DPR);
-    sctx.textAlign = "left";
+    octx.textAlign = "left";
   }
 
+  if (scopeGL) scopeGL.render(sceneCanvas);
   requestAnimationFrame(drawScope);
 }
 
