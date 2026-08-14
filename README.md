@@ -83,6 +83,12 @@ safety/legal bright lines, is in [`docs/interception.md`](docs/interception.md).
 - **`ground_station/guidance.py`** — guidance laws (position+velocity tracking
   with target-velocity feed-forward and latency compensation; pure pursuit;
   proportional navigation) and the world-accel → attitude → RC-channel mapping.
+- **`ground_station/digital_twin.py`** — full **3D digital twin** of the whole
+  system (both quads, radar + barometer sensor suite, latency, guidance), for
+  testing the end goal before risking hardware. See
+  [`docs/3d-sensing.md`](docs/3d-sensing.md).
+- **`ground_station/geometry.py`** — node-layout geometry analysis (where to
+  put nodes; why coplanar nodes can't measure altitude).
 - **`ground_station/pursuit_sim.py`** — closed-loop interception simulation
   reusing the real solver and RSSI noise model (Monte-Carlo, envelope sweep,
   plots). Empirically: reliably arrives within ~2 m of a slow/hovering target;
