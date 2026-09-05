@@ -23,7 +23,7 @@ const S = {
   rateWin: [],          // fix timestamps for solver-rate pill
   render: { x: 0, y: 0, has: false },   // interpolated blip
   view: { cx: 0, cy: 0, mpp: 0.02, user: false },  // meters-per-pixel view
-  edit: false, sweep: true, sweepA: 0,
+  edit: false, sweep: true, sweepA: 0, showPred: true,
   drag: null, mouse: null,
   calArmed: false,
 };
@@ -109,8 +109,13 @@ function updatePanels(m) {
     $("fv").textContent = Math.hypot(m.fix.vx, m.fix.vy).toFixed(1);
     $("fr").textContent = m.fix.resid.toFixed(1);
     $("fn").textContent = `${m.fix.nodes_used} / ${Object.keys(m.nodes).length}`;
+    $("fazel").textContent = (m.fix.az != null)
+      ? `${m.fix.az.toFixed(0)}° / ${m.fix.el.toFixed(0)}°` : "—";
+    $("fslant").textContent = (m.fix.slant != null) ? `${m.fix.slant.toFixed(2)} m` : "—";
+    $("fest").textContent = m.fix.kf ? "Kalman + predict" : "EMA (filter gated off)";
+    $("fest").style.color = m.fix.kf ? "var(--good)" : "var(--ink-muted)";
   } else {
-    for (const id of ["fx", "fy", "fv", "fr"]) $(id).textContent = "—";
+    for (const id of ["fx", "fy", "fv", "fr", "fazel", "fslant", "fest"]) $(id).textContent = "—";
     $("fn").textContent = `0 / ${Object.keys(m.nodes).length}`;
   }
   $("frate").textContent = `${(S.rateWin.length / 3).toFixed(1)} Hz`;
@@ -265,6 +270,10 @@ function wireControls() {
   $("btn-edit").onclick = () => {
     S.edit = !S.edit;
     $("btn-edit").classList.toggle("on", S.edit);
+  };
+  $("btn-pred").onclick = () => {
+    S.showPred = !S.showPred;
+    $("btn-pred").classList.toggle("on", S.showPred);
   };
   $("btn-sweep").onclick = () => {
     S.sweep = !S.sweep;
@@ -458,12 +467,37 @@ function drawScope(tNow) {
     const [bx, by] = W2S(S.render.x, S.render.y);
     // uncertainty ring from residual — crisp on the overlay, so it doesn't
     // bloom into a blob. A soft inner core stays on the emissive layer.
-    const rpx = Math.max(8 * DPR, (f.resid || 0.5) / S.view.mpp * DPR);
-    octx.strokeStyle = "rgba(57,135,229,0.5)";
-    octx.lineWidth = 1 * DPR;
-    octx.setLineDash([3 * DPR, 4 * DPR]);
-    octx.beginPath(); octx.arc(bx, by, rpx, 0, Math.PI * 2); octx.stroke();
-    octx.setLineDash([]);
+    // 1-sigma covariance ellipse from the filter (crisp, not bloomed)
+    const drawEll = (cx, cy, ell, color, dash) => {
+      if (!ell) return;
+      const [a_m, b_m, ang] = ell;
+      const ax = Math.max(6 * DPR, a_m / S.view.mpp * DPR);
+      const bxx = Math.max(6 * DPR, b_m / S.view.mpp * DPR);
+      octx.save();
+      octx.translate(cx, cy);
+      octx.rotate(-ang);                    // screen y is inverted
+      octx.strokeStyle = color; octx.lineWidth = 1 * DPR;
+      octx.setLineDash(dash);
+      octx.beginPath(); octx.ellipse(0, 0, ax, bxx, 0, 0, Math.PI * 2); octx.stroke();
+      octx.setLineDash([]);
+      octx.restore();
+    };
+    drawEll(bx, by, f.ell || [f.resid || 0.5, f.resid || 0.5, 0],
+            "rgba(57,135,229,0.55)", [3 * DPR, 4 * DPR]);
+
+    // predicted position (ghost blip) with its larger, grown ellipse
+    if (S.showPred && f.pred) {
+      const [px_, py_] = W2S(f.pred[0], f.pred[1]);
+      drawEll(px_, py_, f.pred_ell, "rgba(201,133,0,0.5)", [2 * DPR, 5 * DPR]);
+      octx.strokeStyle = "rgba(201,133,0,0.85)"; octx.lineWidth = 1.5 * DPR;
+      octx.setLineDash([4 * DPR, 4 * DPR]);
+      octx.beginPath(); octx.moveTo(bx, by); octx.lineTo(px_, py_); octx.stroke();
+      octx.setLineDash([]);
+      octx.beginPath(); octx.arc(px_, py_, 5 * DPR, 0, Math.PI * 2); octx.stroke();
+      octx.fillStyle = "rgba(201,133,0,0.9)";
+      octx.font = `600 ${10 * DPR}px system-ui`;
+      octx.fillText(`+${(f.horizon || 0.5).toFixed(1)}s`, px_ + 8 * DPR, py_ - 6 * DPR);
+    }
 
     // velocity vector (1 s lookahead)
     const sp = Math.hypot(f.vx, f.vy);

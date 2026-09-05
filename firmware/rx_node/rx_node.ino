@@ -20,9 +20,13 @@
 
 // ---------------- configuration ----------------
 #define NODE_ID        1        // UNIQUE per node: 1, 2, 3, 4...
-#define WIFI_CHANNEL   7        // channel the drone transmits on; 7 = espnow-rclink default (verify with mac_scanner)
+#define WIFI_CHANNEL   1        // ESP-FC softAP default is channel 1, NOT 7.
+                                // The espnow-rclink RX adopts the softAP channel.
+                                // ALWAYS confirm with mac_scanner before flashing.
 
-// STA MAC printed by drone_beacon.ino at boot:
+// The drone's ESP-FC softAP MAC (the AP is named "ESP-FC" and beacons at
+// ~10 Hz all flight, which is free tracking with no firmware patch).
+// Get it from esp-fc's CLI `wifi` command, or from mac_scanner:
 static const uint8_t DRONE_MAC[6] = {0x24, 0x6F, 0x28, 0x00, 0x00, 0x00};
 // MAC printed by hub_node.ino at boot:
 static const uint8_t HUB_MAC[6]   = {0x24, 0x6F, 0x28, 0x00, 0x00, 0x01};

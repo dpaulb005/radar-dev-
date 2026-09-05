@@ -15,6 +15,14 @@ repo implements, is **passive emitter localization**: receive-only sniffer
 nodes measure the drone's own WiFi frames and multilaterate its position.
 Same goal, achievable physics.
 
+**Building the ESP-FLY?** (XIAO ESP32-S3 airframe) — read
+[`docs/espfly.md`](docs/espfly.md). Short version: esp-fc's `ESP-FC` softAP
+beacons at ~10 Hz all flight, so you get a beacon **free with no firmware
+patch**; you **must fly the ESP-NOW link** (an external ELRS receiver leaves
+WiFi down and LoRa is undecodable by an ESP32 sniffer); the channel is **1, not
+7**; the S3 **supports FTM**, which is the accuracy upgrade that matters; and
+with no barometer, altitude needs **one node on the ceiling**.
+
 **Building the ESP-BLAST?** (Max Imagination's ESP32-WROOM-32 rocket drone
 running ESP-FC with an ESP-NOW radio link) — read
 [`docs/espblast.md`](docs/espblast.md) first. Short version: the stock drone
@@ -121,6 +129,19 @@ Vivaldi antenna and simulation workflow:
 
 ⚠️ **Before building it:** a 2.4 GHz radar will jam a 2.4 GHz ESP-NOW control
 link. Move the drone to a 915 MHz ELRS link first — see §0 of the plan.
+
+### Tracking, mmWave and antennas
+
+- **[`docs/tracking.md`](docs/tracking.md)** — the Tier-1 Kalman filter, and the
+  measurement showing it is a *downgrade* on today's RSSI sensor and a win once
+  FTM lands. `ground_station/tracker.py` ships it, gated on
+  `speed x latency > sigma`; the console shows which estimator is live.
+- **[`docs/mmwave.md`](docs/mmwave.md)** — buying a TI IWR6843 instead of
+  building a passive front end: 3.7 cm range cells, ~11 cm cross-range at 10 m,
+  sees the airframe with no beacon at all. Most of this repo survives the swap.
+- **[`docs/antenna.md`](docs/antenna.md)** — optimum pyramidal horn
+  (`antenna/horn.py`), the pe==ph realizability constraint, the `G <= 4piA/l^2`
+  sanity check, and the five-study HFSS methodology.
 
 **Master build guide (whole system: both drones + radar + interception, with a
 priced parts list and ordered steps): [`docs/BUILD.md`](docs/BUILD.md).**

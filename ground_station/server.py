@@ -37,6 +37,8 @@ from locate import (
     FTM_SIGMA_M,
 )
 import guidance
+import geometry
+from tracker import TrackKF, az_el, prediction_is_justified
 
 BASE = pathlib.Path(__file__).resolve().parent
 CONFIG_PATH = BASE / "config.json"
@@ -205,6 +207,14 @@ class Station:
         self.rec_path = None
         self.pursuit = False    # two-drone pursuit demo (sim only)
         self.pursuit_state = None
+        # Tier-1 tracking filter. Runs always (it supplies the covariance
+        # ellipse and az/el), but only DRIVES the displayed fix when the
+        # sensor is good enough for it to beat the EMA -- see tracker.py
+        # _self_test, which measures exactly that.
+        self.kf = TrackKF(sigma_a=float(self.cfg.get("sigma_a", 2.0)), model="cv")
+        self.predict_horizon = float(self.cfg.get("predict_horizon_s", 0.5))
+        self.ranging = self.cfg.get("ranging", "rssi")
+        self.kf_drives = False   # decided per-fix by the gate
 
     # -- logging --------------------------------------------------------
     def log(self, msg):
@@ -285,18 +295,54 @@ class Station:
             self.est = np.array([anch[:, 0].mean(), anch[:, 1].mean(),
                                  self.cfg.get("drone_z", 1.5)])
         prev = self.est.copy()
+        solve_3d = bool(self.cfg.get("solve_3d", False))
         pos, resid = solve_position(meas, self.est, self.cfg.get("drone_z", 1.5),
-                                    solve_3d=False)
+                                    solve_3d=solve_3d)
         self.est = EMA_ALPHA * pos + (1 - EMA_ALPHA) * self.est
         dt = 1.0 / SOLVE_HZ
         self.vel = 0.3 * ((self.est[:2] - prev[:2]) / dt) + 0.7 * self.vel
-        self.fix = {"x": round(float(self.est[0]), 2),
-                    "y": round(float(self.est[1]), 2),
-                    "z": round(float(self.est[2]), 2),
-                    "vx": round(float(self.vel[0]), 2),
-                    "vy": round(float(self.vel[1]), 2),
+
+        # --- Tier-1 Kalman filter, fed with a geometry-derived covariance ---
+        anch = np.array([v["pos"] for v in self.cfg["nodes"].values()], float)
+        R = geometry.position_cov(anch, pos, ranging=self.ranging)
+        if R is None:
+            R = np.diag([2.0 ** 2, 2.0 ** 2, 6.0 ** 2])
+        self.kf.step(now, pos, R)
+        sig = float(math.sqrt(max(R[0, 0], R[1, 1])))
+        self.kf_drives = prediction_is_justified(sig, self.predict_horizon,
+                                                 max(self.kf.speed, 0.5))
+
+        # which estimate the operator sees
+        if self.kf_drives and self.kf.initialised:
+            shown = self.kf.predict_ahead(self.predict_horizon)[0]
+            shown_v = self.kf.vel
+        else:
+            shown = self.est
+            shown_v = np.array([self.vel[0], self.vel[1], 0.0])
+
+        ref = np.array([anch[:, 0].mean(), anch[:, 1].mean(), anch[:, 2].min()])
+        az, el, slant = az_el(shown, ref)
+        a_semi, b_semi, ang = TrackKF.ellipse(self.kf.P[:2, :2]) if self.kf.initialised \
+            else (sig, sig, 0.0)
+        pred_p, pred_P = self.kf.predict_ahead(self.predict_horizon)
+        pa, pb, pang = TrackKF.ellipse(pred_P[:2, :2]) if pred_P is not None else (0, 0, 0)
+
+        self.fix = {"x": round(float(shown[0]), 2),
+                    "y": round(float(shown[1]), 2),
+                    "z": round(float(shown[2]), 2),
+                    "vx": round(float(shown_v[0]), 2),
+                    "vy": round(float(shown_v[1]), 2),
+                    "vz": round(float(shown_v[2]), 2),
                     "resid": round(resid, 2),
                     "nodes_used": len(meas),
+                    "az": round(az, 1), "el": round(el, 1), "slant": round(slant, 2),
+                    "sigma": round(sig, 2),
+                    "ell": [round(a_semi, 2), round(b_semi, 2), round(ang, 3)],
+                    "kf": bool(self.kf_drives),
+                    "pred": ([round(float(pred_p[0]), 2), round(float(pred_p[1]), 2),
+                              round(float(pred_p[2]), 2)] if pred_p is not None else None),
+                    "pred_ell": [round(pa, 2), round(pb, 2), round(pang, 3)],
+                    "horizon": self.predict_horizon,
                     "t": round(now, 2)}
         if self.rec_file:
             self.rec_file.write(json.dumps({"fix": self.fix}) + "\n")

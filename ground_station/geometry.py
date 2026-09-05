@@ -78,6 +78,34 @@ def dop(nodes, p, sigma_fn=rssi_range_sigma, ranging="rssi"):
     return sigma_h, sigma_v, sigma_3d
 
 
+def position_cov(nodes, p, sigma_fn=rssi_range_sigma, ranging="rssi"):
+    """Full 3x3 position covariance (m^2) for anchors `nodes` at point p.
+
+    This is the measurement covariance R that a tracking filter should use:
+    it already carries the geometry (including the cross terms) and the
+    per-node range sigmas, so a fix taken with poor geometry is automatically
+    trusted less. Returns None if the geometry is singular.
+    """
+    nodes = np.asarray(nodes, float)
+    p = np.asarray(p, float)
+    d = np.linalg.norm(nodes - p, axis=1)
+    if np.any(d < 1e-6) or len(nodes) < 3:
+        return None
+    U = (p - nodes) / d[:, None]
+    if ranging == "rssi":
+        s = np.array([sigma_fn(di) for di in d])
+    else:
+        s = np.full_like(d, 0.2)
+    W = np.diag(1.0 / s ** 2)
+    try:
+        C = np.linalg.inv(U.T @ W @ U)
+    except np.linalg.LinAlgError:
+        return None
+    if np.any(np.diag(C) <= 0):
+        return None
+    return C
+
+
 def geometric_dop(nodes, p):
     """Unitless HDOP/VDOP (common range sigma), the classic GPS-style figure."""
     nodes = np.asarray(nodes, float)

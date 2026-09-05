@@ -1,31 +1,15 @@
 {
-  "_comment": "Node positions in meters in your own local frame (pick a corner of the flight area as origin, x east, y north, z up). Measure with a tape measure. rssi0 = median RSSI at 1 m from that node (run calibrate.py); path_loss_n ~2.0 open field, ~2.5 cluttered.",
-  "path_loss_n": 2.1,
-  "drone_z": 1.5,
+  "_comment": "ESP-FLY indoor layout: 5 x 6 m room. Three nodes low in floor corners, ONE NODE ON THE CEILING - that fourth node out of the plane is what makes altitude observable (coplanar nodes cannot measure z; see docs/3d-sensing.md). Measure every position, including z, with a laser meter. rssi0 = median RSSI at 1 m (run calibrate.py).",
+  "path_loss_n": 2.2,
+  "drone_z": 1.2,
+  "solve_3d": true,
+  "ranging": "rssi",
+  "sigma_a": 2.0,
+  "predict_horizon_s": 0.5,
   "nodes": {
-    "1": {
-      "pos": [
-        0.0,
-        0.0,
-        1.0
-      ],
-      "rssi0": -38.0
-    },
-    "2": {
-      "pos": [
-        8.0,
-        0.0,
-        1.0
-      ],
-      "rssi0": -38.0
-    },
-    "3": {
-      "pos": [
-        4.0,
-        7.0,
-        1.0
-      ],
-      "rssi0": -38.0
-    }
+    "1": { "pos": [0.0, 0.0, 0.30], "rssi0": -40.0 },
+    "2": { "pos": [5.0, 0.0, 0.30], "rssi0": -40.0 },
+    "3": { "pos": [2.5, 6.0, 0.30], "rssi0": -40.0 },
+    "4": { "pos": [2.5, 3.0, 2.60], "rssi0": -40.0 }
   }
 }
