@@ -39,6 +39,10 @@ fly on.** The radar dwells in the drone's 20 MHz channel ~14 % of each sweep, so
 you would get heavy, bursty packet loss on the control link precisely when the
 drone is close — which is exactly when you care.
 
+> **Now unambiguous.** This project no longer does any passive RF tracking, so
+> nothing needs the drone to keep a 2.4 GHz link alive. The conflict noted in
+> `espfly.md` is gone: **move the drone to 915 MHz ELRS, no downside.**
+
 ### The fix: move the drone's control link off 2.4 GHz
 
 ESP-FC already supports **CRSF/ELRS** (verified in its README feature list,
@@ -77,6 +81,14 @@ What that costs you (computed):
 trying to resolve two drones 1 m apart. Take the legality.
 
 ---
+
+## 1b. It measures range and velocity — NOT position
+
+One TX horn + one RX horn has **no angle information**. To get position you
+must scan the antennas (a ~$15 servo) or add a second receive channel.
+This is a first-order architectural requirement, not a refinement — the full
+analysis, the measured beam-stepping tradeoff and the end-to-end result
+(**0.12 m RMS tracking error**) are in **[`scanning.md`](scanning.md)**.
 
 ## 2. What you actually get (computed, not guessed)
 
@@ -186,6 +198,7 @@ At the MIT default 20 ms sweep the unambiguous velocity window is only
 | 172-2236 | 3.5 mm plug → stripped wires | Mouser | $3.63 |
 | 2× SMA bulkhead, brackets, 6-32 hardware | mounting | McMaster/Mouser | ~$25 |
 | 8× AA battery holder + batteries | power (keep it off mains — less noise) | — | ~$10 |
+| **Servo + bracket (e.g. MG996R) for the scan** | **turns range-only into position — see `scanning.md`** | — | **~$15** |
 | Assorted 1 % resistors / 1000 pF caps | baseband filter | DigiKey | ~$6 |
 
 **Total ≈ $460** with the ESP32 modernisation, ≈ $470 with the original XR-2206.

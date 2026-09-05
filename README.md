@@ -1,4 +1,35 @@
-# radar-dev — passive RF localization for an ESP32 drone
+# radar-dev — active FMCW radar for drone tracking
+
+**Current scope: an MIT-style 2.4 GHz coffee-can FMCW radar with a custom horn
+antenna, tracking a drone by its reflections.** No passive/beacon tracking —
+the radar sees the airframe itself, so the drone needs no cooperation, no
+beacon firmware and no MAC filtering.
+
+Start here: **[`docs/mit-radar.md`](docs/mit-radar.md)** (build plan and parts),
+**[`docs/scanning.md`](docs/scanning.md)** (how you get *position* out of it —
+read this before buying), **[`docs/antenna.md`](docs/antenna.md)** (horn design
+and EM simulation).
+
+| tool | what it does |
+|---|---|
+| `ground_station/fmcw_sim.py` | chirp → echo → range-Doppler map, link budget |
+| `ground_station/scan_design.py` | range-only vs scanning vs interferometry, sized |
+| `ground_station/radar_twin.py` | full twin: scan → CFAR → centroid → track |
+| `antenna/horn.py` | optimum pyramidal horn, with the pe==ph and aperture-bound checks |
+| `ground_station/tracker.py` | Kalman tracking filter (**on** for radar, see `tracking.md`) |
+
+---
+
+<details>
+<summary><b>Archived: the passive RF localization system</b> (superseded, kept for reference)</summary>
+
+The original approach located a *cooperative* drone by multilaterating RSSI of
+its own WiFi frames across ground sniffer nodes. It works (~2 m), but it needs
+the drone to transmit, and it cannot measure altitude from coplanar nodes. The
+active radar supersedes it on every axis. Docs below are retained because the
+console, geometry tools, tracking filter and guidance code are all still used.
+
+## radar-dev — passive RF localization for an ESP32 drone
 
 Locates an ESP32-equipped drone within a ~5–10 m flight area using its own
 2.4 GHz transmissions, for well under $150 — and, as the end goal, uses that
@@ -207,3 +238,5 @@ Receive-only monitoring of your **own** transmitter, plus standard 802.11
 exchanges with your **own** devices. The sniffer filters on your drone's MAC
 and discards everything else. No jamming, no deauth, nothing directed at
 third parties.
+
+</details>

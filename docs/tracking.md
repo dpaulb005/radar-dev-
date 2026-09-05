@@ -63,6 +63,22 @@ The console draws the 1-σ covariance ellipse on the current fix, and — with
 ellipse, so the growth of uncertainty with horizon is visible rather than
 implied.
 
+## Update: on the can radar, the filter turns ON
+
+The project moved to an active FMCW radar, which changes the verdict
+completely — because the radar **measures velocity directly from Doppler**
+instead of differencing noisy positions:
+
+| sensor | σ | rate | latency | EMA | KF | KF + predict |
+|---|---|---|---|---|---|---|
+| RSSI (dropped) | 1.50 m | 4 Hz | 0.50 s | **2.09 m** | 2.32 | 2.83 |
+| can radar, scanning | 0.32 m | 1.1 Hz | 0.60 s | 1.87 | 1.36 | **0.65 m** |
+| can radar, locked dither | 0.32 m | 3.1 Hz | 0.20 s | 1.29 | 0.50 | **0.26 m** |
+
+**5× better than the EMA**, and the gate enables it automatically. End to end
+through the real detection chain, `radar_twin.py --track` measures **0.12 m RMS
+tracking error**.
+
 ## What to do about it
 
 1. **Add FTM** (`espfly.md` §4). It is one argument on a `softAP()` call and it
