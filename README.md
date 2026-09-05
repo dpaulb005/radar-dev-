@@ -103,6 +103,25 @@ slowly-drifting (≤~3 m/s) target, scored by range.** What it can't: catch a
 fast drone, or make physical contact (that needs UWB or onboard terminal
 guidance). This is a *tracking* system — never weaponized, see the doc.
 
+
+### Active FMCW radar (MIT coffee-can architecture) — the reflection radar
+
+The passive system above needs the target to transmit. An **active FMCW radar**
+does not: it transmits a swept carrier and measures the echo, giving true range
+and velocity off a non-cooperative target. Full build plan, parts list, custom
+Vivaldi antenna and simulation workflow:
+**[`docs/mit-radar.md`](docs/mit-radar.md)**.
+
+- **`ground_station/fmcw_sim.py`** — FMCW system simulator + link budget
+  (chirp → echo → beat → range-Doppler map, with TX leakage and ADC dynamic
+  range). Answers "can it see my drone?" before you spend $460.
+- **`antenna/vivaldi.py`** — designs the custom tapered-slot antenna that
+  replaces the coffee cans; exports an SVG outline for KiCad and an openEMS
+  verification scaffold.
+
+⚠️ **Before building it:** a 2.4 GHz radar will jam a 2.4 GHz ESP-NOW control
+link. Move the drone to a 915 MHz ELRS link first — see §0 of the plan.
+
 **Master build guide (whole system: both drones + radar + interception, with a
 priced parts list and ordered steps): [`docs/BUILD.md`](docs/BUILD.md).**
 Radar-only setup detail is in [`docs/SETUP.md`](docs/SETUP.md).
