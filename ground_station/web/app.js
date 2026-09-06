@@ -91,7 +91,7 @@ function updatePanels(m) {
   else                       { link.className = "pill";      link.innerHTML = "LINK&nbsp;<b>OFFLINE</b>"; }
 
   const fixPill = $("pill-fix");
-  if (m.fix) { fixPill.className = "pill ok"; fixPill.innerHTML = `FIX&nbsp;<b>${m.fix.nodes_used} NODES</b>`; }
+  if (m.fix) { fixPill.className = "pill ok"; fixPill.innerHTML = m.fix.source === "radar" ? `FIX&nbsp;<b>RADAR ${m.fix.nodes_used} BEAMS</b>` : `FIX&nbsp;<b>${m.fix.nodes_used} NODES</b>`; }
   else       { fixPill.className = "pill";    fixPill.innerHTML = "FIX&nbsp;<b>NO SOLUTION</b>"; }
 
   $("pill-rec").classList.toggle("hidden", !m.recording);
@@ -112,7 +112,8 @@ function updatePanels(m) {
     $("fazel").textContent = (m.fix.az != null)
       ? `${m.fix.az.toFixed(0)}° / ${m.fix.el.toFixed(0)}°` : "—";
     $("fslant").textContent = (m.fix.slant != null) ? `${m.fix.slant.toFixed(2)} m` : "—";
-    $("fest").textContent = m.fix.kf ? "Kalman + predict" : "EMA (filter gated off)";
+    const src = m.fix.source === "radar" ? "radar · " : "";
+    $("fest").textContent = src + (m.fix.kf ? "Kalman + predict" : "EMA (filter gated off)");
     $("fest").style.color = m.fix.kf ? "var(--good)" : "var(--ink-muted)";
   } else {
     for (const id of ["fx", "fy", "fv", "fr", "fazel", "fslant", "fest"]) $(id).textContent = "—";

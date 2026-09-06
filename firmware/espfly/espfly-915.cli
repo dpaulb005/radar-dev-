@@ -1,0 +1,27 @@
+# esp-fc CLI script — ESP-FLY (XIAO ESP32-S3) on a 915 MHz ELRS/CRSF receiver
+#
+# Paste into the CLI tab of Betaflight Configurator 10.10 connected to esp-fc.
+# Lines starting with # are comments; if your configurator does not strip
+# them, paste the "set" lines one at a time.
+#
+# Pins are the published esp-fc/XIAO wiring (receiver TX -> GPIO 9, RX -> GPIO 8,
+# serial 2). If your RP1 V2 was on other pins, change the two numbers to
+# match the wires — see docs/drone-hardware.md section 3. `get pin` shows
+# what the board currently has.
+
+set pin_serial_2_rx 9
+set pin_serial_2_tx 8
+set feature_rx_serial 1
+
+# Failsafe: 0.4 s without packets -> DROP (esp-fc's only stage-2 action).
+set failsafe_delay 4
+set failsafe_kill_switch 0
+
+# The serial-2 function (Serial Rx) and the receiver provider (CRSF) are set
+# in the Ports and Receiver tabs; after doing that, run
+#   get serial_2
+#   get rx
+# and paste the two resulting "set ..." lines here so this file is complete
+# for your build.
+
+save

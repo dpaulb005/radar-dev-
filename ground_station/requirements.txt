@@ -3,3 +3,4 @@ scipy>=1.10
 pyserial>=3.5
 aiohttp>=3.9        # web GUI (server.py)
 matplotlib>=3.7     # only needed for locate.py --plot
+sounddevice>=0.4   # live radar capture (radar_acquire.py); needs PortAudio

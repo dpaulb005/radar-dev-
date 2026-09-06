@@ -71,7 +71,13 @@ def cfar_detect(rd_db, ranges, vels, guard=4, train=6, thresh_db=15.0,
             # dB values is biased toward the low outliers and turns ordinary
             # spectral leakage into a 40 dB "detection".
             bg = 10.0 * math.log10(float(np.mean(10.0 ** (tr / 10.0))) + 1e-30)
-            if row[ri] - bg > thresh_db:
+            # Peak-pick: a strong target's windowed mainlobe is several bins
+            # wide and every one of them beats the (distant) training cells,
+            # so without this the SHOULDER bins come out as separate
+            # "targets" 1-2 range cells short of the real one.
+            is_peak = ((ri == 0 or row[ri] >= row[ri - 1]) and
+                       (ri == nr - 1 or row[ri] >= row[ri + 1]))
+            if is_peak and row[ri] - bg > thresh_db:
                 # Sub-bin range: fit a parabola through the peak and its two
                 # neighbours. Reading the raw bin centre costs a fixed bias of
                 # up to half a range cell (~0.9 m here); interpolation is what
@@ -152,7 +158,13 @@ class ScanningRadar:
         """
         cand = []
         for az, dets in per_beam:
-            for (r, v, s, lvl) in dets[:peaks_per_beam]:
+            # cfar_detect ranks by CFAR ratio, which is the right order for
+            # DETECTION but not for centroiding: a target smeared over a few
+            # Doppler bins yields several detections per beam, and the beam
+            # weight must come from the strongest absolute return, not from
+            # whichever bin happened to have the quietest training cells.
+            best = sorted(dets, key=lambda d: -d[3])[:peaks_per_beam]
+            for (r, v, s, lvl) in best:
                 cand.append((az, r, v, s, lvl))
         if not cand:
             return []

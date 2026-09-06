@@ -215,6 +215,7 @@ class Station:
         self.predict_horizon = float(self.cfg.get("predict_horizon_s", 0.5))
         self.ranging = self.cfg.get("ranging", "rssi")
         self.kf_drives = False   # decided per-fix by the gate
+        self.radar = None        # latest active-radar fix (radar_acquire.py)
 
     # -- logging --------------------------------------------------------
     def log(self, msg):
@@ -245,7 +246,33 @@ class Station:
         self.log("config updated")
 
     # -- ingest ---------------------------------------------------------
+    def ingest_radar(self, m, now):
+        """A fix from the active FMCW radar (radar_acquire.py -> /api/radar).
+        Range comes from the beat frequency, azimuth from the beam centroid,
+        so the covariance is polar: tight in range, wide in cross-range."""
+        try:
+            r = float(m["range"]); az = math.radians(float(m["az"]))
+        except (KeyError, ValueError, TypeError):
+            return
+        sig_r = float(self.cfg.get("radar_sigma_r", 0.15))
+        sig_x = r * math.radians(float(self.cfg.get("radar_sigma_az_deg", 2.5)))
+        c, s_ = math.cos(az), math.sin(az)
+        rot = np.array([[c, -s_], [s_, c]])
+        R2 = rot @ np.diag([sig_r ** 2, sig_x ** 2]) @ rot.T
+        R = np.diag([0.0, 0.0, 4.0 ** 2]); R[:2, :2] = R2
+        org = self.cfg.get("radar_origin", [0.0, 0.0, 1.0])
+        pos = np.array([org[0] + r * c, org[1] + r * s_,
+                        float(m.get("z", self.cfg.get("drone_z", 1.5)))])
+        self.radar = {"pos": pos, "R": R, "vel_r": float(m.get("vel", 0.0)),
+                      "snr": float(m.get("snr", 0.0)), "beams": int(m.get("beams", 0)),
+                      "range": r, "az": float(m["az"]), "ts": now}
+        if self.rec_file:
+            self.rec_file.write(json.dumps({"t": now, "radar": m}) + "\n")
+
     def ingest(self, msg, now):
+        if "radar" in msg:
+            self.ingest_radar(msg["radar"], now)
+            return
         if "_true" in msg:
             self.true = msg["_true"]
             return
@@ -283,30 +310,46 @@ class Station:
 
     # -- solve ----------------------------------------------------------
     def solve(self, now):
-        meas = []
-        for nid, rec in self.latest.items():
-            if now - rec["ts"] <= MEAS_MAX_AGE_S:
-                meas.append((np.array(self.cfg["nodes"][nid]["pos"]),
-                             rec["dist"], rec["sigma"]))
-        if len(meas) < 3:
-            return
-        if self.est is None:
-            anch = np.array([v["pos"] for v in self.cfg["nodes"].values()])
-            self.est = np.array([anch[:, 0].mean(), anch[:, 1].mean(),
-                                 self.cfg.get("drone_z", 1.5)])
-        prev = self.est.copy()
-        solve_3d = bool(self.cfg.get("solve_3d", False))
-        pos, resid = solve_position(meas, self.est, self.cfg.get("drone_z", 1.5),
-                                    solve_3d=solve_3d)
-        self.est = EMA_ALPHA * pos + (1 - EMA_ALPHA) * self.est
-        dt = 1.0 / SOLVE_HZ
-        self.vel = 0.3 * ((self.est[:2] - prev[:2]) / dt) + 0.7 * self.vel
-
-        # --- Tier-1 Kalman filter, fed with a geometry-derived covariance ---
         anch = np.array([v["pos"] for v in self.cfg["nodes"].values()], float)
-        R = geometry.position_cov(anch, pos, ranging=self.ranging)
-        if R is None:
-            R = np.diag([2.0 ** 2, 2.0 ** 2, 6.0 ** 2])
+        radar_fresh = self.radar is not None and now - self.radar["ts"] <= 2.5
+        if radar_fresh:
+            # active radar: the fix IS the measurement, no multilateration
+            if self.radar.get("used_ts") == self.radar["ts"]:
+                return                       # one scan -> one update
+            self.radar["used_ts"] = self.radar["ts"]
+            pos, R = self.radar["pos"], self.radar["R"]
+            resid, n_used = 0.0, self.radar["beams"]
+            if self.est is None:
+                self.est = pos.copy()
+            prev = self.est.copy()
+            self.est = pos.copy()            # no EMA: scans are ~1 s apart
+            dt = max(now - self.radar.get("prev_ts", now - 1.0), 0.3)
+            self.vel = (self.est[:2] - prev[:2]) / dt
+            self.radar["prev_ts"] = now
+        else:
+            meas = []
+            for nid, rec in self.latest.items():
+                if now - rec["ts"] <= MEAS_MAX_AGE_S:
+                    meas.append((np.array(self.cfg["nodes"][nid]["pos"]),
+                                 rec["dist"], rec["sigma"]))
+            if len(meas) < 3:
+                return
+            if self.est is None:
+                self.est = np.array([anch[:, 0].mean(), anch[:, 1].mean(),
+                                     self.cfg.get("drone_z", 1.5)])
+            prev = self.est.copy()
+            solve_3d = bool(self.cfg.get("solve_3d", False))
+            pos, resid = solve_position(meas, self.est, self.cfg.get("drone_z", 1.5),
+                                        solve_3d=solve_3d)
+            n_used = len(meas)
+            self.est = EMA_ALPHA * pos + (1 - EMA_ALPHA) * self.est
+            dt = 1.0 / SOLVE_HZ
+            self.vel = 0.3 * ((self.est[:2] - prev[:2]) / dt) + 0.7 * self.vel
+
+            # --- Tier-1 Kalman filter, fed with a geometry-derived covariance ---
+            R = geometry.position_cov(anch, pos, ranging=self.ranging)
+            if R is None:
+                R = np.diag([2.0 ** 2, 2.0 ** 2, 6.0 ** 2])
         self.kf.step(now, pos, R)
         sig = float(math.sqrt(max(R[0, 0], R[1, 1])))
         self.kf_drives = prediction_is_justified(sig, self.predict_horizon,
@@ -320,7 +363,10 @@ class Station:
             shown = self.est
             shown_v = np.array([self.vel[0], self.vel[1], 0.0])
 
-        ref = np.array([anch[:, 0].mean(), anch[:, 1].mean(), anch[:, 2].min()])
+        if radar_fresh:
+            ref = np.array(self.cfg.get("radar_origin", [0.0, 0.0, 1.0]), float)
+        else:
+            ref = np.array([anch[:, 0].mean(), anch[:, 1].mean(), anch[:, 2].min()])
         az, el, slant = az_el(shown, ref)
         a_semi, b_semi, ang = TrackKF.ellipse(self.kf.P[:2, :2]) if self.kf.initialised \
             else (sig, sig, 0.0)
@@ -334,7 +380,8 @@ class Station:
                     "vy": round(float(shown_v[1]), 2),
                     "vz": round(float(shown_v[2]), 2),
                     "resid": round(resid, 2),
-                    "nodes_used": len(meas),
+                    "nodes_used": n_used,
+                    "source": "radar" if radar_fresh else self.ranging,
                     "az": round(az, 1), "el": round(el, 1), "slant": round(slant, 2),
                     "sigma": round(sig, 2),
                     "ell": [round(a_semi, 2), round(b_semi, 2), round(ang, 3)],
@@ -409,6 +456,13 @@ class Station:
                          "progress": min(1.0, (now - self.cal["t0"]) / self.cal["seconds"]),
                          "n": len(self.cal["samples"])} if self.cal else None),
                 "recording": self.rec_path.name if self.rec_file else None,
+                "radar": ({"range": round(self.radar["range"], 2),
+                           "az": round(self.radar["az"], 1),
+                           "vel": round(self.radar["vel_r"], 2),
+                           "snr": round(self.radar["snr"], 1),
+                           "beams": self.radar["beams"],
+                           "age": round(now - self.radar["ts"], 1)}
+                          if self.radar else None),
                 "pursuit": self.pursuit_state if self.pursuit else None,
                 "log": self.logbuf[-40:]}
 
@@ -468,6 +522,17 @@ async def ws_handler(request):
     finally:
         st.clients.discard(ws)
     return ws
+
+
+async def api_radar(request):
+    """POST /api/radar  {range, az, vel, snr, beams, [x, y, z]} from radar_acquire.py"""
+    st: Station = request.app["station"]
+    try:
+        m = await request.json()
+    except Exception:
+        return web.json_response({"ok": False, "err": "bad json"}, status=400)
+    st.sources.q.put({"radar": m})
+    return web.json_response({"ok": True})
 
 
 async def broadcast(st, payload):
@@ -533,6 +598,7 @@ def main():
     app = web.Application()
     app["station"] = st
     app.router.add_get("/ws", ws_handler)
+    app.router.add_post("/api/radar", api_radar)
 
     async def index(_):
         return web.FileResponse(BASE / "web" / "index.html")

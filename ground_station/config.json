@@ -7,9 +7,45 @@
   "sigma_a": 2.0,
   "predict_horizon_s": 0.5,
   "nodes": {
-    "1": { "pos": [0.0, 0.0, 0.30], "rssi0": -40.0 },
-    "2": { "pos": [5.0, 0.0, 0.30], "rssi0": -40.0 },
-    "3": { "pos": [2.5, 6.0, 0.30], "rssi0": -40.0 },
-    "4": { "pos": [2.5, 3.0, 2.60], "rssi0": -40.0 }
-  }
+    "1": {
+      "pos": [
+        0.0,
+        0.0,
+        0.3
+      ],
+      "rssi0": -40.0
+    },
+    "2": {
+      "pos": [
+        5.0,
+        0.0,
+        0.3
+      ],
+      "rssi0": -40.0
+    },
+    "3": {
+      "pos": [
+        2.5,
+        6.0,
+        0.3
+      ],
+      "rssi0": -40.0
+    },
+    "4": {
+      "pos": [
+        2.5,
+        3.0,
+        2.6
+      ],
+      "rssi0": -40.0
+    }
+  },
+  "radar_origin": [
+    0.0,
+    0.0,
+    1.0
+  ],
+  "radar_sigma_r": 0.15,
+  "radar_sigma_az_deg": 2.5,
+  "_radar": "Active FMCW radar (radar_acquire.py -> /api/radar): radar_origin = horn position in the same frame as the nodes, boresight along +x; sigma_r from range interpolation (~0.1-0.2 m), sigma_az from beam centroiding (2.5 deg measured in radar_twin)."
 }

@@ -1,5 +1,9 @@
 # Full setup plan — ESP-BLAST drone + passive RF radar
 
+> **Passive system — archived.** The current radar bring-up is
+> [`radar-software.md`](radar-software.md).
+
+
 The complete path from parts on the bench to a live radar display, in five
 phases. Each phase ends with a checkpoint you can verify before moving on —
 do not skip checkpoints; every debugging hour in this hobby is spent on a

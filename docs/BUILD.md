@@ -1,5 +1,13 @@
 # Master build guide — full two-drone interception system
 
+> **Superseded for the current scope.** The active-radar build is now
+> documented step by step in [`radar-hardware.md`](radar-hardware.md),
+> [`radar-software.md`](radar-software.md), [`drone-hardware.md`](drone-hardware.md)
+> and [`drone-software.md`](drone-software.md). This page is the passive
+> two-drone plan and is kept for the interception stages (E–H), which still
+> apply once the radar tracks.
+
+
 Everything needed to go from parts to a working system where one ESP-BLAST
 drone is flown by the ground radar to another. This is the index that ties the
 detailed docs together:

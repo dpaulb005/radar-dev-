@@ -5,13 +5,30 @@ antenna, tracking a drone by its reflections.** No passive/beacon tracking —
 the radar sees the airframe itself, so the drone needs no cooperation, no
 beacon firmware and no MAC filtering.
 
-Start here: **[`docs/mit-radar.md`](docs/mit-radar.md)** (build plan and parts),
-**[`docs/scanning.md`](docs/scanning.md)** (how you get *position* out of it —
-read this before buying), **[`docs/antenna.md`](docs/antenna.md)** (horn design
-and EM simulation).
+## Step-by-step guides (start here)
+
+| | hardware | software |
+|---|---|---|
+| **radar** | [`docs/radar-hardware.md`](docs/radar-hardware.md) — horns, RF chain in MIT order, video amp, sync, turntable, stacked RX | [`docs/radar-software.md`](docs/radar-software.md) — `radar_ctl` firmware, `radar_acquire.py`, self-test, console |
+| **ESP-FLY** | [`docs/drone-hardware.md`](docs/drone-hardware.md) — why 915 MHz, receiver swap, antenna, radio | [`docs/drone-software.md`](docs/drone-software.md) — ELRS flash, EdgeTX, esp-fc Ports/CRSF/failsafe, first flights |
+
+Parts, priced and in stock as of Sept 2026: [`hardware/BOM.md`](hardware/BOM.md).
+Background: [`docs/mit-radar.md`](docs/mit-radar.md) (the plan and its
+constraints), [`docs/scanning.md`](docs/scanning.md) (why you need to scan to
+get position), [`docs/antenna.md`](docs/antenna.md) (the horn).
+
+```bash
+cd ground_station && pip install -r requirements.txt
+python radar_acquire.py --selftest        # the live DSP, on a synthetic drone — no hardware
+python radar_acquire.py --device 3 --ctl /dev/ttyUSB0 --server http://localhost:8080
+python server.py                          # console at http://localhost:8080
+```
 
 | tool | what it does |
 |---|---|
+| `firmware/radar_ctl/` | **radar ESP32**: steps the ADF4351 sweep, SYNC to the sound card, turntable, serial protocol |
+| `ground_station/radar_acquire.py` | **live radar**: sound card → chirps → range-Doppler → CFAR → azimuth centroid → console (`--selftest`, `--replay`) |
+| `firmware/espfly/` | the ESP-FLY's esp-fc configuration for a 915 MHz CRSF receiver (no custom drone code) |
 | `ground_station/fmcw_sim.py` | chirp → echo → range-Doppler map, link budget |
 | `ground_station/scan_design.py` | range-only vs scanning vs interferometry, sized |
 | `ground_station/radar_twin.py` | full twin: scan → CFAR → centroid → track |
