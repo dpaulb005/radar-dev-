@@ -23,7 +23,7 @@ the finished assembly (published artifact "Horn-Fed Radar Assembly"),
  radar_ctl  │                                    │ IF ──► video amp ──► sound card L
             └──► STEP/DIR ──► A4988 ──► turntable│                       (UCA202 → USB)
                                                  │
- RX HORN ──►[LNA SPF5189Z +12 dB]──► RF ─────────┘
+ RX HORN ──►[BPF 2400–2500]──►[LNA SPF5189Z +12 dB]──► RF ─┘
 ```
 
 Signal order is the MIT order: **VCO → attenuator → PA → splitter → {TX, LO}**
@@ -133,7 +133,12 @@ run is short and nothing crosses (the 3-D model is the layout):
 1. Screw each SMA module down with L-brackets or double-sided foam tape.
    Modules with mounting holes: use them.
 2. Coax runs (RG316 SMA M-M): VCO→att, att→PA, PA→splitter, splitter→mixer LO,
-   LNA→mixer RF, plus two longer runs up the mast to the horns. **Torque SMA
+   RX horn→**band-pass filter**→LNA, LNA→mixer RF, plus two longer runs up
+   the mast to the horns. The band-pass (2400–2500 MHz inline SMA) sits at
+   the LNA input: the horn is wideband and the SPF5189Z amplifies
+   50–4000 MHz, so without it every signal in the building reaches the
+   mixer. It does *not* reject the drone's channel-1 WiFi — that is handled
+   by turning the drone's AP power down (`drone-software.md` §0). **Torque SMA
    by hand plus 1/8 turn with a wrench** — finger-tight SMA is a 1 dB loss
    you will chase for an evening.
 3. Mark the modules' **DC feed** direction (SPF5189Z boards and the ADF4351
@@ -217,6 +222,10 @@ running (next page).
 - TX on the splitter side, RX on the LNA side, short coax up the posts.
 - A sheet of aluminium foil on cardboard between the two horns' *rear*
   halves (not in front of the mouths) buys a few dB of isolation for free.
+
+- **You stand behind the horns**, phone in pocket. A phone in the beam at
+  3 m is as strong at the receiver as the drone's own WiFi; behind the horns
+  it is ~25 dB weaker.
 
 **Checkpoint 7 — the leakage tone.** Power everything, `SWEEP 1`, open the
 sound card monitor. You must see a **low tone with a strong ~135 Hz

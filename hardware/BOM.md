@@ -12,7 +12,7 @@ table order — the mixer is the critical path.
 > (the mixer) and replaces the rest with parts that are in stock, for ~$200
 > of RF instead of ~$577.
 
-## A. RF chain — ~$176
+## A. RF chain — ~$196
 
 | # | item | qty | ~$ | source | notes |
 |---|---|---|---|---|---|
@@ -23,6 +23,7 @@ table order — the mixer is the critical path.
 | 5 | SMA 3 dB attenuator, DC–6 GHz | 1 | 9 | Amazon | replaces VAT-3+ |
 | 6 | SMA M-M RG316 jumpers, 20 cm, 3-pack | 2 | 18 | Amazon | 6 runs in the chain |
 | 7 | SMA adapter assortment (M-M barrels, F-F) | 1 | 12 | Amazon | |
+| 7b | **2.4 GHz band-pass filter**, 2400–2500 MHz, SMA inline | 1 | 20 | Amazon / eBay | between RX horn and LNA — keeps out-of-band signals off the wideband SPF5189Z (it cannot reject WiFi ch 1; the drone's AP power is turned down for that) |
 
 ## B. Horns — ~$95 (materials for three)
 
@@ -82,10 +83,10 @@ fallback if the coexistence test in `docs/drone-software.md` §4 fails.
 
 | | |
 |---|---|
-| Stage 1 (A + B + C) | **~$354** |
-| + Stage 2 (D) | ~$404 |
-| + Drone fallback to 915 MHz (E-fallback) | ~$534 |
-| + Stage 3 (F) | ~$760 |
+| Stage 1 (A + B + C) | **~$374** |
+| + Stage 2 (D) | ~$424 |
+| + Drone fallback to 915 MHz (E-fallback) | ~$554 |
+| + Stage 3 (F) | ~$780 |
 
 Not needed: SDRs, external LNAs beyond the two, RF switches, any 2.4 GHz
 sniffer boards, a UWB kit.

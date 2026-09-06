@@ -64,6 +64,12 @@ FIXED DECISIONS (design to these; do not reopen them):
 - Interference budget at the drone's receiver, 5 m, beam on it: radar
   -31 dBm raw, ~ -55 dBm after adjacent-channel rejection; phone signal
   ~ -35 dBm; SIR ~ 20 dB (802.11 needs 5-10 dB).
+- Interference INTO the radar: the drone's AP (+20 dBm, always in the
+  beam) reaches the LNA at -21 dBm at 5 m and the mixer at -9 dBm --
+  ~8 dB from compression with WiFi peaks. Mitigations that are part of
+  the design: drone AP power set to +8 dBm in firmware; a 2400-2500 MHz
+  band-pass filter between RX horn and LNA (the horn and the SPF5189Z
+  are wideband); the operator with the phone stands behind the horns.
 - Processing on the laptop (Python, exists): sync-edge segmentation ->
   per-chirp range FFT (3.45 m cells, parabolic peak interpolation) ->
   Doppler FFT across chirps (axis from the measured PRI, +/-4.2 m/s) ->
@@ -103,7 +109,9 @@ Deliver, in this order:
 2. SCHEMATIC (text form, KiCad-importable if you can: a netlist or a
    KiCad 8 .kicad_sch S-expression; otherwise an unambiguous ASCII
    schematic per sheet) with these sheets:
-   a. RF chain: SMA-to-SMA interconnects between modules, module DC
+   a. RF chain: SMA-to-SMA interconnects between modules, including
+      the 2400-2500 MHz band-pass filter between the RX horn and the
+      LNA, module DC
       feeds (5 V, 100 nF + 10 uF at each module), the 3 dB pad, the
       splitter, the mixer's LO/RF/IF ports labeled.
    b. Video amplifier: TL072 on a single 12 V rail with a 6 V mid-rail
@@ -422,9 +430,19 @@ Deliver:
       offset), resulting level vs the phone's -35 dBm, SIR, and the
       802.11 rate that survives (needs 5-10 dB). Include the fraction
       of time the beam is on the drone during a scan.
-   b. Phone and AP into the radar receiver: level at the RX horn,
-      where the mixer moves them (17-70 MHz IF, above the 15 kHz video
-      filter), LNA compression margin (input P1dB vs -35 dBm).
+   b. Phone and AP into the radar receiver. The horn is wideband and
+      the SPF5189Z is a 50-4000 MHz amplifier: compute the drone AP
+      (+20 dBm, in beam, 3/5/10 m) and the phone (+15 dBm, in beam vs
+      behind the horns at ~25 dB front-to-back) at the LNA input and at
+      the mixer RF port, against SPF5189Z input P1dB (~+6 dBm) and the
+      mixer's RF compression (~+9 dBm), including WiFi's ~10 dB
+      peak-to-average. Show the margin with the AP at +20 dBm and at
+      +8 dBm (the drone's AP power is turned down in firmware). Specify
+      the 2400-2500 MHz band-pass filter between RX horn and LNA and
+      state plainly what it does (out-of-ISM rejection) and does not
+      (it cannot separate channel 1 from the sweep). Only then argue
+      the linear case: channel-1 energy lands at 17-80 MHz IF, above
+      the 15 kHz video filter.
    c. The failure case: sweep 2400-2483.5 crossing channel 1 ->
       in-channel radar level vs phone level, expected loss; this is
       the deliberate "see the loss appear" calibration in the
