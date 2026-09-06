@@ -190,6 +190,15 @@ the same with one TL072 on the 12 V rail:
 Total gain ≈ 61 dB. A 10 m drone echo (≈ −78 dBm at the IF) comes out at
 ~20 mV; leakage comes out at ~200 mV; nothing clips a line input.
 
+Two things the breadboard drawing above leaves out that the reviewed carrier
+PCB (`docs/reviews/radar-carrier-v1.md`) should add and you should too:
+**49.9 Ω from the IF to ground** right at the input (the mixer's IF port wants
+a 50 Ω load; without it the conversion loss and flatness wander), and a
+**1 nF ceramic from the IF to ground** beside it. The mixer leaks LO at
+2.4 GHz out of its IF port; a TL072 will happily rectify that into a DC
+offset and a raised noise floor. The 1 nF with 49.9 Ω is a 3 MHz corner,
+invisible to the audio band.
+
 **Checkpoint 5:** with the sound card's input monitor open and the mixer IF
 *disconnected*, touching the input node with a finger gives a hum — the amp
 is alive. Output DC sits near 0 V (after the 10 µF).
@@ -285,6 +294,6 @@ stages 1 and 2 first; stage 3 is a second project on top of a working radar.
   band, but keep the mouths pointed away from people at < 1 m out of habit.
 - The sweep stays inside 2400–2483.5 MHz. Do not "extend it for resolution".
 - The drone is flown by phone over its WiFi AP on **channel 1**, and the
-  radar sweeps **2440–2483.5 MHz** above it — set that before the drone is
+  radar sweeps **2440–2480 MHz** above it — set that before the drone is
   ever in the air with the radar sweeping, and do the ping test in
   [`drone-software.md`](drone-software.md) §4 first.

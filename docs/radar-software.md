@@ -117,11 +117,11 @@ Wiring is in the sketch header. Flash, open the serial monitor at 115200:
 or LE/CLK/DATA swapped, or the board's CE pin not tied high.
 
 **If the drone is flown by phone** (its WiFi AP on channel 1), set the
-coexistence sweep now and keep it — `SET f0_mhz 2440` then `SET bw_mhz 43.5`
-(range cell 3.45 m, drone SNR unchanged; the reasoning and the link test are
+coexistence sweep now and keep it — `SET f0_mhz 2440` then `SET bw_mhz 40`
+(range cell 3.75 m, drone SNR unchanged; the reasoning and the link test are
 in [`drone-software.md`](drone-software.md)). `radar_acquire.py --ctl` picks
 the edges up from `?`; in stage 1 without `--ctl` pass `--f0-mhz 2440
---bw-mhz 43.5`.
+--bw-mhz 40`.
 
 Commands you will use by hand:
 
@@ -132,8 +132,13 @@ CW 2440        park anywhere 2200–4400 MHz — for antenna / spectrum tests
 SWEEP 1        chirp
 AZ 30 / HOME   turntable
 SET step_us 80 / SET steps 32 / SET retrace_us 1000
-SET f0_mhz 2440 / SET bw_mhz 43.5   sweep edges (refused if outside 2400-2483.5)
+SET f0_mhz 2440 / SET bw_mhz 40   sweep edges (refused if outside 2400-2483.5)
 ```
+
+The ESP32 **boots silent**: PLL locked and parked, RF output *off*, sweep
+stopped (`"sweep":0,"rf":0`). Nothing radiates until you send `SWEEP 1` or
+`CW`, and `radar_acquire.py` sends `SWEEP 1` when it starts and `SWEEP 0`
+when it exits. `RFOFF` kills the output from any state.
 
 **Checkpoint 3:** `?` shows `lock:1`; with `SWEEP 1` the right audio channel
 shows the ~135 Hz square wave (hardware checkpoint 6).
@@ -143,8 +148,11 @@ shows the ~135 Hz square wave (hardware checkpoint 6).
 ## 4. Stage 1 — range and velocity (no turntable)
 
 ```bash
-python radar_acquire.py --device 3 --record first-walk.wav
+python radar_acquire.py --device 3 --ctl /dev/ttyUSB0 --range-only --record first-walk.wav
 ```
+
+`--ctl` is still needed in stage 1 — the script turns the sweep on and off
+through it; `--range-only` keeps the turntable out of it.
 
 `--device` is the UCA202's index from `python -m sounddevice`. Output is one
 JSON line per block of 64 chirps (~0.5 s):
@@ -155,6 +163,10 @@ JSON line per block of 64 chirps (~0.5 s):
 
 - `t_chirp_ms` should sit within 1 % of the ESP32's `t_chirp_ms`. If it
   jumps around, the sync divider is marginal — check the 0.3 V level.
+- The sound card's input is AC-coupled, so the recorded sync is not a clean
+  square wave: a drooping positive plateau and a large negative retrace
+  pulse. The software detects the *edges* (jumps in the derivative), which
+  survive coupling; it does not threshold the level.
 - `# no sync` means the right channel is flat: `SWEEP 1`, cable, channel
   swapped.
 - **Walk toward the horns from 5 m.** `range` counts down, `vel` is negative
@@ -187,8 +199,11 @@ centroids across beams (`scanning.md` — 12° steps, 3× oversampling, measured
 {"t": ..., "beams": 9, "fix": {"range": 7.9, "az": 11.3, "vel": 0.6, "snr": 48.2, "x": 7.75, "y": 1.55, "beams": 6}}
 ```
 
-A 100° sector at 12° is 9 beams ≈ 1.5 s per revisit. `--sector` should be the
-flight box plus one step each side (§2 item 5).
+A 100° sector at 12° is 9 beams × 64 chirps × 7.4 ms ≈ **4.3 s per revisit**
+plus turntable moves — slow. `--n-chirps 32` halves it for 3 dB of SNR you
+can spare; the real answer is the lock-and-dither mode in §6, which revisits
+in ~0.3 s once a track exists. `--sector` should be the flight box plus one
+step each side (§2 item 5).
 
 **Console:** run `python server.py` in another terminal, open
 <http://localhost:8080>. With `--server` set, every fix is POSTed to

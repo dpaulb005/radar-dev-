@@ -1,7 +1,7 @@
 # Fallback — ESP-FLY on a 915 MHz ELRS link
 
 > **Not the current plan.** The drone is flown from the phone over its own
-> WiFi AP on channel 1, with the radar sweeping 2440–2483.5 MHz above it
+> WiFi AP on channel 1, with the radar sweeping 2440–2480 MHz above it
 > ([`drone-915-esp-fc.md`](drone-915-esp-fc.md)). Use this page only if the link
 > test in that guide's §4 fails. The esp-fc side of it is
 > [`drone-915-esp-fc.md`](drone-915-esp-fc.md).

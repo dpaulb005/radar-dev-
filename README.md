@@ -10,7 +10,7 @@ beacon firmware and no MAC filtering.
 | | hardware | software |
 |---|---|---|
 | **radar** | [`docs/radar-hardware.md`](docs/radar-hardware.md) — horns, RF chain in MIT order, video amp, sync, turntable, stacked RX | [`docs/radar-software.md`](docs/radar-software.md) — `radar_ctl` firmware, `radar_acquire.py`, self-test, console |
-| **ESP-FLY** | [`docs/drone-hardware.md`](docs/drone-hardware.md) — flown by phone: nothing changes on the airframe; what to take off | [`docs/drone-software.md`](docs/drone-software.md) — ESP-Drone AP on channel 1, radar sweeps 2440–2483.5 MHz above it, the ping test that proves coexistence |
+| **ESP-FLY** | [`docs/drone-hardware.md`](docs/drone-hardware.md) — flown by phone: nothing changes on the airframe; what to take off | [`docs/drone-software.md`](docs/drone-software.md) — ESP-Drone AP on channel 1, radar sweeps 2440–2480 MHz above it, the ping test that proves coexistence |
 
 Fallback if the phone link and the radar won't coexist: a 915 MHz ELRS link
 ([`docs/drone-915.md`](docs/drone-915.md), [`docs/drone-915-esp-fc.md`](docs/drone-915-esp-fc.md)).

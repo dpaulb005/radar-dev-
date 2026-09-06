@@ -30,10 +30,11 @@ the sweep starting at **2440 MHz** (28 MHz above the channel centre):
 | radar seen by the drone's receiver | −31 − ~24 dB ≈ **−55 dBm** |
 | phone signal | −35 dBm |
 | signal-to-interference | **~20 dB** (802.11 at 1–6 Mb/s needs ~5–10) |
-| radar sweep | **2440–2483.5 MHz = 43.5 MHz** |
-| range cell | **3.45 m** (was 1.80 m) |
-| drone echo SNR at 10 m | **71 dB — unchanged** (`fmcw_sim.py --f0 2.44 --sweep-bw 43.5 --gain 13.4 --budget`) |
-| self-test at 43.5 MHz | range error 0.1–0.4 m, azimuth 0.4–2° — same as full band |
+| radar sweep | **2440–2480 MHz = 40 MHz** |
+| range cell | **3.75 m** (was 1.875 m) |
+| drone echo SNR at 10 m | **71 dB — unchanged** (`fmcw_sim.py --f0 2.44 --sweep-bw 40 --gain 13.4 --budget`) |
+| self-test at 40 MHz | range error 0.1–0.4 m, azimuth 0.4–2° — same as full band |
+| scan revisit | 9 beams × 64 chirps × 7.4 ms = **4.3 s** (not the 1.5 s an earlier draft claimed); `--n-chirps 32` gives 2.1 s at −3 dB, and lock-and-dither is the real fix |
 
 The coarser range cell does not hurt tracking: range *accuracy* comes from
 sub-cell interpolation (SNR-limited, 71 dB), azimuth from beam centroiding,
@@ -120,13 +121,13 @@ In the `radar_ctl` serial monitor (or `SET` lines in your start-up notes):
 
 ```
 SET f0_mhz 2440
-SET bw_mhz 43.5
-?          -> "f0_mhz":2440.0,"bw_mhz":43.5
+SET bw_mhz 40
+?          -> "f0_mhz":2440.0,"bw_mhz":40.0,"rf":1
 ```
 
 `radar_acquire.py --ctl …` reads the sweep edges from that status, so nothing
 else needs changing. Without `--ctl` (stage 1), pass `--f0-mhz 2440
---bw-mhz 43.5` so the range scale matches. The ESP32 refuses any setting that
+--bw-mhz 40` so the range scale matches. The ESP32 refuses any setting that
 would leave 2400–2483.5 MHz.
 
 ## 4. The link test — this is the checkpoint that matters
@@ -140,7 +141,7 @@ drone's IP (any "PingTools"-type app, 100 pings at 100 ms):
    round-trip unchanged.
 3. For calibration of your own margin, `SET f0_mhz 2400 SET bw_mhz 83.5`
    (the sweep now crosses channel 1) → you should *see* packet loss appear.
-   Go back to 2440/43.5.
+   Go back to 2440/40.
 
 4. **The reverse test — does the drone's WiFi hurt the radar?** With the
    drone on the bench in the beam and `radar_acquire.py` printing, toggle
@@ -174,7 +175,7 @@ Only if checkpoint 4 fails. It costs ~$130 (RadioMaster Pocket + Bandit Nano
 cannot do 900 MHz) and switches the drone to esp-fc with a CRSF receiver.
 The full procedure is kept in [`drone-915.md`](drone-915.md); the esp-fc CLI
 settings are in `firmware/espfly/espfly-915.cli`. It also gives you back the
-full 83.5 MHz sweep.
+full 80 MHz sweep.
 
 ## 7. What is deliberately *not* on the drone
 

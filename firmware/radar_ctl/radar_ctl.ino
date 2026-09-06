@@ -16,9 +16,10 @@
  *   3. AZ      point the horn pair: A4988 stepper (default) or hobby servo.
  *
  * Serial protocol, 115200 8N1, one command per line:
- *   ?              -> status JSON
- *   SWEEP 0|1      -> stop / start chirping
- *   CW <MHz>       -> park the synthesiser on one frequency (antenna tests)
+ *   ?              -> status JSON  (boots with RF OFF and sweep stopped)
+ *   SWEEP 0|1      -> stop (RF off) / start chirping
+ *   CW <MHz>       -> park the synthesiser on one frequency, RF on (antenna tests)
+ *   RFOFF          -> RF output off
  *   AZ <deg>       -> move to azimuth, replies "OK AZ <deg>" when settled
  *   HOME           -> AZ 0
  *   SET steps <n>  -> steps per chirp     (8..256)
@@ -43,11 +44,16 @@
 #define F_REF_HZ        25000000ULL   // the board's TCXO; check yours (25 MHz is usual)
 #define ISM_LO_HZ       2400000000ULL // 2.4 GHz ISM band edges: the sweep never leaves them
 #define ISM_HI_HZ       2483500000ULL
-// Default sweep: the whole ISM band. If the drone is flown over its own WiFi
-// AP (phone control), park the AP on channel 1 and sweep ABOVE it with a
-// guard band:  SET f0_mhz 2440  /  SET bw_mhz 43.5   (docs/drone-software.md)
+// Default sweep: 2400-2480 MHz. The top 3.5 MHz of the ISM band is left as
+// an emission-mask margin (a CW tone parked at 2483.5 has no allowance for
+// phase noise or spurs). If the drone is flown over its own WiFi AP (phone
+// control), park the AP on channel 1 and sweep ABOVE it with a guard band:
+//   SET f0_mhz 2440  /  SET bw_mhz 40      (docs/drone-software.md)
+// The last step sits at f_start + bw - bw/N_STEPS, so the slope is exactly
+// bw / T_up and the software's beat->range scale needs no N/(N-1) fudge.
 #define F_START_HZ      2400000000ULL
-#define SWEEP_BW_HZ     83500000ULL
+#define SWEEP_BW_HZ     80000000ULL
+#define ISM_MARGIN_HZ   3500000ULL    // sweep top must stay <= 2483.5 - this
 #define MOD_DEFAULT     4000          // fractional modulus -> 6.25 kHz resolution
 
 #define AZ_MODE_STEPPER 1             // 1 = A4988 stepper, 0 = hobby servo
@@ -72,7 +78,8 @@ static uint64_t sweep_bw   = SWEEP_BW_HZ;
 static uint16_t n_steps    = 64;      // 64 steps x 100 us = 6.4 ms up-chirp
 static uint32_t step_us    = 100;     // PLL relock per step; see docs/radar-software.md
 static uint32_t retrace_us = 1000;    // hold at F_START between chirps
-static bool     sweeping   = true;
+static bool     sweeping   = false;   // boot SILENT: RF output off until SWEEP 1 / CW
+static bool     rf_on      = false;
 static float    az_deg     = 0.0f;
 static long     az_steps   = 0;
 
@@ -95,12 +102,12 @@ static const uint32_t R2 = (0UL << 29)     // low-noise mode
 static const uint32_t R3 = (1UL << 23)     // band-select clock mode: HIGH (fast)
                          | (150UL << 3)    // clock divider value (unused, CLK DIV mode off)
                          | 0x3;
-static const uint32_t R4 = (1UL << 23)     // feedback: fundamental
+static const uint32_t R4_BASE = (1UL << 23) // feedback: fundamental
                          | (0UL << 20)     // RF divider 1  (2.2-4.4 GHz direct)
                          | (50UL << 12)    // band-select clock div: 25 MHz/50 = 500 kHz
-                         | (1UL << 5)      // RF output enable
                          | (3UL << 3)      // output power +5 dBm
                          | 0x4;
+static uint32_t reg_r4(bool rf_enable) { return R4_BASE | ((rf_enable ? 1UL : 0UL) << 5); }
 static const uint32_t R5 = 0x00580005UL;   // LD pin = digital lock detect
 
 static void adf_write(uint32_t v) {
@@ -123,10 +130,15 @@ static void adf_tune(uint64_t f_hz) {
   adf_write(reg_r0(INT, FRAC));      // R0 write also triggers VCO band select
 }
 
+static void adf_rf(bool on) {
+  rf_on = on;
+  adf_write(reg_r4(on));            // RF output enable lives in R4
+}
+
 static void adf_init() {
-  adf_write(R5); adf_write(R4); adf_write(R3); adf_write(R2);
+  adf_write(R5); adf_write(reg_r4(false)); adf_write(R3); adf_write(R2);
   adf_write(reg_r1(MOD_DEFAULT));
-  adf_tune(f_start);
+  adf_tune(f_start);                // locked and parked, output OFF
 }
 
 // ---------------- azimuth ----------------
@@ -163,7 +175,7 @@ static void az_goto(float deg) {
 
 // ---------------- sweep ----------------
 static void one_chirp() {
-  const uint64_t df = sweep_bw / (uint64_t)(n_steps - 1);
+  const uint64_t df = sweep_bw / (uint64_t)n_steps;   // exact slope bw/T_up
   digitalWrite(PIN_SYNC, HIGH);
   uint32_t t0 = micros();
   for (uint16_t k = 0; k < n_steps; k++) {
@@ -182,10 +194,10 @@ static float chirp_ms() { return n_steps * step_us / 1000.0f; }
 static void status() {
   Serial.printf("{\"fw\":\"radar_ctl\",\"f0_mhz\":%.1f,\"bw_mhz\":%.1f,\"steps\":%u,"
                 "\"step_us\":%lu,\"t_chirp_ms\":%.3f,\"retrace_us\":%lu,"
-                "\"sweep\":%d,\"az\":%.2f,\"lock\":%d}\n",
+                "\"sweep\":%d,\"rf\":%d,\"az\":%.2f,\"lock\":%d}\n",
                 f_start / 1e6, sweep_bw / 1e6, n_steps,
                 (unsigned long)step_us, chirp_ms(), (unsigned long)retrace_us,
-                sweeping ? 1 : 0, az_deg, digitalRead(PIN_LD));
+                sweeping ? 1 : 0, rf_on ? 1 : 0, az_deg, digitalRead(PIN_LD));
 }
 
 static void handle(String line) {
@@ -194,16 +206,18 @@ static void handle(String line) {
   if (line == "?") { status(); return; }
   if (line.startsWith("SWEEP")) {
     sweeping = line.substring(5).toInt() != 0;
-    if (!sweeping) { digitalWrite(PIN_SYNC, LOW); adf_tune(f_start); }
+    digitalWrite(PIN_SYNC, LOW); adf_tune(f_start);
+    adf_rf(sweeping);                 // SWEEP 0 = RF output off, not just parked
     Serial.printf("OK SWEEP %d\n", sweeping ? 1 : 0); return;
   }
   if (line.startsWith("CW")) {
     double mhz = line.substring(2).toFloat();
-    if (mhz < 2200 || mhz > 4400) { Serial.println("ERR range 2200-4400 MHz"); return; }
+    if (mhz < 2400 || mhz > 2483.5) { Serial.println("ERR CW must be inside 2400-2483.5 MHz"); return; }
     sweeping = false; digitalWrite(PIN_SYNC, LOW);
-    adf_tune((uint64_t)(mhz * 1e6));
+    adf_tune((uint64_t)(mhz * 1e6)); adf_rf(true);
     Serial.printf("OK CW %.3f\n", mhz); return;
   }
+  if (line == "RFOFF") { sweeping = false; digitalWrite(PIN_SYNC, LOW); adf_rf(false); Serial.println("OK RFOFF"); return; }
   if (line.startsWith("AZ")) {
     float d = line.substring(2).toFloat();
     bool was = sweeping; sweeping = false; digitalWrite(PIN_SYNC, LOW);
@@ -221,8 +235,8 @@ static void handle(String line) {
       uint64_t f0 = f_start, bw = sweep_bw;
       if (key == "f0_mhz") f0 = (uint64_t)(val.toFloat() * 1e6);
       else                 bw = (uint64_t)(val.toFloat() * 1e6);
-      if (f0 < ISM_LO_HZ || f0 + bw > ISM_HI_HZ || bw < 10000000ULL) {
-        Serial.println("ERR sweep must stay within 2400-2483.5 MHz, bw >= 10"); return;
+      if (f0 < ISM_LO_HZ || f0 + bw > ISM_HI_HZ - ISM_MARGIN_HZ || bw < 10000000ULL) {
+        Serial.println("ERR sweep must stay within 2400-2480 MHz (3.5 MHz top margin), bw >= 10"); return;
       }
       f_start = f0; sweep_bw = bw; adf_tune(f_start);
       Serial.printf("OK SET %s %.1f\n", key.c_str(), key == "f0_mhz" ? f0 / 1e6 : bw / 1e6); return;

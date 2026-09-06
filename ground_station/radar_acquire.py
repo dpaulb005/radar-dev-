@@ -33,8 +33,8 @@ import numpy as np
 import fmcw_sim
 from radar_twin import ScanningRadar, cfar_detect
 
-F0_HZ = 2.400e9          # defaults: the whole ISM band. Overridden by --f0-mhz/
-BW_HZ = 83.5e6           # --bw-mhz, or by radar_ctl's status when --ctl is used.
+F0_HZ = 2.400e9          # defaults: 2400-2480 MHz (3.5 MHz top margin). Overridden by
+BW_HZ = 80.0e6           # --f0-mhz/--bw-mhz, or by radar_ctl's status when --ctl is used.
 SYNC_FRAC = 0.5          # sync threshold as a fraction of the sync channel's peak
 SETTLE_FRAC = 0.05       # drop the first 5 % of each chirp (PLL settle)
 
@@ -48,11 +48,25 @@ def segment_chirps(beat, sync, fs, n_chirps):
     square wave. Returns (cube, t_chirp_s). t_chirp is MEASURED from the sync,
     never assumed — the stepped PLL sweep's real period is set by the ESP32's
     step_us and any drift shows up here first."""
+    # Sound-card inputs are AC-coupled: an 86 %-duty square wave arrives as
+    # a small positive plateau that droops, and a big negative retrace pulse.
+    # Levels are useless; the EDGES survive coupling intact, so detect the
+    # jumps in the derivative instead of thresholding the level.
     s = sync.astype(float)
-    thr = SYNC_FRAC * max(float(np.max(np.abs(s))), 1e-6)
-    high = s > thr
-    edges = np.flatnonzero(np.diff(high.astype(np.int8)) == 1) + 1
-    falls = np.flatnonzero(np.diff(high.astype(np.int8)) == -1) + 1
+    d = np.diff(s)
+    dmax = max(float(np.max(d)), 1e-6); dmin = min(float(np.min(d)), -1e-6)
+    up = np.flatnonzero(d > SYNC_FRAC * dmax) + 1      # chirp starts
+    dn = np.flatnonzero(d < SYNC_FRAC * dmin) + 1      # chirp ends
+    # collapse edge clusters (a jump can span 2-3 samples after the card's AA filter)
+    def collapse(idx):
+        if idx.size == 0:
+            return idx
+        keep = [idx[0]]
+        for i in idx[1:]:
+            if i - keep[-1] > 8:
+                keep.append(i)
+        return np.array(keep)
+    edges, falls = collapse(up), collapse(dn)
     if len(edges) < n_chirps + 1:
         return None, None
     # up-chirp length: median rising->falling gap
@@ -200,7 +214,16 @@ class SynthSource:
             beat.append(sig); sync.append(np.ones(n_up))
             beat.append(np.zeros(n_gap)); sync.append(np.zeros(n_gap))
         beat = np.clip(np.concatenate(beat) * self.ADC_SCALE, -32767, 32767)
-        return beat, np.concatenate(sync) * 20000.0
+        sync = np.concatenate(sync) * 20000.0
+        # model the sound card's AC coupling (~10 Hz one-pole high-pass) on
+        # both channels -- the sync square wave droops and loses its DC level
+        a = math.exp(-2 * math.pi * 10.0 / self.fs)
+        def hp(x):
+            y = np.empty_like(x); prev_x = 0.0; prev_y = 0.0
+            for i, v in enumerate(x):
+                prev_y = a * (prev_y + v - prev_x); prev_x = v; y[i] = prev_y
+            return y
+        return hp(beat), hp(sync)
 
     def close(self):
         pass
@@ -216,6 +239,10 @@ class Ctl:
         self.ser = serial.Serial(port, baud, timeout=2.0)
         time.sleep(1.5)                      # ESP32 reset on open
         self.ser.reset_input_buffer()
+        self.status = self.cmd("?")
+
+    def sweep(self, on):
+        self.cmd(f"SWEEP {1 if on else 0}")
         self.status = self.cmd("?")
 
     def cmd(self, line):
@@ -279,7 +306,9 @@ def run(args):
         src = AudioSource(args.device, args.fs, block_s, record=args.record)
         fs = args.fs
 
-    scan_mode = bool(ctl) or (args.selftest and not args.st_range_only)
+    if ctl:
+        ctl.sweep(True)                      # the ESP32 boots with RF off
+    scan_mode = (bool(ctl) and not args.range_only) or (args.selftest and not args.st_range_only)
     radar = ScanningRadar(sector=args.sector) if scan_mode else None
     if radar:
         n_beams = int(round(args.sector / args.step)) + 1
@@ -338,6 +367,11 @@ def run(args):
                 return fixes
     finally:
         src.close()
+        if ctl:
+            try:
+                ctl.sweep(False)             # leave the radar silent
+            except Exception:
+                pass
 
 
 def main():
@@ -351,15 +385,16 @@ def main():
     ap.add_argument("--thresh", type=float, default=15.0, help="CFAR threshold dB")
     ap.add_argument("--f0-mhz", type=float, default=2400.0,
                     help="sweep start; overridden by radar_ctl status when --ctl is given")
-    ap.add_argument("--bw-mhz", type=float, default=83.5,
-                    help="sweep width; 43.5 with --f0-mhz 2440 for WiFi-channel-1 coexistence")
+    ap.add_argument("--bw-mhz", type=float, default=80.0,
+                    help="sweep width; 40 with --f0-mhz 2440 for WiFi-channel-1 coexistence")
     ap.add_argument("--ctl", help="radar_ctl serial port -> scanning mode")
     ap.add_argument("--sector", type=float, default=90.0)
     ap.add_argument("--step", type=float, default=12.0, help="beam step deg (3x oversample)")
     ap.add_argument("--server", help="console URL, e.g. http://localhost:8080")
     ap.add_argument("--record", metavar="WAV", help="save raw stereo audio")
     ap.add_argument("--replay", metavar="WAV")
-    ap.add_argument("--range-only", action="store_true", help="(default without --ctl)")
+    ap.add_argument("--range-only", action="store_true",
+                    help="stage 1: no azimuth scan even with --ctl (which is still used for SWEEP)")
     ap.add_argument("--selftest", action="store_true", help="synthetic target, no hardware")
     ap.add_argument("--st-range", type=float, default=8.0)
     ap.add_argument("--st-az", type=float, default=15.0)

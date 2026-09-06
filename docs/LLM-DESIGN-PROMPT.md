@@ -31,8 +31,8 @@ FIXED DECISIONS (design to these; do not reopen them):
   ESP32, NOT an analog VCO (the MIT ZX95-2536C+ is non-catalog).
   64 steps x 100 us = 6.4 ms up-chirp, 1 ms retrace -> PRI 7.4 ms.
 - Band: the drone's WiFi AP is on 802.11 channel 1 (2401-2423 MHz).
-  Radar sweep 2440.0 -> 2483.5 MHz (43.5 MHz). The sweep never leaves
-  2400-2483.5 MHz (US ISM). 2360-2395 MHz is NOT usable (AMT/medical).
+  Radar sweep 2440.0 -> 2480.0 MHz (40 MHz). The sweep never leaves
+  2400-2480 MHz (the top 3.5 MHz of the US ISM band is left as an emission margin). 2360-2395 MHz is NOT usable (AMT/medical).
 - Parts on hand / chosen: Mini-Circuits ZX05-43MH-S+ mixer (level 13),
   2x SPF5189Z LNA modules (PA role and LNA role), 800-2500 MHz 2-way SMA
   splitter, SMA 3 dB attenuator, Behringer UCA202 USB sound card
@@ -43,7 +43,7 @@ FIXED DECISIONS (design to these; do not reopen them):
   splitter +10.5 dBm to TX horn and +10.5 dBm to LO. TX horn 13.4 dBi
   -> +23 dBm EIRP. Drone RCS assumed 0.01 m^2 -> echo -74 dBm at 10 m
   at the RX horn, SNR 71 dB after 64-chirp integration. Beat frequency
-  f_b = 2*B*R/(c*T_up) = 401 Hz at 10 m; IF band of interest 0-2.6 kHz;
+  f_b = 2*B*R/(c*T_up) = 417 Hz at 10 m; IF band of interest 0-2.6 kHz;
   TX->RX leakage appears as a ~26 Hz tone ~40 dB above the drone echo.
 - Horn (per horn, three built): optimum pyramidal horn on a WR-340 guide.
   Aperture 263.8 x 193.1 mm, throat 86.4 x 43.2 mm, flare 91.5 mm axial,
@@ -71,7 +71,7 @@ FIXED DECISIONS (design to these; do not reopen them):
   band-pass filter between RX horn and LNA (the horn and the SPF5189Z
   are wideband); the operator with the phone stands behind the horns.
 - Processing on the laptop (Python, exists): sync-edge segmentation ->
-  per-chirp range FFT (3.45 m cells, parabolic peak interpolation) ->
+  per-chirp range FFT (3.75 m cells, parabolic peak interpolation) ->
   Doppler FFT across chirps (axis from the measured PRI, +/-4.2 m/s) ->
   CA-CFAR (linear power, guard 4, train 6, 15 dB, peak-picked) ->
   beam centroid -> Kalman tracker -> web console.
@@ -248,7 +248,7 @@ Cover, with numeric acceptance limits and the procedure to measure each:
 2. RETURN LOSS (S11), NanoVNA at the SMA
    - Acceptance: S11 <= -10 dB over 2400-2483.5 MHz; note the
      minimum and its frequency. Target from the design: better than
-     -15 dB at 2440-2483.5.
+     -15 dB at 2440-2480.
    - Procedure: calibrate at the cable end (SOL), horn pointed at open
      space > 2 m from any object, sweep 2.2-2.7 GHz, 201 points.
    - Diagnosis table: resonance too low/high -> probe length; broad
@@ -360,11 +360,11 @@ Deliver:
 4. COEXISTENCE TEST (the decision test)
    - Drone on the bench 1 m in front of the horns, in the beam, props
      off, phone connected. Ping the drone (100 pings at 100 ms) with:
-     radar SWEEP 0; radar SWEEP 1 on 2440-2483.5; radar deliberately
+     radar SWEEP 0; radar SWEEP 1 on 2440-2480; radar deliberately
      on 2400-2483.5 (crossing channel 1). Acceptance: ~0 % loss and
      unchanged RTT in the second case; visible loss in the third case
-     proves the margin is real. Escalation: sweep from 2450 (33.5 MHz,
-     4.5 m cell); then, only if still failing, the 915 MHz ELRS
+     proves the margin is real. Escalation: sweep from 2450 (30 MHz,
+     5 m cell); then, only if still failing, the 915 MHz ELRS
      fallback (RadioMaster Pocket + Bandit Nano + Nano 915 RX, esp-fc
      with CRSF).
 
@@ -392,8 +392,8 @@ Deliver:
 
 1. SPECTRUM MAP of 2400-2483.5 MHz, to scale (ASCII or SVG), showing:
    WiFi channel 1 (2401-2423, centre 2412) = phone <-> drone AP;
-   guard 2423-2440; radar sweep 2440.0-2483.5 (43.5 MHz, 64 steps of
-   0.690 MHz); ESP-Drone's default channel 6 (2426-2448) marked as the
+   guard 2423-2440; radar sweep 2440.0-2483.5 (40 MHz, 64 steps of
+   0.625 MHz); ESP-Drone's default channel 6 (2426-2448) marked as the
    collision to avoid; ELRS 2.4 GHz FHSS 2400-2480 marked as removed;
    the ISM edges; the unusable 2360-2395 MHz below the band.
    Alternative plan for channel 11 (2451-2473) with the sweep below
@@ -402,7 +402,7 @@ Deliver:
 2. RADAR WAVEFORM TABLE: f_start, f_stop, B, N_steps, step size,
    step dwell, T_up, retrace, PRI, chirps per dwell, dwell time, beams
    per scan, scan time; and the derived quantities with formulas:
-   range cell c/2B (3.45 m), beat frequency vs range (401 Hz at 10 m;
+   range cell c/2B (3.75 m), beat frequency vs range (417 Hz at 10 m;
    give the 1-30 m curve), IF band of interest, sound-card Nyquist and
    the anti-alias corner, max unambiguous range from the step size
    (c/2*delta_f), Doppler resolution and window (+/- lambda/(4*PRI) =
@@ -451,7 +451,7 @@ Deliver:
 6. AUDIO / DIGITAL SIDE: sound card sample rate options (44.1 / 48 kHz)
    and what changes; sync divider levels; USB serial protocol timing
    between the laptop and the radar ESP32 (one AZ per beam, settle
-   time); HTTP fix rate to the console (~1 per 1.5 s scan) and the
+   time); HTTP fix rate to the console (~1 per 4.3 s scan) and the
    10 Hz WebSocket state.
 
 7. STAGE 3 ADDENDUM: second RX channel at 193 mm vertical spacing ->
@@ -471,10 +471,10 @@ from §0 must be flagged, not silently changed).
 
 | number | source |
 |---|---|
-| sweep, range cell, beat, Doppler window, link budget | `ground_station/fmcw_sim.py --f0 2.44 --sweep-bw 43.5 --chirp-ms 6.4 --gain 13.4 --budget` |
+| sweep, range cell, beat, Doppler window, link budget | `ground_station/fmcw_sim.py --f0 2.44 --sweep-bw 40 --chirp-ms 6.4 --gain 13.4 --budget` |
 | horn geometry, gain, beamwidths, pe==ph | `antenna/horn.py` |
 | 12° steps, 2.5° azimuth, centroid | `ground_station/scan_design.py`, `docs/scanning.md` |
-| CFAR / centroid / PRI handling, self-test | `ground_station/radar_acquire.py --selftest --f0-mhz 2440 --bw-mhz 43.5` |
+| CFAR / centroid / PRI handling, self-test | `ground_station/radar_acquire.py --selftest --f0-mhz 2440 --bw-mhz 40` |
 | interference budget, channel choice | `docs/drone-software.md` §0 |
 | MIT chain order, video amp, sync, power | `docs/radar-hardware.md` |
 | firmware protocol (`SET f0_mhz`, `AZ`, SYNC) | `firmware/radar_ctl/radar_ctl.ino` |
