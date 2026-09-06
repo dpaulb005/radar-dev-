@@ -288,12 +288,13 @@ def run(args):
                 beat, sync = src.read()
                 if beat is None:
                     break
-                cube, t_chirp = segment_chirps(beat, sync, fs, n)
+                cube, timing = segment_chirps(beat, sync, fs, n)
                 if cube is None:
                     print("# no sync: check the R channel / SWEEP 1", file=sys.stderr)
                     time.sleep(0.2); continue
-                dets, spec = process(cube, fs, t_chirp, n, thresh_db=args.thresh)
-                out = {"t": round(time.time(), 2), "t_chirp_ms": round(t_chirp * 1e3, 3),
+                dets, spec = process(cube, fs, timing, n, thresh_db=args.thresh)
+                out = {"t": round(time.time(), 2), "t_chirp_ms": round(timing[0] * 1e3, 3),
+                       "pri_ms": round(timing[1] * 1e3, 3),
                        "dets": [{"range": round(r, 2), "vel": round(v, 2),
                                  "snr": round(s, 1)} for (r, v, s, _) in dets[:5]]}
                 print(json.dumps(out), flush=True)
@@ -311,11 +312,11 @@ def run(args):
                 beat, sync = src.read()
                 if beat is None:
                     return
-                cube, t_chirp = segment_chirps(beat, sync, fs, n)
+                cube, timing = segment_chirps(beat, sync, fs, n)
                 if cube is None:
                     print(f"# beam {b:+.0f}: no sync", file=sys.stderr)
                     continue
-                dets, spec = process(cube, fs, t_chirp, n, thresh_db=args.thresh)
+                dets, spec = process(cube, fs, timing, n, thresh_db=args.thresh)
                 radar.spec = spec
                 per_beam.append((b, dets))
             fixes = radar.centroid(per_beam)
@@ -375,6 +376,8 @@ def main():
         r_true = args.st_range + args.st_vel * t_dwell / 2
         er = abs(f["range"] - r_true); ea = abs(f["az"] - args.st_az)
         edge = abs(args.st_az) > args.sector / 2 - args.step
+        if args.st_range_only:
+            ea, edge = 0.0, False          # stage 1 has no azimuth to check
         ok = er < 0.5 and (ea < 4.0 or (edge and ea < 8.0))
         tag = "PASS" if ok else "FAIL"
         if ok and edge and ea >= 4.0:

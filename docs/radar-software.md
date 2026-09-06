@@ -142,7 +142,7 @@ python radar_acquire.py --device 3 --record first-walk.wav
 JSON line per block of 64 chirps (~0.5 s):
 
 ```
-{"t": 1788671945.4, "t_chirp_ms": 6.395, "dets": [{"range": 4.62, "vel": -1.31, "snr": 38.4}]}
+{"t": 1788671945.4, "t_chirp_ms": 6.395, "pri_ms": 7.392, "dets": [{"range": 4.62, "vel": -1.31, "snr": 38.4}]}
 ```
 
 - `t_chirp_ms` should sit within 1 % of the ESP32's `t_chirp_ms`. If it
