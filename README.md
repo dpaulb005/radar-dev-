@@ -16,6 +16,9 @@ Fallback if the phone link and the radar won't coexist: a 915 MHz ELRS link
 ([`docs/drone-915.md`](docs/drone-915.md), [`docs/drone-915-esp-fc.md`](docs/drone-915-esp-fc.md)).
 
 Parts, priced and in stock as of Sept 2026: [`hardware/BOM.md`](hardware/BOM.md).
+Handing the detailed design to an LLM? [`docs/LLM-DESIGN-PROMPT.md`](docs/LLM-DESIGN-PROMPT.md)
+is the prompt pack: shared context with every fixed number, then task prompts for the
+schematic, the PCB, horn test/acceptance, the drone build, and the signal/band plan.
 Background: [`docs/mit-radar.md`](docs/mit-radar.md) (the plan and its
 constraints), [`docs/scanning.md`](docs/scanning.md) (why you need to scan to
 get position), [`docs/antenna.md`](docs/antenna.md) (the horn).
