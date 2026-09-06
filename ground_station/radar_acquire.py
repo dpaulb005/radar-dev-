@@ -33,8 +33,8 @@ import numpy as np
 import fmcw_sim
 from radar_twin import ScanningRadar, cfar_detect
 
-F0_HZ = 2.400e9
-BW_HZ = 83.5e6
+F0_HZ = 2.400e9          # defaults: the whole ISM band. Overridden by --f0-mhz/
+BW_HZ = 83.5e6           # --bw-mhz, or by radar_ctl's status when --ctl is used.
 SYNC_FRAC = 0.5          # sync threshold as a fraction of the sync channel's peak
 SETTLE_FRAC = 0.05       # drop the first 5 % of each chirp (PLL settle)
 
@@ -78,15 +78,15 @@ def segment_chirps(beat, sync, fs, n_chirps):
 
 
 def process(cube, fs, timing, n_chirps, min_range=1.5, max_range=30.0,
-            thresh_db=15.0):
+            thresh_db=15.0, f0=None, bw=None):
     """Beat cube -> range-Doppler -> CFAR detections.
 
     timing = (t_up, pri): the up-chirp sets the beat->range scale, the pulse
     repetition interval (up-chirp + retrace) sets the Doppler axis. They are
     NOT the same number on this hardware, and both are measured from sync."""
     t_chirp, pri = timing
-    spec = fmcw_sim.RadarSpec(f0=F0_HZ, bw=BW_HZ, t_chirp=t_chirp, fs=fs,
-                              n_chirps=n_chirps)
+    spec = fmcw_sim.RadarSpec(f0=f0 or F0_HZ, bw=bw or BW_HZ, t_chirp=t_chirp,
+                              fs=fs, n_chirps=n_chirps)
     # the sim's range axis assumes n_s = fs*t_chirp samples; we trimmed the
     # settle, so rescale the beat->range mapping to the samples we kept
     # range_doppler derives the beat->range map from spec.t_chirp (the
@@ -163,12 +163,13 @@ class SynthSource:
     ADC_SCALE = 3.0e5          # sqrt(mW) -> counts; leakage ~ -22 dBm fits int16
 
     def __init__(self, fs, t_chirp, n_chirps, targets, retrace_s=1e-3,
-                 beam_az=0.0, bw_az=36.0, seed=0, isolation_db=35.0):
+                 beam_az=0.0, bw_az=36.0, seed=0, isolation_db=35.0,
+                 f0=None, bw=None):
         self.fs, self.t_chirp, self.n_chirps = fs, t_chirp, n_chirps
         self.targets, self.retrace_s = targets, retrace_s
         self.beam_az, self.bw_az = beam_az, bw_az
         self.rng = np.random.default_rng(seed)
-        self.spec = fmcw_sim.RadarSpec(f0=F0_HZ, bw=BW_HZ, t_chirp=t_chirp, fs=fs,
+        self.spec = fmcw_sim.RadarSpec(f0=f0 or F0_HZ, bw=bw or BW_HZ, t_chirp=t_chirp, fs=fs,
                                        n_chirps=n_chirps, gt_dbi=13.4, gr_dbi=13.4,
                                        isolation_db=isolation_db)
         self.frames = None
@@ -257,15 +258,19 @@ def post_fix(url, payload):
 def run(args):
     n = args.n_chirps
     ctl = Ctl(args.ctl) if args.ctl else None
+    f0, bw = args.f0_mhz * 1e6, args.bw_mhz * 1e6
     if ctl:
         t_nom = ctl.status["t_chirp_ms"] / 1000.0 + ctl.status["retrace_us"] / 1e6
+        f0, bw = ctl.status["f0_mhz"] * 1e6, ctl.status["bw_mhz"] * 1e6   # the truth
     else:
         t_nom = args.t_chirp_ms / 1000.0 + 1e-3
+    print(f"# sweep {f0/1e6:.1f}-{(f0+bw)/1e6:.1f} MHz, range cell {3e8/(2*bw):.2f} m",
+          file=sys.stderr)
     block_s = (n + 3) * t_nom               # a few spare chirps for sync slop
 
     if args.selftest:
         targets = [(args.st_range, args.st_az, args.st_vel, 0.01)]
-        src = SynthSource(args.fs, args.t_chirp_ms / 1000.0, n, targets)
+        src = SynthSource(args.fs, args.t_chirp_ms / 1000.0, n, targets, f0=f0, bw=bw)
         fs = args.fs
     elif args.replay:
         src = WavSource(args.replay, block_s)
@@ -292,7 +297,7 @@ def run(args):
                 if cube is None:
                     print("# no sync: check the R channel / SWEEP 1", file=sys.stderr)
                     time.sleep(0.2); continue
-                dets, spec = process(cube, fs, timing, n, thresh_db=args.thresh)
+                dets, spec = process(cube, fs, timing, n, thresh_db=args.thresh, f0=f0, bw=bw)
                 out = {"t": round(time.time(), 2), "t_chirp_ms": round(timing[0] * 1e3, 3),
                        "pri_ms": round(timing[1] * 1e3, 3),
                        "dets": [{"range": round(r, 2), "vel": round(v, 2),
@@ -316,7 +321,7 @@ def run(args):
                 if cube is None:
                     print(f"# beam {b:+.0f}: no sync", file=sys.stderr)
                     continue
-                dets, spec = process(cube, fs, timing, n, thresh_db=args.thresh)
+                dets, spec = process(cube, fs, timing, n, thresh_db=args.thresh, f0=f0, bw=bw)
                 radar.spec = spec
                 per_beam.append((b, dets))
             fixes = radar.centroid(per_beam)
@@ -344,6 +349,10 @@ def main():
     ap.add_argument("--t-chirp-ms", type=float, default=6.4,
                     help="nominal up-chirp (only for block sizing; measured live from sync)")
     ap.add_argument("--thresh", type=float, default=15.0, help="CFAR threshold dB")
+    ap.add_argument("--f0-mhz", type=float, default=2400.0,
+                    help="sweep start; overridden by radar_ctl status when --ctl is given")
+    ap.add_argument("--bw-mhz", type=float, default=83.5,
+                    help="sweep width; 43.5 with --f0-mhz 2440 for WiFi-channel-1 coexistence")
     ap.add_argument("--ctl", help="radar_ctl serial port -> scanning mode")
     ap.add_argument("--sector", type=float, default=90.0)
     ap.add_argument("--step", type=float, default=12.0, help="beam step deg (3x oversample)")

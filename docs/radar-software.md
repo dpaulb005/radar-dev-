@@ -116,6 +116,13 @@ Wiring is in the sketch header. Flash, open the serial monitor at 115200:
 `"lock":1` is the ADF4351's lock-detect pin. If it is 0: wrong `F_REF_HZ`,
 or LE/CLK/DATA swapped, or the board's CE pin not tied high.
 
+**If the drone is flown by phone** (its WiFi AP on channel 1), set the
+coexistence sweep now and keep it — `SET f0_mhz 2440` then `SET bw_mhz 43.5`
+(range cell 3.45 m, drone SNR unchanged; the reasoning and the link test are
+in [`drone-software.md`](drone-software.md)). `radar_acquire.py --ctl` picks
+the edges up from `?`; in stage 1 without `--ctl` pass `--f0-mhz 2440
+--bw-mhz 43.5`.
+
 Commands you will use by hand:
 
 ```
@@ -125,6 +132,7 @@ CW 2440        park anywhere 2200–4400 MHz — for antenna / spectrum tests
 SWEEP 1        chirp
 AZ 30 / HOME   turntable
 SET step_us 80 / SET steps 32 / SET retrace_us 1000
+SET f0_mhz 2440 / SET bw_mhz 43.5   sweep edges (refused if outside 2400-2483.5)
 ```
 
 **Checkpoint 3:** `?` shows `lock:1`; with `SWEEP 1` the right audio channel

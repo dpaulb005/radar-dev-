@@ -24,6 +24,7 @@
  *   SET steps <n>  -> steps per chirp     (8..256)
  *   SET step_us <n>-> dwell per step, us  (40..2000)
  *   SET retrace_us <n>
+ *   SET f0_mhz <f> / SET bw_mhz <b>  -> sweep edges (kept inside 2400-2483.5)
  *
  * Wiring (ESP32 devkit, VSPI):
  *   ADF4351  CLK -> GPIO18   DATA -> GPIO23   LE -> GPIO5   CE -> 3V3
@@ -40,8 +41,13 @@
 
 // ---------------- configuration ----------------
 #define F_REF_HZ        25000000ULL   // the board's TCXO; check yours (25 MHz is usual)
-#define F_START_HZ      2400000000ULL // bottom of the 2.4 GHz ISM band
-#define SWEEP_BW_HZ     83500000ULL   // 2400 - 2483.5 MHz: stay inside ISM (docs/mit-radar.md s1)
+#define ISM_LO_HZ       2400000000ULL // 2.4 GHz ISM band edges: the sweep never leaves them
+#define ISM_HI_HZ       2483500000ULL
+// Default sweep: the whole ISM band. If the drone is flown over its own WiFi
+// AP (phone control), park the AP on channel 1 and sweep ABOVE it with a
+// guard band:  SET f0_mhz 2440  /  SET bw_mhz 43.5   (docs/drone-software.md)
+#define F_START_HZ      2400000000ULL
+#define SWEEP_BW_HZ     83500000ULL
 #define MOD_DEFAULT     4000          // fractional modulus -> 6.25 kHz resolution
 
 #define AZ_MODE_STEPPER 1             // 1 = A4988 stepper, 0 = hobby servo
@@ -61,6 +67,8 @@
 #define PIN_SERVO 26
 // -----------------------------------------------
 
+static uint64_t f_start    = F_START_HZ;
+static uint64_t sweep_bw   = SWEEP_BW_HZ;
 static uint16_t n_steps    = 64;      // 64 steps x 100 us = 6.4 ms up-chirp
 static uint32_t step_us    = 100;     // PLL relock per step; see docs/radar-software.md
 static uint32_t retrace_us = 1000;    // hold at F_START between chirps
@@ -118,7 +126,7 @@ static void adf_tune(uint64_t f_hz) {
 static void adf_init() {
   adf_write(R5); adf_write(R4); adf_write(R3); adf_write(R2);
   adf_write(reg_r1(MOD_DEFAULT));
-  adf_tune(F_START_HZ);
+  adf_tune(f_start);
 }
 
 // ---------------- azimuth ----------------
@@ -155,17 +163,17 @@ static void az_goto(float deg) {
 
 // ---------------- sweep ----------------
 static void one_chirp() {
-  const uint64_t df = SWEEP_BW_HZ / (uint64_t)(n_steps - 1);
+  const uint64_t df = sweep_bw / (uint64_t)(n_steps - 1);
   digitalWrite(PIN_SYNC, HIGH);
   uint32_t t0 = micros();
   for (uint16_t k = 0; k < n_steps; k++) {
-    adf_tune(F_START_HZ + df * k);
+    adf_tune(f_start + df * k);
     // hold the step for step_us measured from the chirp start, so SPI time
     // does not stretch the chirp
     while ((int32_t)(micros() - (t0 + (uint32_t)step_us * (k + 1))) < 0) { }
   }
   digitalWrite(PIN_SYNC, LOW);
-  adf_tune(F_START_HZ);
+  adf_tune(f_start);
   delayMicroseconds(retrace_us);
 }
 
@@ -175,7 +183,7 @@ static void status() {
   Serial.printf("{\"fw\":\"radar_ctl\",\"f0_mhz\":%.1f,\"bw_mhz\":%.1f,\"steps\":%u,"
                 "\"step_us\":%lu,\"t_chirp_ms\":%.3f,\"retrace_us\":%lu,"
                 "\"sweep\":%d,\"az\":%.2f,\"lock\":%d}\n",
-                F_START_HZ / 1e6, SWEEP_BW_HZ / 1e6, n_steps,
+                f_start / 1e6, sweep_bw / 1e6, n_steps,
                 (unsigned long)step_us, chirp_ms(), (unsigned long)retrace_us,
                 sweeping ? 1 : 0, az_deg, digitalRead(PIN_LD));
 }
@@ -186,7 +194,7 @@ static void handle(String line) {
   if (line == "?") { status(); return; }
   if (line.startsWith("SWEEP")) {
     sweeping = line.substring(5).toInt() != 0;
-    if (!sweeping) { digitalWrite(PIN_SYNC, LOW); adf_tune(F_START_HZ); }
+    if (!sweeping) { digitalWrite(PIN_SYNC, LOW); adf_tune(f_start); }
     Serial.printf("OK SWEEP %d\n", sweeping ? 1 : 0); return;
   }
   if (line.startsWith("CW")) {
@@ -208,10 +216,21 @@ static void handle(String line) {
     int sp = line.indexOf(' ', 4);
     String key = line.substring(4, sp), val = line.substring(sp + 1);
     long v = val.toInt();
+    if (key == "f0_mhz" || key == "bw_mhz") {
+      // sweep edges: validated together so the sweep can never leave ISM
+      uint64_t f0 = f_start, bw = sweep_bw;
+      if (key == "f0_mhz") f0 = (uint64_t)(val.toFloat() * 1e6);
+      else                 bw = (uint64_t)(val.toFloat() * 1e6);
+      if (f0 < ISM_LO_HZ || f0 + bw > ISM_HI_HZ || bw < 10000000ULL) {
+        Serial.println("ERR sweep must stay within 2400-2483.5 MHz, bw >= 10"); return;
+      }
+      f_start = f0; sweep_bw = bw; adf_tune(f_start);
+      Serial.printf("OK SET %s %.1f\n", key.c_str(), key == "f0_mhz" ? f0 / 1e6 : bw / 1e6); return;
+    }
     if (key == "steps" && v >= 8 && v <= 256)          n_steps = v;
     else if (key == "step_us" && v >= 40 && v <= 2000) step_us = v;
     else if (key == "retrace_us" && v >= 100 && v <= 20000) retrace_us = v;
-    else { Serial.println("ERR SET steps|step_us|retrace_us"); return; }
+    else { Serial.println("ERR SET steps|step_us|retrace_us|f0_mhz|bw_mhz"); return; }
     Serial.printf("OK SET %s %ld\n", key.c_str(), v); return;
   }
   Serial.println("ERR ? SWEEP CW AZ HOME SET");

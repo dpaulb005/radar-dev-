@@ -1,8 +1,10 @@
 # firmware/espfly — what runs on the ESP-FLY
 
-**esp-fc, unmodified.** The drone is a non-cooperative radar target; it needs
-no code from this repo. What it needs is *configuration* so that it flies on
-915 MHz ELRS (out of the radar's 2.4 GHz sweep) — captured here:
+**Current plan: nothing from here.** The drone is flown from the phone on
+the stock ESP-Drone firmware (AP on channel 1) — see `docs/drone-software.md`.
+
+This directory is the **fallback**: esp-fc configuration for a 915 MHz
+ELRS/CRSF receiver, if the phone link and the radar turn out not to coexist:
 
 - `espfly-915.cli` — the esp-fc CLI settings (receiver pins, serial RX,
   failsafe). Paste into the Configurator's CLI tab.

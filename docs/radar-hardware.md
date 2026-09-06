@@ -275,5 +275,7 @@ stages 1 and 2 first; stage 3 is a second project on top of a working radar.
 - +10 dBm into a 13 dBi horn is 0.2 W EIRP — under the Part 15 limits for the
   band, but keep the mouths pointed away from people at < 1 m out of habit.
 - The sweep stays inside 2400–2483.5 MHz. Do not "extend it for resolution".
-- The drone's control link must be **off 2.4 GHz** before the radar is ever
-  swept with the drone in the air — [`drone-hardware.md`](drone-hardware.md).
+- The drone is flown by phone over its WiFi AP on **channel 1**, and the
+  radar sweeps **2440–2483.5 MHz** above it — set that before the drone is
+  ever in the air with the radar sweeping, and do the ping test in
+  [`drone-software.md`](drone-software.md) §4 first.

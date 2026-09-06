@@ -54,7 +54,13 @@ Dimensions: aperture 263.8 × 193.1 mm, WR-340 throat 86.4 × 43.2 mm, flare
 | 17 | Plywood ~18" × 15", L-brackets, M3 hardware, standoffs | 1 | 28 | |
 | 18 | **NEMA-17 stepper + A4988** (+ lazy-susan bearing) | 1 | 25 | not a hobby servo: three copper horns sag one, and the 2.5° azimuth budget cannot absorb that |
 
-## E. Drone — move the control link to 915 MHz — ~$130
+## E. Drone — nothing (flown from the phone)
+
+The drone is the stock ESP-FLY on ESP-Drone firmware, AP on WiFi channel 1;
+the radar sweeps 2440–2483.5 MHz above it. **$0.** The table below is the
+fallback if the coexistence test in `docs/drone-software.md` §4 fails.
+
+### E-fallback. 915 MHz control link — ~$130
 
 | # | item | qty | ~$ | notes |
 |---|---|---|---|---|
@@ -78,7 +84,7 @@ Dimensions: aperture 263.8 × 193.1 mm, WR-340 throat 86.4 × 43.2 mm, flare
 |---|---|
 | Stage 1 (A + B + C) | **~$354** |
 | + Stage 2 (D) | ~$404 |
-| + Drone on 915 MHz (E) | ~$534 |
+| + Drone fallback to 915 MHz (E-fallback) | ~$534 |
 | + Stage 3 (F) | ~$760 |
 
 Not needed: SDRs, external LNAs beyond the two, RF switches, any 2.4 GHz

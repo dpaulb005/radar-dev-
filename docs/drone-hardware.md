@@ -1,94 +1,50 @@
-# ESP-FLY drone hardware — step by step (fly on 915 MHz)
+# ESP-FLY drone hardware — step by step (fly by phone)
 
-One drone. Goal: the ESP-FLY flies on a control link that is **not in the
-2.4 GHz band the radar sweeps**. Nothing else on the airframe changes.
+**Nothing changes on the airframe.** The phone-flying ESP-FLY is the stock
+build: XIAO ESP32-S3, the flight-controller board, MPU-6050, four coreless
+motors, 1S battery, ESP-Drone firmware. The receiver you fitted for the T8L
+(RP1 V2) is simply not used — leave it or remove it (−0.9 g), your call.
 
-## 0. Why, in one paragraph
+What *does* matter for the radar is where the drone's WiFi sits and what
+the radar can see:
 
-The radar puts ≈ +10 dBm into a 13 dBi horn and sweeps 2400–2483.5 MHz
-continuously. At 10 m the drone's receiver sees that at about −34 dBm; its
-own control signal arrives at −50…−60 dBm. A 2.4 GHz link — ELRS 2.4,
-ESP-NOW, WiFi, anything — is being jammed by 20 dB every time the beam
-points at the drone, which is exactly when you need it. ELRS's LoRa is
-tough, but you would be betting the aircraft on an untested margin. The
-900 MHz ELRS band is 1.5 GHz away: **zero** interaction, and better range
-and wall penetration as a bonus.
+## 1. Take the RP1 V2 off, or power it down
 
-## 1. What you have, and what it can't do
+An ELRS 2.4 receiver that is powered but unbound sends nothing, so it is
+harmless to the radar. But if it is bound to a T8L that is switched on, the
+link hops over the whole 2.4 GHz band at 25–100 mW — right through the
+radar's sweep, in both directions. **Either unsolder the RP1 V2, or never
+have the T8L on during radar sessions.** Unsoldering is the version that
+cannot be forgotten.
 
-- **Receiver: RadioMaster RP1 V2** — an ExpressLRS **2.4 GHz** receiver.
-- **Radio: RadioMaster T8L** — a screenless ELRS radio with a **built-in
-  2.4 GHz** module (SX1281), 2.400–2.480 GHz, and **no external module bay**.
-  There is no 900 MHz variant. It cannot be moved to 915 MHz.
+**Checkpoint 1:** with the drone powered, a WiFi-analyser app on the phone
+shows exactly one thing from the drone: its `ESP-DRONE-xxxx` AP.
 
-So both ends of the link get replaced. Keep the T8L: it is still the right
-tool for every flight where the radar is off (all of the bring-up in
-[`drone-software.md`](drone-software.md)).
+## 2. Keep the antenna as it is
 
-## 2. Parts (≈ $130)
+The XIAO's antenna is the AP's antenna. Do not add a 915 MHz wire; there is
+nothing to attach it to in this configuration.
 
-| item | ~$ | why this one |
-|---|---|---|
-| **RadioMaster Pocket** (ELRS or CC2500 internal — irrelevant, you use the bay) | 65 | cheapest EdgeTX radio with a **Nano module bay** |
-| **RadioMaster Bandit Nano**, 915 MHz ELRS module | 40 | fits the Pocket's Nano bay; 10 mW–1 W; FCC915 |
-| **BetaFPV ELRS Nano receiver, 915 MHz** (0.7 g) or HappyModel ES900RX (0.6 g) | 17 | lightest 900 MHz receivers; same CRSF wiring as the RP1 V2 |
-| 915 MHz receiver antenna (usually included: ~80 mm wire or "T") | 0–5 | |
+## 3. Make the drone a good radar target (optional, free)
 
-Alternatives: any EdgeTX radio with a JR bay (Boxer, TX12) + Bandit Micro;
-HappyModel ES900TX (Nano) instead of the Bandit Nano. Both ends must be the
-**same ELRS major version** and the **same regulatory domain (FCC915)**.
+A 25 g quad's radar cross-section is small (~0.01 m² was assumed in every
+link budget in this repo; the margin at 10 m is 71 dB so it does not need
+help). If you ever want more echo at longer range, a 30 mm square of
+copper tape on the top plate, flat, roughly doubles it. Not needed indoors.
 
-Weight: the RP1 V2 is ~0.9 g with its 31 mm antenna; the Nano 915 is ~0.7 g
-plus a ~1 g antenna → about **+1 g on a 25 g aircraft**. Fine.
+## 4. Where to hover
 
-## 3. Swap the receiver
+The horns' beams are 34° × 36°. At 5 m that is a ~3 m wide, ~3 m tall
+window per beam position; the turntable sweeps it across the sector. Fly
+inside the sector at 3–10 m from the horns, at horn height ±1.5 m — the
+first flights should stay where a single beam sees the drone at all times.
 
-The RP1 V2 is wired to the XIAO ESP32-S3 with four wires: 5 V (or the pad
-you currently power it from), GND, RX-TX → XIAO RX, RX-RX → XIAO TX. The
-915 MHz receiver has **exactly the same four pads** and speaks the **same
-CRSF** protocol, so:
+**Checkpoint 4:** floor marks at 3, 5 and 8 m along the boresight, and the
+sector edges taped on the floor.
 
-1. Photograph the current wiring before touching anything.
-2. Desolder the RP1 V2. Note which XIAO pin its **TX** wire went to — that
-   is the pin esp-fc has as the serial-RX input (in the published esp-fc /
-   XIAO guide it is **GPIO 9 = serial 2 RX**, with **GPIO 8 = serial 2 TX**;
-   yours may differ — the wire tells you, and `get pin` in the esp-fc CLI
-   confirms it).
-3. Solder the 915 receiver to the **same four pads**: power to the same rail
-   the RP1 V2 used, GND, its TX to the XIAO pin the old TX used, its RX to
-   the old RX pin.
-4. Shrink-wrap the receiver, tape it to the top plate away from the motors.
+## 5. If the phone link test fails
 
-**Checkpoint 3:** power the drone on USB; the receiver's LED blinks slowly
-(no bind) — it is alive on the same rail the RP1 V2 was.
-
-## 4. Route the 915 MHz antenna
-
-A 915 MHz quarter-wave is **~80 mm**, not 31 mm. On a 67 mm frame:
-
-- run it straight out along one arm and past the motor, or straight back
-  as a tail, with ~10 mm of the base kept clear of any metal or the battery;
-- never parallel to and touching a motor wire, never under a prop;
-- fix it with a short piece of heat-shrink to a zip-tie stub so it cannot
-  reach a prop in a crash.
-
-A drooping tail antenna is the usual answer on micro quads and works.
-
-**Checkpoint 4:** props on, spin up on the bench held down — the antenna
-does not touch a prop at full throttle.
-
-## 5. Nothing else changes
-
-The XIAO ESP32-S3, the flight-controller board, MPU-6050, motors, battery
-and esp-fc firmware are untouched. With a serial receiver, esp-fc does not
-bring WiFi up at all in flight (`espfly.md` §2) — so **the drone emits
-nothing in 2.4 GHz** and the radar band is clean. That was the whole point.
-
-## 6. Radio side
-
-Slide the Bandit Nano into the Pocket's bay, screw it, fit its antenna (the
-module ships with one). Set the Pocket's **internal** RF module to OFF and
-the **external** module to CRSF in the model setup — [`drone-software.md`](drone-software.md) §1.
-
-**Checkpoint 6:** the Pocket boots, the module's OLED lights, ELRS Lua opens
-and shows the module's version and FCC915.
+The fallback hardware (a 915 MHz ELRS link, ~$130) is documented in
+[`drone-915.md`](drone-915.md). Do the link test in
+[`drone-software.md`](drone-software.md) §4 first; it takes ten minutes and
+is the thing that tells you whether you need to spend anything at all.

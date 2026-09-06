@@ -1,139 +1,142 @@
-# ESP-FLY drone software — step by step (fly on 915 MHz)
+# ESP-FLY drone software — step by step (fly by phone, radar on the same band)
 
-What runs on the drone is **esp-fc, unmodified**. There is no custom flight
-code in this repo and there should not be: the drone is a passive target
-for the radar, and CRSF is CRSF whether it arrives at 2.4 GHz or 915 MHz.
-"Drone software" is therefore three configurations, in this order:
+**Decision: the drone is flown from the phone.** That means the ESP-FLY runs
+the **ESP-Drone** firmware and is controlled over its own WiFi access point.
+There is no radio, no ELRS, no esp-fc receiver setup. The drone-side "software"
+is one firmware option and one test.
 
-1. ExpressLRS on the **TX module and receiver** (band, bind, rate)
-2. EdgeTX on the **Pocket** (model, module, switches)
-3. esp-fc on the **XIAO** (serial port, CRSF, arm/mode switches, failsafe)
-
-The esp-fc part is captured as a CLI script: `firmware/espfly/espfly-915.cli`.
-
-Props OFF for everything until §6.
+The catch, stated once: the XIAO ESP32-S3's radio is **2.4 GHz only** — no
+5 GHz WiFi, and Bluetooth is 2.4 GHz too. So the phone link lives inside the
+band the radar sweeps. The way out is that a WiFi AP sits on **one fixed
+20 MHz channel**, so the radar simply sweeps the *rest* of the band with a
+guard gap. That is a better situation than an ELRS-2.4 link, which hops over
+the whole band and cannot be avoided.
 
 ---
 
-## 1. ExpressLRS — both ends on FCC915, one binding phrase
+## 0. The numbers (why this works, and what it costs)
 
-Use the **ExpressLRS Configurator** (desktop app). For each device, target
-→ flash:
+Radar at the drone, 5 m, beam on it: +10 dBm into 13.4 dBi = +23 dBm EIRP,
+free-space loss 54 dB → **−31 dBm**. Phone's WiFi at the drone, 3 m: about
+**−35 dBm**. In the same channel the radar wins by 4 dB and the link dies.
 
-| device | target | options |
-|---|---|---|
-| Bandit Nano | RadioMaster → Bandit Nano 900 TX | regulatory domain **FCC915**, binding phrase e.g. `espfly-radar`, same version as the RX |
-| BetaFPV Nano 915 RX | BetaFPV → Nano 900 RX (or HappyModel → ES900RX) | **FCC915**, **same** binding phrase, same version |
+Out of channel, the drone's WiFi receiver rejects the radar like any
+neighbouring-channel signal (802.11n minimums: 16 dB one channel away,
+32 dB two or more away). With the AP on **channel 1** (2401–2423 MHz) and
+the sweep starting at **2440 MHz** (28 MHz above the channel centre):
 
-Flash the module over its USB port; flash the receiver by USB/UART adapter
-or over its own WiFi (power it, join `ExpressLRS RX`, open 10.0.0.1).
+| | |
+|---|---|
+| radar seen by the drone's receiver | −31 − ~24 dB ≈ **−55 dBm** |
+| phone signal | −35 dBm |
+| signal-to-interference | **~20 dB** (802.11 at 1–6 Mb/s needs ~5–10) |
+| radar sweep | **2440–2483.5 MHz = 43.5 MHz** |
+| range cell | **3.45 m** (was 1.80 m) |
+| drone echo SNR at 10 m | **71 dB — unchanged** (`fmcw_sim.py --f0 2.44 --sweep-bw 43.5 --gain 13.4 --budget`) |
+| self-test at 43.5 MHz | range error 0.1–0.4 m, azimuth 0.4–2° — same as full band |
 
-**Checkpoint 1:** with both flashed and the receiver powered on the drone,
-the receiver LED goes **solid** within a few seconds of the Pocket being on:
-bound, on 915.
+The coarser range cell does not hurt tracking: range *accuracy* comes from
+sub-cell interpolation (SNR-limited, 71 dB), azimuth from beam centroiding,
+and static clutter is removed by background subtraction regardless of cell
+width. What you lose is the ability to separate two objects less than ~3.5 m
+apart in range — you have one drone.
 
-## 2. EdgeTX on the Pocket
+The other direction is free: the phone and the AP are strong *into the
+radar's* receiver (−35 dBm), but the mixer moves them to 17–70 MHz, far above
+the 15 kHz video low-pass, and −35 dBm is 40 dB below the LNA's compression.
 
-Model setup → Internal RF: **OFF**. External RF: **CRSF**. Then the ELRS Lua
-script (Tools → ExpressLRS):
+Radar defaults stay the full band; the coexistence sweep is two serial
+commands on `radar_ctl` (§3).
 
-| setting | value | why |
-|---|---|---|
-| Packet rate | **100 Hz Full** (or 200 Hz) | 10 full-res channels; 900 MHz tops out at 200 |
-| Telemetry ratio | 1:64 | you only need LQ/RSSI back |
-| Switch mode | Wide | |
-| TX power | **25 mW** | indoors, 10 m; raise later if LQ ever drops |
-| Dynamic power | off while testing | you want a constant number to compare against the radar |
+---
 
-Mixer (default is fine): CH1–4 = **A E T R** on the sticks (esp-fc's map is
-set to match below), CH5 = a two-position switch for **ARM**, CH6 = a
-switch for **ANGLE** mode.
+## 1. ESP-Drone firmware on channel 1
 
-**Checkpoint 2:** Lua shows the module *connected*, LQ 100, and the
-receiver's RSSI around −40…−60 dBm at bench distance.
+ESP-Drone defaults to **channel 6** (`CONFIG_WIFI_CHANNEL=6`), which sits in
+the middle of the band and leaves no room for a useful sweep on either side.
+Rebuild it on channel 1:
 
-## 3. esp-fc — Configurator part
+1. Clone Seeed's ESP-FLY firmware (the `Firmware/` tree of
+   `Seeed-Projects/Co-Create_ESP-FLY`, an esp-drone fork for the XIAO S3)
+   with ESP-IDF installed.
+2. `idf.py menuconfig` → **ESPDrone Config → Wi-Fi/ESP-Now Channel** = **1**
+   (or add `CONFIG_WIFI_CHANNEL=1` to `sdkconfig.defaults`). While there:
+   `WIFI_BASE_SSID` / `WIFI_PASSWORD` are the AP name and password; leave
+   `WIFI_MAX_STA_CONN` at 3.
+3. `idf.py -p <port> flash`.
 
-Connect the drone by USB, open **Betaflight Configurator 10.10** (esp-fc
-speaks its MSP; newer configurators refuse it).
+**Checkpoint 1:** a WiFi-analyser app on the phone shows the `ESP-DRONE-xxxx`
+AP on **channel 1**. If it is on 6, the sdkconfig didn't take.
 
-1. **Ports** tab: on the UART your receiver is wired to (the published
-   XIAO guide uses **UART 2**, GPIO 9 RX / GPIO 8 TX), tick **Serial Rx**.
-   Save. If you are not sure which UART, `get pin` in the CLI tab lists
-   `pin_serial_2_rx` etc. against the GPIO you found in
-   [`drone-hardware.md`](drone-hardware.md) §3.
-2. **Receiver** tab: Receiver Mode **Serial (via UART)**, Serial Receiver
-   Provider **CRSF**. Channel map **TAER1234** if the bars move on the wrong
-   sticks; otherwise the default. Save.
-3. Move the sticks: the four bars follow, 1000 → 2000 with 1500 centred.
-   Adjust EdgeTX endpoints, not esp-fc, if they don't reach.
-4. **Modes** tab: ARM on the CH5 switch range, ANGLE on CH6. Save.
+Channel 11 (2451–2473) with the sweep **below** it (`SET f0_mhz 2400`,
+`SET bw_mhz 40`) is the mirror-image alternative; channel 1 is preferred
+because it leaves 3.5 MHz more sweep. Channels 12–13 are not usable in the US.
 
-**Checkpoint 3:** Receiver tab bars follow every stick and both switches.
-If they twitch or drop: wrong UART, or TX/RX wires swapped.
+## 2. App
 
-## 4. esp-fc — CLI script
+Connect the phone to the drone's AP (password from §1), open the ESP-Drone
+app, connect (default host 192.168.43.42, UDP 2390 — check the app's
+connection settings if it doesn't find the drone). Fly it once **with the
+radar off** to confirm nothing about the flight changed — it hasn't, this is
+the stock ESP-FLY phone-flying path.
 
-`firmware/espfly/espfly-915.cli` pins the receiver wiring, the serial
-function and the failsafe in a form you can paste back after any reset.
-Open the **CLI** tab and paste it line by line (or all at once if your
-configurator passes multi-line). It ends with `save`.
+**Checkpoint 2:** stable hover from the phone, radar powered off.
 
-What it sets, and why (the exact syntax is esp-fc's, from its `docs/cli.md`):
+## 3. Radar side: the coexistence sweep
+
+In the `radar_ctl` serial monitor (or `SET` lines in your start-up notes):
 
 ```
-set pin_serial_2_rx 9          # the XIAO GPIO the receiver's TX is soldered to
-set pin_serial_2_tx 8          # and its RX (needed for CRSF telemetry back)
-set feature_rx_serial 1        # receiver is serial, not the built-in ESP-NOW "SPI Rx"
-set failsafe_delay 4           # 0.4 s of no packets -> failsafe (the only stage-2 action is DROP)
-set failsafe_kill_switch 0
-save
+SET f0_mhz 2440
+SET bw_mhz 43.5
+?          -> "f0_mhz":2440.0,"bw_mhz":43.5
 ```
 
-Two things the CLI file does **not** set, because their ids are best read
-back from the configurator rather than guessed: the serial-2 *function* (the
-Ports tab's Serial Rx tick) and the receiver *provider* (CRSF). After step
-3, `get serial_2` and `get rx` in the CLI show what the configurator wrote —
-paste those two lines into your copy of the file so it is complete for your
-build.
+`radar_acquire.py --ctl …` reads the sweep edges from that status, so nothing
+else needs changing. Without `--ctl` (stage 1), pass `--f0-mhz 2440
+--bw-mhz 43.5` so the range scale matches. The ESP32 refuses any setting that
+would leave 2400–2483.5 MHz.
 
-**Checkpoint 4:** `reboot`, reconnect, Receiver tab still live; `get pin`
-shows serial 2 on the pins you soldered.
+## 4. The link test — this is the checkpoint that matters
 
-## 5. Failsafe test (props OFF)
+Drone on the bench **1 m in front of the horns, in the beam**, powered,
+phone connected, props **off**. Run a ping tool on the phone against the
+drone's IP (any "PingTools"-type app, 100 pings at 100 ms):
 
-1. Arm on the bench (motors spin, props off). Switch the Pocket **off**.
-2. Within ~0.5 s the motors must **stop** and the drone disarm. esp-fc's
-   only stage-2 failsafe is DROP — that is the correct behaviour for a
-   25 g indoor quad; there is no GPS return.
-3. Power the Pocket back on: the link recovers, the drone stays disarmed
-   until you cycle the ARM switch.
+1. Radar `SWEEP 0` → note loss (should be 0 %) and round-trip (~5–20 ms).
+2. Radar `SWEEP 1` on the coexistence sweep → **loss must stay ≈ 0 %** and
+   round-trip unchanged.
+3. For calibration of your own margin, `SET f0_mhz 2400 SET bw_mhz 83.5`
+   (the sweep now crosses channel 1) → you should *see* packet loss appear.
+   Go back to 2440/43.5.
 
-**Checkpoint 5:** motors stop on TX-off every time, three times in a row.
+**Checkpoint 4:** step 2 shows no loss with the beam on the drone at 1 m. If
+it does show loss, move the sweep up (`SET f0_mhz 2450`, `SET bw_mhz 33.5`,
+range cell 4.5 m) and repeat; if it still does, the fallback is the 915 MHz
+link in §6.
 
-## 6. First flights — radar OFF, then radar ON
+## 5. First flight with the radar scanning
 
-1. **T8L + RP1 V2 baseline** is not needed any more; from here fly on the
-   Pocket. Props on, room clear, ANGLE mode, arm, hover at 1 m for 30 s,
-   land. Same as before the swap — the flight controller is unchanged.
-2. **Radar sweeping, drone on the bench 1 m in front of the horns**, powered
-   and bound, props off: open the ELRS Lua → the receiver's **LQ must stay
-   100** and RSSI unchanged while `SWEEP 1` runs. That single number is the
-   proof that the band separation works. (With the old RP1 V2 in this test,
-   LQ would be dropping.)
-3. Hover in the sector with the radar scanning. The console shows the fix;
-   Lua shows LQ still 100.
+Hover in the sector from the phone while `radar_acquire.py --ctl … --server
+…` runs. The console tracks the drone; the phone link feels exactly as it did
+in checkpoint 2.
 
-**Checkpoint 6:** a 2-minute hover in the scanned sector with LQ 100
-throughout and a continuous radar track in the console.
+**Checkpoint 5:** a 2-minute hover with a continuous radar track and no
+control glitches. Record it (console Record button).
+
+---
+
+## 6. Fallback: move the link to 915 MHz ELRS
+
+Only if checkpoint 4 fails. It costs ~$130 (RadioMaster Pocket + Bandit Nano
+915 module + a 0.7 g Nano 915 receiver — your T8L has no module bay and
+cannot do 900 MHz) and switches the drone to esp-fc with a CRSF receiver.
+The full procedure is kept in [`drone-915.md`](drone-915.md); the esp-fc CLI
+settings are in `firmware/espfly/espfly-915.cli`. It also gives you back the
+full 83.5 MHz sweep.
 
 ## 7. What is deliberately *not* on the drone
 
-- No beacon firmware, no MAC filtering, no WiFi AP — those were the passive
-  system. The radar sees the airframe; the drone cooperates by being made
-  of copper, carbon and motors.
-- No custom code in esp-fc. If you later want the drone to *use* the radar's
-  track (the two-drone end goal), that is the laptop-side commander path in
-  [`interception.md`](interception.md), and with ELRS it becomes trivially
-  cleaner: the laptop drives the Pocket's trainer port or a second ELRS
-  module instead of an ESP-NOW commander. Different project, later.
+- No beacon firmware, no MAC filtering, no esp-fc patches — those were the
+  passive system. The radar sees the airframe.
+- No radio. The phone is the transmitter; the WiFi AP is the receiver.
