@@ -1,0 +1,22 @@
+* BLOCK 2 -- buffered half-rail reference. VANA has 100 mVpk buck ripple at 150 kHz.
+.include tl072_macro.lib
+VANA  vana 0  DC 11.4 SIN(11.4 0.1 150k) AC 1
+R9    vana vdiv 10k
+R10   vdiv 0    10k
+C5    vdiv 0    10u
+XU2A  vdiv vbuf vana 0 vbuf TL072X
+R11   vbuf vref 47
+C6    vref 0    47u
+RL    vref 0    2.2k        ; the six 10k/1k returns the gain stages hang on VREF
+.control
+set wr_singlescale
+set wr_vecnames
+op
+print v(vdiv) v(vref)
+ac dec 20 1 1meg
+wrdata vref_ac.txt vdb(vref) vdb(vdiv)
+tran 200n 200u 100u
+wrdata vref_tran.txt v(vref) v(vana)
+quit
+.endc
+.end

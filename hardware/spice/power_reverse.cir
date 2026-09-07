@@ -1,0 +1,15 @@
+* BLOCK 3b -- reverse polarity: -12 V applied. VPROT must stay near 0 V.
+.model D1N5822 D(IS=2e-6 N=1.05 RS=0.02 BV=40 IBV=1m CJO=180p)
+VIN   vin  0  DC -12
+D1    vin  vprot D1N5822
+C11   vprot 0 100u
+RBUCK vprot 0 60
+R15   vprot vana 10
+C13   vana 0 100u
+ROPA  vana 0 1.1k
+.control
+op
+print v(vprot) v(vana) i(vin)
+quit
+.endc
+.end

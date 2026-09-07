@@ -1,0 +1,21 @@
+* BLOCK 3 -- 12 V in -> D1 (1N5822) -> VPROT -> R15/C13 -> VANA, with 150 kHz 200 mVpp ripple
+.model D1N5822 D(IS=2e-6 N=1.05 RS=0.02 BV=40 IBV=1m CJO=180p)
+VIN   vin  0  DC 12 SIN(12 0.1 150k) AC 1
+D1    vin  vprot D1N5822
+C11   vprot 0 100u
+RBUCK vprot 0 60            ; LM2596 draws ~0.2 A at 12 V
+R15   vprot vana 10
+C13   vana 0 100u
+ROPA  vana 0 1.1k           ; two TL072 (~5 mA each) + dividers
+.control
+set wr_singlescale
+set wr_vecnames
+op
+print v(vprot) v(vana)
+ac dec 20 1 1meg
+wrdata power_ac.txt vdb(vana) vdb(vprot)
+tran 100n 300u 200u
+wrdata power_tran.txt v(vana) v(vprot)
+quit
+.endc
+.end

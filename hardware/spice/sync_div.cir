@@ -1,0 +1,16 @@
+* BLOCK 4 -- sync divider: ESP32 GPIO (3.3 V, 30 ohm) -> 10k/1k -> sound card R (AC-coupled 10k)
+VGPIO g   0  PULSE(0 3.3 0 10n 10n 6.4m 7.4m)
+RG    g   pin 30
+R23   pin audio_r 10k
+R24   audio_r 0   1k
+* sound card input: coupling cap + 10k, ~1.6 Hz corner  (some cards: 10 Hz -- try 1u)
+CCPL  audio_r sc 10u
+RSC   sc   0  10k
+.control
+set wr_singlescale
+set wr_vecnames
+tran 5u 60m 0
+wrdata sync_tran.txt v(audio_r) v(sc)
+quit
+.endc
+.end

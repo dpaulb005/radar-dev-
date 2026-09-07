@@ -1,0 +1,10 @@
+* Generic TL072-class op-amp macro model (single pole, GBW 3 MHz, Aol 100 dB,
+* output clamps 1.5 V inside each rail). Multisim: use the library TL072CP instead.
+.subckt TL072X inp inn vcc vee out
+Rin   inp inn 1e12
+E1    n1  0   inp inn 1e5
+R1    n1  n2  1k
+C1    n2  0   5.305u
+B1    n3  0   V = max(min(V(n2), V(vcc)-1.5), V(vee)+1.5)
+Rout  n3  out 100
+.ends

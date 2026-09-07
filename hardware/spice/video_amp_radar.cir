@@ -1,0 +1,35 @@
+* BLOCK 1b -- video amp with the REAL radar input: 12.5 Hz leakage (8 mVpk)
+* + 417 Hz drone echo (40 uVpk) at the mixer IF, full gain 101 x 11
+.include tl072_macro.lib
+VANA  vana 0  DC 11.4
+VREF  vref 0  DC 5.7
+VLEAK vs1  0  DC 0 SIN(0 8m 12.5)
+VECHO vs   vs1 DC 0 SIN(0 40u 417)
+RS    vs   if 50
+R1    if   0   49.9
+C20   if   0   1n
+C1    if   ap  100n
+R2    ap   vref 10k
+XU1A  ap   am  vana 0 aout TL072X
+R3    aout am  100k
+R4    am   vref 1k
+C2    aout bp  100n
+R6    bp   vref 10k
+XU1B  bp   bm  vana 0 bout TL072X
+R7    bout bm  10k
+R8    bm   vref 1k
+R12   bout lp  1k
+C9    lp   vref 10n
+XU2B  lp   obuf vana 0 obuf TL072X
+R13   obuf oiso 100
+C10   oiso audio 10u
+R14   audio 0  100k
+RLOAD audio 0  10k
+.control
+set wr_singlescale
+set wr_vecnames
+tran 20u 3.0 1.0
+wrdata tran_radar.txt v(audio) v(aout) v(bout)
+quit
+.endc
+.end
