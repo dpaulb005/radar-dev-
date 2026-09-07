@@ -45,6 +45,6 @@ sector edges taped on the floor.
 ## 5. If the phone link test fails
 
 The fallback hardware (a 915 MHz ELRS link, ~$130) is documented in
-[`drone-915.md`](drone-915.md). Do the link test in
+[`archive/drone-915.md`](archive/drone-915.md). Do the link test in
 [`drone-software.md`](drone-software.md) §4 first; it takes ten minutes and
 is the thing that tells you whether you need to spend anything at all.

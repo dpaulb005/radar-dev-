@@ -1,7 +1,7 @@
 # Fallback — esp-fc configuration for the 915 MHz link
 
 > **Not the current plan** (the drone is flown from the phone — see
-> [`drone-software.md`](drone-software.md)). This is the software half of the
+> [`drone-software.md`](../drone-software.md)). This is the software half of the
 > [`drone-915.md`](drone-915.md) fallback, used only if the WiFi/radar
 > coexistence test fails.
 

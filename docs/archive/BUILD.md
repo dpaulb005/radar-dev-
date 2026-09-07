@@ -1,9 +1,9 @@
 # Master build guide — full two-drone interception system
 
 > **Superseded for the current scope.** The active-radar build is now
-> documented step by step in [`radar-hardware.md`](radar-hardware.md),
-> [`radar-software.md`](radar-software.md), [`drone-hardware.md`](drone-hardware.md)
-> and [`drone-software.md`](drone-software.md). This page is the passive
+> documented step by step in [`radar-hardware.md`](../radar-hardware.md),
+> [`radar-software.md`](../radar-software.md), [`drone-hardware.md`](../drone-hardware.md)
+> and [`drone-software.md`](../drone-software.md). This page is the passive
 > two-drone plan and is kept for the interception stages (E–H), which still
 > apply once the radar tracks.
 
@@ -16,7 +16,7 @@ detailed docs together:
 - Radar bring-up detail → [`SETUP.md`](SETUP.md)
 - Interception architecture & guidance → [`interception.md`](interception.md)
 - Why RSSI (not reflection radar / mmWave) → [`feasibility.md`](feasibility.md)
-- Priced radar parts table → [`../hardware/BOM.md`](../hardware/BOM.md)
+- Priced radar parts table → [`../../hardware/BOM.md`](../../hardware/BOM.md)
 
 ---
 

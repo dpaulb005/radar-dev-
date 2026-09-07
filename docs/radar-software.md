@@ -192,7 +192,7 @@ python radar_acquire.py --device 3 --ctl /dev/ttyUSB0 --sector 100 --step 12 \
 
 Per scan the script sends `AZ` for each beam, waits for `OK AZ` (motion done
 plus settle), captures 64 chirps, runs CFAR, and after the last beam
-centroids across beams (`scanning.md` — 12° steps, 3× oversampling, measured
+centroids across beams (`archive/scanning.md` — 12° steps, 3× oversampling, measured
 2.5° azimuth RMS). One line per scan:
 
 ```
@@ -226,7 +226,7 @@ session (Record button) — the JSONL has every radar fix.
 
 ## 6. Once tracking: lock and dither (next software step)
 
-`scanning.md` measured that a locked 2-position dither (±half a beamwidth
+`archive/scanning.md` measured that a locked 2-position dither (±half a beamwidth
 around the target, compare amplitudes) revisits **4× faster** than the full
 sweep and is *more* accurate than reading a peak. `radar_acquire.py` does
 the full sweep only; the dither is the natural next addition — the ESP32

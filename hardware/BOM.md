@@ -100,7 +100,7 @@ sniffer boards, a UWB kit.
 Target: locate your own ESP32-equipped drone within a 5–10 m area, budget < $150.
 Prices are typical US street prices (AliExpress / Amazon, mid-2026).
 
-> **ESP-BLAST builders:** see `docs/espblast.md`. Your drone-side cost is $0
+> **ESP-BLAST builders:** see `docs/archive/espblast.md`. Your drone-side cost is $0
 > (one-line esp-fc patch) or ~$3 (row 6, piggyback beacon board). Upgrade A
 > (FTM) does **not** apply — the ESP-BLAST's WROOM-32 lacks FTM support.
 
@@ -138,13 +138,13 @@ S3 or C6 boards up front so both modes work.
 
 | # | Item | Qty | Unit | Total | Notes |
 |---|------|-----|------|-------|-------|
-| 9 | RX5808 5.8 GHz receiver module | 3 | $10 | $30 | Analog RSSI output read by an ESP32 ADC; tracks the FPV video carrier with zero drone modifications. Coarser than 2.4 GHz sniffing; see the note in `docs/espblast.md` and the RotorHazard project for the reference design. |
+| 9 | RX5808 5.8 GHz receiver module | 3 | $10 | $30 | Analog RSSI output read by an ESP32 ADC; tracks the FPV video carrier with zero drone modifications. Coarser than 2.4 GHz sniffing; see the note in `docs/archive/espblast.md` and the RotorHazard project for the reference design. |
 
 ## Explicitly NOT needed
 
 - **SDRs** (RTL-SDR, KrakenSDR, HackRF) — required only for true
   reflection-based passive radar, which doesn't work at this range/budget
-  (see `docs/feasibility.md`).
+  (see `docs/archive/feasibility.md`).
 - Directional antennas, LNAs, RF switches.
 
 ## Placement guidance

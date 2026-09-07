@@ -224,7 +224,7 @@ handle:
 |---|---|---|
 | ADF4351 sweep | no model; 2.4 GHz | `radar_ctl` status shows `lock:1`; a spectrum analyser or an RTL-SDR with a 30 dB pad sees the CW tone at `CW 2440` |
 | PA / LNA (SPF5189Z), splitter, mixer at RF | no models | the level budget in `docs/radar-hardware.md` §0, measured with a power meter or an SDR + pad at each SMA |
-| horns | electromagnetic, not circuit | `docs/LLM-DESIGN-PROMPT.md` §3: NanoVNA S11 ≤ −10 dB, S21 isolation ≤ −35 dB, gain by the two-antenna method |
+| horns | electromagnetic, not circuit | `docs/archive/LLM-DESIGN-PROMPT.md` §3: NanoVNA S11 ≤ −10 dB, S21 isolation ≤ −35 dB, gain by the two-antenna method |
 | ESP32 / A4988 / stepper | digital + motor | bench: `AZ 30`, protractor |
 
 The rule of thumb: everything left of the mixer's IF port in the schematic

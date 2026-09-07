@@ -173,7 +173,7 @@ control glitches. Record it (console Record button).
 Only if checkpoint 4 fails. It costs ~$130 (RadioMaster Pocket + Bandit Nano
 915 module + a 0.7 g Nano 915 receiver — your T8L has no module bay and
 cannot do 900 MHz) and switches the drone to esp-fc with a CRSF receiver.
-The full procedure is kept in [`drone-915.md`](drone-915.md); the esp-fc CLI
+The full procedure is kept in [`archive/drone-915.md`](archive/drone-915.md); the esp-fc CLI
 settings are in `firmware/espfly/espfly-915.cli`. It also gives you back the
 full 80 MHz sweep.
 

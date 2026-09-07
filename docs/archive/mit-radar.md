@@ -1,10 +1,10 @@
 # Building the MIT radar with a custom antenna — full plan
 
-> **Build it from the step-by-step guides:** [`radar-hardware.md`](radar-hardware.md)
-> and [`radar-software.md`](radar-software.md). The parts list in §4 below
+> **Build it from the step-by-step guides:** [`radar-hardware.md`](../radar-hardware.md)
+> and [`radar-software.md`](../radar-software.md). The parts list in §4 below
 > predates the September 2026 sourcing check — the ZX95 VCO is non-catalog
 > and two Mini-Circuits parts are out of stock; the current, priced list is
-> [`../hardware/BOM.md`](../hardware/BOM.md).
+> [`../../hardware/BOM.md`](../../hardware/BOM.md).
 
 
 **Read this first, then `Phase 0`. Nothing here needs you to buy anything until

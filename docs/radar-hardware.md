@@ -7,7 +7,7 @@ with a checkpoint. Do not skip checkpoints.
 Companion pages: [`radar-software.md`](radar-software.md) (what runs on it),
 [`../hardware/BOM.md`](../hardware/BOM.md) (priced parts), the 3-D model of
 the finished assembly (published artifact "Horn-Fed Radar Assembly"),
-[`antenna.md`](antenna.md) (why the horn is that shape).
+[`archive/antenna.md`](archive/antenna.md) (why the horn is that shape).
 
 ---
 
@@ -35,7 +35,7 @@ the one trade-off in [`radar-software.md`](radar-software.md) §1).
 
 **Band:** the sweep is 2400–2483.5 MHz, the ISM band, *not* MIT's 2.36–2.50
 GHz (2360–2395 MHz is licensed aeronautical telemetry — see
-[`mit-radar.md`](mit-radar.md) §1). 83.5 MHz → 1.80 m range resolution.
+[`archive/mit-radar.md`](archive/mit-radar.md) §1). 83.5 MHz → 1.80 m range resolution.
 
 **Three stages, same RF chain:**
 
@@ -191,7 +191,7 @@ Total gain ≈ 61 dB. A 10 m drone echo (≈ −78 dBm at the IF) comes out at
 ~20 mV; leakage comes out at ~200 mV; nothing clips a line input.
 
 Two things the breadboard drawing above leaves out that the reviewed carrier
-PCB (`docs/reviews/radar-carrier-v1.md`) should add and you should too:
+PCB (`docs/archive/reviews/radar-carrier-v1.md`) should add and you should too:
 **49.9 Ω from the IF to ground** right at the input (the mixer's IF port wants
 a 50 Ω load; without it the conversion loss and flatness wander), and a
 **1 nF ceramic from the IF to ground** beside it. The mixer leaks LO at
