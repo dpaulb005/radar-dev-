@@ -1,0 +1,12 @@
+harness sync
+.include sync_div.sub
+VG g 0 PULSE(0 3.3 0 10n 10n 6.4m 7.4m)
+X1 g sync sc 0 SYNC_DIV
+.control
+set wr_singlescale
+set wr_vecnames
+tran 5u 60m 0
+wrdata h_sync.txt v(sync) v(sc)
+quit
+.endc
+.end

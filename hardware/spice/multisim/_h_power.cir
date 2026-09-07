@@ -1,0 +1,12 @@
+harness power
+.include power_in.sub
+VIN vin 0 DC 12
+X1 vin vprot vana 0 POWER_IN
+RB vprot 0 60
+RO vana 0 1.1k
+.control
+op
+print v(vprot) v(vana)
+quit
+.endc
+.end

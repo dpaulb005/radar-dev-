@@ -1,0 +1,11 @@
+* BLOCK 2 -- buffered half-rail reference.  Pins: VANA in, VREF out, GND.
+.include opamp_tl072.sub
+.subckt VREF_BIAS vana vref gnd
+R9    vana vdiv 10k
+R10   vdiv gnd  10k
+C5    vdiv gnd  10u
+XU2A  vdiv vbuf vana gnd vbuf TL072X
+R11   vbuf vref 47
+C6    vref gnd  47u
+C7    vana gnd  100n
+.ends

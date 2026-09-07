@@ -1,0 +1,11 @@
+harness vref
+.include vref_bias.sub
+VANA vana 0 DC 11.4
+X1 vana vref 0 VREF_BIAS
+RL vref 0 2.2k
+.control
+op
+print v(vref)
+quit
+.endc
+.end

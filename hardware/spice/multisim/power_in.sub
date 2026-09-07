@@ -1,0 +1,8 @@
+* BLOCK 3 -- 12 V input protection and VANA filter.  Pins: VIN (12 V), VPROT (to buck), VANA, GND.
+.subckt POWER_IN vin vprot vana gnd
+.model D1N5822 D(IS=2e-6 N=1.05 RS=0.02 BV=40 IBV=1m CJO=180p)
+D1    vin   vprot D1N5822
+C11   vprot gnd   100u
+R15   vprot vana  10
+C13   vana  gnd   100u
+.ends

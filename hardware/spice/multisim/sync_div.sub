@@ -1,0 +1,8 @@
+* BLOCK 4 -- sync divider + sound-card input model.  Pins: GPIO (3.3 V pulse), SYNC (0.3 V), SC (after coupling), GND.
+.subckt SYNC_DIV gpio sync sc gnd
+RG    gpio pin  30
+R23   pin  sync 10k
+R24   sync gnd  1k
+CCPL  sync sc   10u
+RSC   sc   gnd  10k
+.ends

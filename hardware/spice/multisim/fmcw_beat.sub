@@ -1,0 +1,24 @@
+* BLOCK 5 -- the radar as a behavioural model, scaled (B = 4 MHz, delay 667 ns -> 417 Hz at "10 m").
+* Pins: TX (the chirp, from a Multisim VCO: 1 -> 5 MHz over 6.4 ms, 1 Vpk), LEAK_EN (DC 0 or 1),
+*       BEAT (after the amp's LP + two HPs), GND.
+* Multiplier and gating done with POLY sources so it is plain SPICE 3 (no B-sources).
+.subckt FMCW_BEAT tx leak_en beat gnd
+* echo path: ideal delay line then x 0.01
+T1    tx gnd rxd gnd Z0=50 TD=667n
+RT1   rxd gnd 50
+E1    echo gnd rxd gnd 0.01
+* leakage path: 20 ns, gated by LEAK_EN (product of two voltages)
+T2    tx gnd lkd gnd Z0=50 TD=20n
+RT2   lkd gnd 50
+E2    leak gnd POLY(2) (lkd,gnd) (leak_en,gnd) 0 0 0 0 1
+* sum, then the mixer = multiplier
+E3    sum  gnd POLY(2) (echo,gnd) (leak,gnd) 0 1 1
+E4    ifm  gnd POLY(2) (tx,gnd) (sum,gnd) 0 0 0 0 1
+* 15.9 kHz low-pass, then the two 159 Hz high-passes of the video amp
+R12   ifm  ifl 1k
+C9    ifl  gnd 10n
+C1    ifl  hp1 100n
+R2    hp1  gnd 10k
+C2    hp1  beat 100n
+R6    beat gnd 10k
+.ends

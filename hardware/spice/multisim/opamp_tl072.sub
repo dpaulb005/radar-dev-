@@ -1,0 +1,17 @@
+* TL072-class op-amp for Multisim's Arbitrary SPICE Block (plain SPICE 3, no B-sources)
+* Aol 100 dB, GBW 3 MHz, output clamped 1.5 V inside each rail.
+* In Multisim itself prefer the library TL072CP; this is for netlist-only use.
+.subckt TL072X inp inn vcc vee out
+Rin   inp inn 1e12
+E1    n1  0   inp inn 1e5
+R1    n1  n2  1k
+C1    n2  0   5.305u
+E2    n3  0   n2  0   1
+Rout  n3  out 100
+* clamps
+Vch   vcc chp DC 1.5
+Dch   out chp DCLAMP
+Vcl   chn vee DC 1.5
+Dcl   chn out DCLAMP
+.model DCLAMP D(IS=1e-12 N=0.05)
+.ends

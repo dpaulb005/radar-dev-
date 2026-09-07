@@ -1,0 +1,18 @@
+harness video_amp
+.include video_amp.sub
+VANA vana 0 DC 11.4
+VREF vref 0 DC 5.7
+VIN  vs 0 DC 0 SIN(0 10m 1k) AC 1
+RS   vs if 50
+X1   if audio vana vref 0 VIDEO_AMP
+RL   audio 0 10k
+.control
+set wr_singlescale
+set wr_vecnames
+ac dec 40 1 100k
+wrdata h_video_ac.txt vdb(audio)
+tran 5u 60m 40m
+wrdata h_video_tr.txt v(audio)
+quit
+.endc
+.end

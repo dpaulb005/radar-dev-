@@ -1,0 +1,25 @@
+* BLOCK 1 -- video amplifier.  Pins: IF (mixer IF, 50-ohm source outside), AUDIO (line out),
+* VANA (11.4 V), VREF (5.7 V), GND.  Paste into an Arbitrary SPICE Block, or .include it.
+* Gain jumpers: R4 1k -> A=101 (4.7k -> 22); R7 10k -> B=11 (short -> 1).
+.include opamp_tl072.sub
+.subckt VIDEO_AMP if audio vana vref gnd
+R1    if   gnd  49.9
+C20   if   gnd  1n
+C1    if   ap   100n
+R2    ap   vref 10k
+XU1A  ap   am   vana gnd aout TL072X
+R3    aout am   100k
+R4    am   vref 1k
+C2    aout bp   100n
+R6    bp   vref 10k
+XU1B  bp   bm   vana gnd bout TL072X
+R7    bout bm   10k
+R8    bm   vref 1k
+R12   bout lp   1k
+C9    lp   vref 10n
+XU2B  lp   obuf vana gnd obuf TL072X
+R13   obuf oiso 100
+C10   oiso audio 10u
+R14   audio gnd 100k
+C3    vana gnd  100n
+.ends

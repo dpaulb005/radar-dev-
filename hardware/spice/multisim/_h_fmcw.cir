@@ -1,0 +1,14 @@
+harness fmcw (ngspice only: the chirp needs a B-source here; in Multisim use the VCO block)
+.include fmcw_beat.sub
+.param T=6.4m F0=1meg B=4meg
+B1   tx 0 V = cos(2*pi*(F0*(time-T*floor(time/T)) + 0.5*(B/T)*(time-T*floor(time/T))*(time-T*floor(time/T))))
+VLK  lk 0 DC 0
+X1   tx lk beat 0 FMCW_BEAT
+.control
+set wr_singlescale
+set wr_vecnames
+tran 10n 12.8m 0 10n
+wrdata h_fmcw.txt v(beat)
+quit
+.endc
+.end
