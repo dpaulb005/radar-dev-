@@ -1,0 +1,419 @@
+<title>Radar Bench Model</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+  :root{
+    color-scheme: light;
+    --bg:#e8ecf1; --surface:#f8fafc; --surface-2:#eef2f6;
+    --ink:#0f151c; --ink-2:#3b4653; --muted:#69757f;
+    --rule:#c3ccd6; --hair:#d7dee6;
+    --rf:#c2622a; --dsp:#2f77b0; --ok:#22794c; --link:#6a4fbf; --pow:#b8860b;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme: dark;
+      --bg:#0b1015; --surface:#131b23; --surface-2:#18222c;
+      --ink:#e6ecf2; --ink-2:#b7c2cc; --muted:#8593a0; --rule:#2c3946; --hair:#222d38;
+      --rf:#e59055; --dsp:#6fb0e6; --ok:#5cc48f; --link:#a893ee; --pow:#e0b04a;
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --bg:#0b1015; --surface:#131b23; --surface-2:#18222c;
+    --ink:#e6ecf2; --ink-2:#b7c2cc; --muted:#8593a0; --rule:#2c3946; --hair:#222d38;
+    --rf:#e59055; --dsp:#6fb0e6; --ok:#5cc48f; --link:#a893ee; --pow:#e0b04a;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);margin:0;font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:14px;line-height:1.5}
+  #app{display:grid;grid-template-columns:1fr 330px;grid-template-rows:auto 1fr;height:100vh;min-height:640px}
+  header{grid-column:1/3;padding:14px 20px 10px;border-bottom:1px solid var(--rule);background:var(--surface);display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+  header h1{font-family:"IBM Plex Serif",Georgia,serif;font-weight:600;font-size:22px;margin:0;letter-spacing:-.01em}
+  header .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--rf)}
+  header .sub{color:var(--ink-2);font-size:13px}
+  #vp{position:relative;background:#0a0e13;overflow:hidden}
+  #cv{display:block;width:100%;height:100%}
+  #hud{position:absolute;left:12px;top:12px;display:flex;gap:6px;flex-wrap:wrap;max-width:calc(100% - 24px)}
+  button{font:inherit;font-size:12.5px;padding:6px 11px;border:1px solid var(--rule);background:var(--surface);color:var(--ink);cursor:pointer;border-radius:3px}
+  button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  button.grp{border-radius:0} button.grp:first-child{border-radius:3px 0 0 3px} button.grp:last-child{border-radius:0 3px 3px 0}
+  .grpwrap{display:flex}
+  #tip{position:absolute;pointer-events:none;background:rgba(15,21,28,.92);color:#e6ecf2;font-family:"IBM Plex Mono",monospace;font-size:11.5px;padding:5px 8px;border-radius:3px;border:1px solid #3a4a5a;white-space:nowrap;opacity:0;transform:translate(-50%,-130%)}
+  .lbl{position:absolute;transform:translate(-50%,-50%);pointer-events:none;font-family:"IBM Plex Mono",monospace;font-size:10.5px;padding:1px 5px;border-radius:2px;background:rgba(15,21,28,.78);color:#dfe6ee;border:1px solid rgba(255,255,255,.14);white-space:nowrap;opacity:0;transition:opacity .15s}
+  .lbl.rf{color:#f0a878;border-color:rgba(240,168,120,.45)} .lbl.dsp{color:#89c2ea;border-color:rgba(137,194,234,.45)} .lbl.ok{color:#7ed6a6;border-color:rgba(126,214,166,.45)} .lbl.pow{color:#f2c86a;border-color:rgba(242,200,106,.45)}
+  #status{position:absolute;left:12px;bottom:10px;font-family:"IBM Plex Mono",monospace;font-size:11px;color:#8593a0}
+  aside{background:var(--surface);border-left:1px solid var(--rule);overflow-y:auto;padding:12px 14px 30px}
+  aside h2{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px;font-weight:500}
+  aside h2:first-child{margin-top:2px}
+  .row{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:baseline;padding:5px 6px;border-radius:3px;cursor:pointer;font-size:12.5px;border:1px solid transparent}
+  .row:hover{background:var(--surface-2)} .row.sel{border-color:var(--rf);background:var(--surface-2)}
+  .row .n{font-family:"IBM Plex Mono",monospace;color:var(--muted);font-size:11px}
+  .row .q{font-family:"IBM Plex Mono",monospace;color:var(--muted);font-size:11px;white-space:nowrap}
+  .row.na{opacity:.6;cursor:default} .row small{display:block;color:var(--muted);font-size:11px}
+  .total{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-2);padding:8px 6px;border-top:1px solid var(--rule);margin-top:10px}
+  .legend{font-size:12px;color:var(--ink-2);margin:6px 0 0}
+  .sw{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:4px}
+  @media (max-width:900px){#app{grid-template-columns:1fr;grid-template-rows:auto 60vh 1fr} header{grid-column:1} aside{border-left:0;border-top:1px solid var(--rule)}}
+</style>
+
+<div id="app">
+  <header>
+    <div><div class="eyebrow">horn-fed FMCW radar · every BOM row · the breadboard, hole by hole</div><h1>Radar Bench Model</h1></div>
+    <div class="sub">Drag to orbit · scroll to zoom · click a BOM row to fly to the part · hover anything for its name.</div>
+  </header>
+  <section id="vp">
+    <canvas id="cv"></canvas>
+    <div id="hud">
+      <div class="grpwrap"><button class="grp on" data-stage="1">1 · fixed pair</button><button class="grp" data-stage="2">2 · turntable</button><button class="grp" data-stage="3">3 · stacked RX</button></div>
+      <button id="b-bench" class="on">Bench</button><button id="b-bb">Breadboard</button><button id="b-room">Room + drone</button>
+      <button id="b-labels" class="on">Labels</button><button id="b-coax" class="on">Coax</button>
+    </div>
+    <div id="tip"></div>
+    <div id="status"></div>
+  </section>
+  <aside id="bom"></aside>
+</div>
+
+<script>
+(function(){
+// =====================================================================
+// setup
+// =====================================================================
+const cv=document.getElementById('cv'), vp=document.getElementById('vp'), tip=document.getElementById('tip');
+const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x0a0e13); scene.fog=new THREE.Fog(0x0a0e13,4,14);
+const camera=new THREE.PerspectiveCamera(40,1,0.01,60);
+scene.add(new THREE.HemisphereLight(0xa8bfd2,0x1a2129,0.9));
+const key=new THREE.DirectionalLight(0xffffff,0.9); key.position.set(1.5,2.6,1.8); scene.add(key);
+const rim=new THREE.DirectionalLight(0xe59055,0.3); rim.position.set(-2,1.2,-1.5); scene.add(rim);
+
+const M={
+  metal:new THREE.MeshStandardMaterial({color:0xb9c3cc,metalness:.72,roughness:.34,side:THREE.DoubleSide}),
+  metalIn:new THREE.MeshStandardMaterial({color:0x6a757f,metalness:.55,roughness:.42,side:THREE.BackSide}),
+  alu:new THREE.MeshStandardMaterial({color:0xaab3ba,metalness:.6,roughness:.45}),
+  wood:new THREE.MeshStandardMaterial({color:0x9a7c52,roughness:.85}),
+  pcb:new THREE.MeshStandardMaterial({color:0x1f5d3a,roughness:.75}),
+  pcbBlue:new THREE.MeshStandardMaterial({color:0x1b3f7a,roughness:.75}),
+  pcbRed:new THREE.MeshStandardMaterial({color:0x7a1f1f,roughness:.75}),
+  dark:new THREE.MeshStandardMaterial({color:0x27313a,metalness:.3,roughness:.6}),
+  black:new THREE.MeshStandardMaterial({color:0x111418,roughness:.6}),
+  rf:new THREE.MeshStandardMaterial({color:0xc2622a,metalness:.35,roughness:.5}),
+  dsp:new THREE.MeshStandardMaterial({color:0x2f77b0,metalness:.3,roughness:.5}),
+  ok:new THREE.MeshStandardMaterial({color:0x2c9c68,metalness:.3,roughness:.5}),
+  coax:new THREE.MeshStandardMaterial({color:0x30383f,metalness:.4,roughness:.5}),
+  coaxRx:new THREE.MeshStandardMaterial({color:0x2a4a6a,metalness:.4,roughness:.5}),
+  sma:new THREE.MeshStandardMaterial({color:0xd4b25a,metalness:.8,roughness:.3}),
+  bb:new THREE.MeshStandardMaterial({color:0xf2f0e6,roughness:.9}),
+  hole:new THREE.MeshStandardMaterial({color:0x3a3a3a,roughness:.9}),
+  res:new THREE.MeshStandardMaterial({color:0xd9c39a,roughness:.7}),
+  film:new THREE.MeshStandardMaterial({color:0xd8b53a,roughness:.7}),
+  cer:new THREE.MeshStandardMaterial({color:0xd08a3a,roughness:.7}),
+  elec:new THREE.MeshStandardMaterial({color:0x1d2330,roughness:.6}),
+  lead:new THREE.MeshStandardMaterial({color:0xc9ccd0,metalness:.7,roughness:.4}),
+  copper:new THREE.MeshStandardMaterial({color:0xb87333,metalness:.7,roughness:.4}),
+  screen:new THREE.MeshStandardMaterial({color:0x0b1a2a,emissive:0x0e2a44,roughness:.4}),
+  brick:new THREE.MeshStandardMaterial({color:0x2b2f34,roughness:.7}),
+  rubber:new THREE.MeshStandardMaterial({color:0x1a1a1a,roughness:.95}),
+  glow:new THREE.MeshStandardMaterial({color:0xffc06a,emissive:0xff9a2a,emissiveIntensity:.9,transparent:true,opacity:.85}),
+};
+const pickables=[], labels=[], registry={};      // registry: bomId -> [meshes]
+function reg(id,obj,name,cls){ obj.userData.bom=id; obj.userData.name=name||id; if(cls) obj.userData.cls=cls; (registry[id]=registry[id]||[]).push(obj); obj.traverse(o=>{ if(o.isMesh){ o.userData.bom=id; o.userData.name=obj.userData.name; pickables.push(o);} }); return obj; }
+function box(w,h,d,mat){ return new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat); }
+function cyl(r,h,mat,seg=16){ return new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,seg),mat); }
+function at(m,x,y,z){ m.position.set(x,y,z); return m; }
+function addLabel(obj,text,cls,off){ const el=document.createElement('div'); el.className='lbl '+(cls||''); el.textContent=text; vp.appendChild(el); labels.push({el,obj,off:off||new THREE.Vector3(0,.02,0)}); }
+
+// =====================================================================
+// the board and the room
+// =====================================================================
+const BW=0.457, BD=0.381, BT=0.018, TOP=BT;
+const world=new THREE.Group(); scene.add(world);
+const grid=new THREE.GridHelper(4,20,0x2b3742,0x1a232b); scene.add(grid);
+const bench=new THREE.Group(); world.add(bench);
+reg('D17', at(box(BW,BT,BD,M.wood),0,BT/2,0), 'plywood board 18" x 15"');
+bench.add(registry.D17[0]);
+
+// SMA port helper: small gold cylinder along +axis
+function sma(len=0.009){ const g=new THREE.Group(); const b=cyl(0.0032,len,M.sma,12); b.rotation.z=Math.PI/2; b.position.x=len/2; g.add(b); const n=cyl(0.0042,0.004,M.sma,6); n.rotation.z=Math.PI/2; n.position.x=len-0.002; g.add(n); return g; }
+function module(w,h,d,mat,ports){ // ports: [{side:'l'|'r'|'b'|'f', y, off}]
+  const g=new THREE.Group(); const body=box(w,h,d,mat); body.position.y=h/2; g.add(body); g.userData.ports={};
+  (ports||[]).forEach(p=>{ const s=sma(); const y=(p.y!==undefined?p.y:h/2); if(p.side==='r'){ s.position.set(w/2,y,p.off||0);} else if(p.side==='l'){ s.rotation.y=Math.PI; s.position.set(-w/2,y,p.off||0);} else if(p.side==='b'){ s.rotation.y=Math.PI/2; s.position.set(p.off||0,y,-d/2);} else { s.rotation.y=-Math.PI/2; s.position.set(p.off||0,y,d/2);} g.add(s); g.userData.ports[p.name]=s; });
+  return g;
+}
+function portWorld(mod,name){ const s=mod.userData.ports[name]; const v=new THREE.Vector3(0.009,0,0); s.localToWorld(v); return v; }
+
+// --- RF chain, in MIT order, back row of the board (z = -0.04) ---
+const RZ=-0.045;
+const adf=module(0.055,0.012,0.036,M.pcb,[{name:'out',side:'r',y:0.006,off:0.008}]); at(adf,-0.19,TOP,RZ); bench.add(adf); reg('A2',adf,'ADF4351 board — the sweep source, +5 dBm','rf');
+adf.add(at(cyl(0.0035,0.003,M.sma,8),-0.012,0.0135,-0.008)); // TCXO can-ish
+const hdrA=box(0.020,0.008,0.0025,M.black); hdrA.position.set(-0.015,0.016,0.016); adf.add(hdrA);
+const att=module(0.028,0.010,0.010,M.dark,[{name:'in',side:'l'},{name:'out',side:'r'}]); at(att,-0.135,TOP+0.010,RZ+0.006); bench.add(att); reg('A5',att,'3 dB attenuator, SMA inline','rf');
+const pa=module(0.040,0.012,0.028,M.pcbBlue,[{name:'in',side:'l',y:0.006},{name:'out',side:'r',y:0.006}]); at(pa,-0.085,TOP,RZ); bench.add(pa); reg('A3a',pa,'PA — SPF5189Z module, +12 dB','rf');
+pa.add(at(box(0.018,0.004,0.014,M.alu),0,0.014,0)); // shield can
+const spl=module(0.032,0.014,0.022,M.alu,[{name:'s',side:'l'},{name:'o1',side:'r',off:-0.006},{name:'o2',side:'r',off:0.006}]); at(spl,-0.030,TOP,RZ); bench.add(spl); reg('A4',spl,'2-way splitter, 800–2500 MHz','rf');
+const mix=module(0.020,0.012,0.020,M.alu,[{name:'lo',side:'l'},{name:'rf',side:'r'},{name:'if',side:'f'}]); at(mix,0.040,TOP,RZ+0.004); bench.add(mix); reg('A1',mix,'mixer ZX05-43MH-S+ — LO · RF · IF','rf');
+const lna=module(0.040,0.012,0.028,M.pcbBlue,[{name:'out',side:'l',y:0.006},{name:'in',side:'r',y:0.006}]); at(lna,0.100,TOP,RZ); bench.add(lna); reg('A3b',lna,'LNA — SPF5189Z module, NF ~1 dB','rf');
+lna.add(at(box(0.018,0.004,0.014,M.alu),0,0.014,0));
+const bpf=module(0.050,0.012,0.012,M.alu,[{name:'out',side:'l'},{name:'in',side:'r'}]); at(bpf,0.160,TOP+0.006,RZ+0.006); bench.add(bpf); reg('A7b',bpf,'band-pass 2400–2500 MHz, SMA inline','rf');
+addLabel(adf,'ADF4351','rf'); addLabel(att,'3 dB pad','rf'); addLabel(pa,'PA','rf'); addLabel(spl,'splitter','rf'); addLabel(mix,'mixer','rf'); addLabel(lna,'LNA','rf'); addLabel(bpf,'band-pass','rf');
+
+// --- horns ---
+const GW=0.0864/2, GH=0.0432/2, AW=0.2638/2, AH=0.1931/2, FL=0.0915, GL=0.115;
+function flareGeom(){ const g=[[-GW,-GH,0],[GW,-GH,0],[GW,GH,0],[-GW,GH,0]], a=[[-AW,-AH,FL],[AW,-AH,FL],[AW,AH,FL],[-AW,AH,FL]]; const pos=[]; for(let i=0;i<4;i++){const j=(i+1)%4; pos.push(...g[i],...g[j],...a[j],...g[i],...a[j],...a[i]);} const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); geo.computeVertexNormals(); return geo; }
+const FLARE=flareGeom();
+function horn(tintMat){ const g=new THREE.Group();
+  g.add(new THREE.Mesh(FLARE,M.copper)); const inner=new THREE.Mesh(FLARE,M.metalIn); inner.scale.set(.985,.985,1); g.add(inner);
+  const guide=box(GW*2,GH*2,GL,M.copper); guide.position.z=-GL/2; g.add(guide);
+  const RB=0.008; [[0,AH+RB/2],[0,-AH-RB/2]].forEach(([x,y])=>{const m=box(AW*2+RB*2,RB,0.004,tintMat); m.position.set(x,y,FL); g.add(m);});
+  [[AW+RB/2,0],[-AW-RB/2,0]].forEach(([x,y])=>{const m=box(RB,AH*2,0.004,tintMat); m.position.set(x,y,FL); g.add(m);});
+  // SMA flange + probe at 43.7 mm from the back wall, on the broad (top) wall
+  const fl=box(0.0127,0.0016,0.0127,M.sma); fl.position.set(0,GH+0.0008,-GL+0.0437); g.add(fl);
+  const p=sma(0.009); p.rotation.z=Math.PI/2; p.position.set(0,GH+0.0016,-GL+0.0437); g.add(p);
+  const probe=cyl(0.0008,0.028,M.copper,6); probe.position.set(0,GH-0.014,-GL+0.0437); g.add(probe); g.userData.feed=p;
+  return g; }
+const HY=0.30, HZ=-0.135;
+const stage1=new THREE.Group(), stage23=new THREE.Group(); bench.add(stage1,stage23);
+const h1tx=horn(M.rf), h1rx=horn(M.dsp); h1tx.position.set(-0.145,HY,HZ); h1rx.position.set(0.145,HY,HZ); h1tx.rotation.y=Math.PI; h1rx.rotation.y=Math.PI; stage1.add(h1tx,h1rx);
+[-0.145,0.145].forEach(x=>{ const post=box(0.016,HY-0.02,0.016,M.dark); post.position.set(x,TOP+(HY-0.02)/2,HZ-0.10); stage1.add(post); const br=box(0.03,0.002,0.03,M.alu); br.position.set(x,TOP+0.001,HZ-0.10); stage1.add(br); });
+reg('B8',h1tx,'TX horn — 0.021" copper, 264 × 193 mm mouth','rf'); reg('B8',h1rx,'RX horn — same, E-plane vertical','dsp');
+addLabel(h1tx,'TX horn','rf',new THREE.Vector3(0,AH+.03,0)); addLabel(h1rx,'RX horn','dsp',new THREE.Vector3(0,AH+.03,0));
+// turntable (stage 2/3): NEMA-17 + lazy susan + mast + plate
+const nema=box(0.042,0.042,0.042,M.black); nema.position.set(0,TOP+0.021,HZ-0.10); stage23.add(nema); reg('D18a',nema,'NEMA-17 stepper','ok');
+const shaft=cyl(0.0025,0.02,M.lead,8); shaft.position.set(0,TOP+0.052,HZ-0.10); stage23.add(shaft);
+const susan=cyl(0.075,0.008,M.alu,32); susan.position.set(0,TOP+0.046,HZ-0.10); stage23.add(susan); reg('D18b',susan,'lazy-susan bearing 150 mm','ok');
+const rotG=new THREE.Group(); rotG.position.set(0,TOP+0.050,HZ-0.10); stage23.add(rotG);
+const plate=cyl(0.09,0.006,M.wood,32); plate.position.y=0.003; rotG.add(plate);
+const mast=cyl(0.011,HY-0.06,M.dark,12); mast.position.y=(HY-0.06)/2; rotG.add(mast);
+const yoke=box(0.34,0.012,0.03,M.dark); yoke.position.set(0,HY-TOP-0.05,0.0); rotG.add(yoke);
+const h2tx=horn(M.rf), h2rx=horn(M.dsp); h2tx.position.set(-0.145,HY-TOP-0.05,-0.02); h2rx.position.set(0.145,HY-TOP-0.05,-0.02); h2tx.rotation.y=Math.PI; h2rx.rotation.y=Math.PI; rotG.add(h2tx,h2rx);
+reg('B8',h2tx,'TX horn (on the turntable)','rf'); reg('B8',h2rx,'RX horn (on the turntable)','dsp');
+addLabel(h2tx,'TX horn','rf',new THREE.Vector3(0,AH+.03,0)); addLabel(h2rx,'RX horn','dsp',new THREE.Vector3(0,AH+.03,0));
+const h3=horn(M.ok); h3.position.set(0.145,HY-TOP-0.05-0.1931,-0.02); h3.rotation.y=Math.PI; rotG.add(h3); reg('F24',h3,'3rd horn — RX 2, 193 mm below RX 1','ok'); addLabel(h3,'RX 2','ok',new THREE.Vector3(0,-AH-.03,0));
+const a4988=box(0.020,0.004,0.015,M.pcbRed); a4988.position.set(0.19,TOP+0.002,0.15); bench.add(a4988); reg('D18c',a4988,'A4988 stepper driver','ok'); addLabel(a4988,'A4988','ok');
+const susanCable=[]; // stepper wire
+const stepWire=tube([new THREE.Vector3(0.19,TOP+0.006,0.15),new THREE.Vector3(0.21,TOP+0.03,0.05),new THREE.Vector3(0.06,TOP+0.03,-0.20),new THREE.Vector3(0.021,TOP+0.03,HZ-0.10)],0.0015,M.rubber); stage23.add(stepWire);
+
+// --- breadboard ---
+const BBW=0.165, BBD=0.055, BBH=0.009, PITCH=0.00254;
+const bbG=new THREE.Group(); bbG.position.set(-0.075,TOP,0.085); bench.add(bbG);
+const bbBody=box(BBW,BBH,BBD,M.bb); bbBody.position.y=BBH/2; bbG.add(bbBody); reg('C15a',bbBody,'830-point breadboard','dsp');
+// hole grid: columns 1..63 along x, rows a-e (z from -0.01 to -0.0002) and f-j; rails top/bottom
+const COL0=-BBW/2+0.006; const rowZ={};
+'abcde'.split('').forEach((r,i)=>rowZ[r]=-0.0127+i*PITCH+0.0025); 'fghij'.split('').forEach((r,i)=>rowZ[r]=0.0025+i*PITCH+0.0005);
+rowZ['R1']=-0.0235; rowZ['R2']=-0.0235+PITCH; rowZ['R3']=0.0235-PITCH; rowZ['R4']=0.0235;
+function hx(col){ return COL0+(col-1)*PITCH; }
+const holeGeo=new THREE.BoxGeometry(0.0009,0.0006,0.0009); const holes=new THREE.InstancedMesh(holeGeo,M.hole,63*10+4*60); let hi=0; const hm=new THREE.Matrix4();
+for(let c=1;c<=63;c++) for(const r of 'abcdefghij'){ hm.makeTranslation(hx(c),BBH+0.0002,rowZ[r]); holes.setMatrixAt(hi++,hm); }
+for(let c=1;c<=60;c++) for(const r of ['R1','R2','R3','R4']){ hm.makeTranslation(hx(c+1.5),BBH+0.0002,rowZ[r]); holes.setMatrixAt(hi++,hm); }
+holes.count=hi; bbG.add(holes);
+const chan=box(BBW,0.0008,0.004,M.hole); chan.position.set(0,BBH-0.0003,-0.0002+0.0025-0.0025); bbG.add(chan);
+// rail stripes
+[['R1',0xc84b3a],['R2',0x3a5fc8],['R3',0xc84b3a],['R4',0x3a5fc8]].forEach(([r,c])=>{ const s=box(BBW-0.01,0.0003,0.0008,new THREE.MeshStandardMaterial({color:c})); s.position.set(0,BBH+0.0001,rowZ[r]+(r==='R1'||r==='R3'?-0.0018:0.0018)); bbG.add(s); });
+
+// component builders (positions in hole coordinates)
+const BANDS={0:0x000000,1:0x8b4513,2:0xd22,3:0xf80,4:0xee0,5:0x2a2,6:0x22d,7:0x82a,8:0x888,9:0xfff};
+function bandColors(val){ // '49.9'|'10k'|'100k'|'1k'|'47'|'100'|'10'
+  let v=parseFloat(val); if(/k/.test(val)) v*=1e3; if(/M/.test(val)) v*=1e6; const e=Math.floor(Math.log10(v))-1; const s=Math.round(v/Math.pow(10,e)); return [Math.floor(s/10)%10, s%10, Math.max(e,0)]; }
+function resistor(val,vertical){ const g=new THREE.Group(); const body=cyl(0.0012,0.0064,M.res,10); body.rotation.z=Math.PI/2; g.add(body);
+  bandColors(val).concat([null]).forEach((d,i)=>{ const b=cyl(0.00125,0.0006,new THREE.MeshStandardMaterial({color:d===null?0xd4a017:BANDS[d]}),10); b.rotation.z=Math.PI/2; b.position.x=-0.0022+i*0.0011; g.add(b); });
+  const l1=cyl(0.0003,0.0075,M.lead,5); l1.rotation.z=Math.PI/2; l1.position.x=-0.006; g.add(l1); const l2=l1.clone(); l2.position.x=0.006; g.add(l2);
+  return g; }
+function filmCap(){ const g=new THREE.Group(); const b=box(0.0045,0.006,0.0025,M.film); b.position.y=0.004; g.add(b); [-0.00127,0.00127].forEach(x=>{const l=cyl(0.0003,0.004,M.lead,5); l.position.set(x,0.001,0); g.add(l);}); return g; }
+function cerCap(){ const g=new THREE.Group(); const d=cyl(0.002,0.0015,M.cer,14); d.rotation.x=Math.PI/2; d.position.y=0.0045; g.add(d); [-0.00127,0.00127].forEach(x=>{const l=cyl(0.0003,0.004,M.lead,5); l.position.set(x,0.0015,0); g.add(l);}); return g; }
+function elecCap(big){ const g=new THREE.Group(); const r=big?0.004:0.0025, h=big?0.011:0.007; const b=cyl(r,h,M.elec,16); b.position.y=h/2+0.002; g.add(b); const stripe=box(0.0012,h*0.8,0.0002,new THREE.MeshStandardMaterial({color:0xdddddd})); stripe.position.set(-r*0.75,h/2+0.002,r*0.55); g.add(stripe); [-0.00127,0.00127].forEach(x=>{const l=cyl(0.0003,0.003,M.lead,5); l.position.set(x,0.0008,0); g.add(l);}); return g; }
+function diode(){ const g=new THREE.Group(); const b=cyl(0.0026,0.0085,M.black,10); b.rotation.z=Math.PI/2; g.add(b); const band=cyl(0.0027,0.0008,new THREE.MeshStandardMaterial({color:0xdddddd}),10); band.rotation.z=Math.PI/2; band.position.x=-0.003; g.add(band); const l1=cyl(0.0004,0.008,M.lead,5); l1.rotation.z=Math.PI/2; l1.position.x=-0.008; g.add(l1); const l2=l1.clone(); l2.position.x=0.008; g.add(l2); return g; }
+function bead(){ const g=new THREE.Group(); const b=cyl(0.0018,0.006,new THREE.MeshStandardMaterial({color:0x55595e,roughness:.8}),10); b.rotation.z=Math.PI/2; g.add(b); const l1=cyl(0.0003,0.007,M.lead,5); l1.rotation.z=Math.PI/2; l1.position.x=-0.006; g.add(l1); const l2=l1.clone(); l2.position.x=0.006; g.add(l2); return g; }
+function dip8(){ const g=new THREE.Group(); const b=box(0.0096,0.0035,0.0064,M.black); b.position.y=0.0035; g.add(b); const notch=cyl(0.0008,0.001,M.dark,8); notch.rotation.x=Math.PI/2; notch.position.set(-0.0048,0.0053,0); g.add(notch); for(let i=0;i<4;i++){ [-0.0038,0.0038].forEach(z=>{ const p=box(0.0005,0.003,0.0003,M.lead); p.position.set(-0.00381+i*PITCH,0.0015,z); g.add(p);}); } return g; }
+function header(n){ const g=new THREE.Group(); const b=box(n*PITCH,0.0025,0.0025,M.black); b.position.set((n-1)*PITCH/2,0.00125,0); g.add(b); for(let i=0;i<n;i++){ const p=box(0.0006,0.008,0.0006,M.sma); p.position.set(i*PITCH,0.003,0); g.add(p);} return g; }
+function jumper(c1,r1,c2,r2,color){ const a=new THREE.Vector3(hx(c1),BBH,rowZ[r1]), b=new THREE.Vector3(hx(c2),BBH,rowZ[r2]); const mid=a.clone().add(b).multiplyScalar(.5); mid.y+=0.004+a.distanceTo(b)*0.25; const curve=new THREE.CatmullRomCurve3([a,a.clone().setY(BBH+0.003),mid,b.clone().setY(BBH+0.003),b]); return new THREE.Mesh(new THREE.TubeGeometry(curve,12,0.0005,6,false),new THREE.MeshStandardMaterial({color,roughness:.7})); }
+
+// component placement: ref, kind, value, col, row, orientation
+const BB=[
+ // signal chain, top bank
+ ['J1','hdr2','MIXER IF',1,'a'],['R1','res','49.9',2,'b','v'],['C20','cer','1n',3,'b','v'],['C1','film','100n',5,'c','h'],['R2','res','10k',9,'b','v'],
+ ['U1','dip','TL072 A/B',11,'e'],['C3','cer','100n',10,'a','v'],['R3','res','100k',15,'a','h'],['R4','res','1k',19,'b','v'],
+ ['C2','film','100n',20,'c','h'],['R6','res','10k',24,'b','v'],['R7','res','10k',25,'a','h'],['R8','res','1k',29,'b','v'],
+ ['R12','res','1k',30,'c','h'],['C9','cer','10n',34,'b','v'],['U2','dip','TL072 A/B',36,'e'],['C7','cer','100n',35,'a','v'],
+ ['R13','res','100',40,'c','h'],['C10','elec','10u',44,'b','v'],['R14','res','100k',45,'b','v'],['J2','hdr2','AUDIO L',46,'a'],
+ // bias + power, bottom bank
+ ['R9','res','10k',1,'g','h'],['R10','res','10k',5,'g','h'],['C5','elec','10u',9,'g','v'],['R11','res','47',10,'i','h'],['C6','elecB','47u',14,'g','v'],
+ ['J3','hdr2','12V IN',16,'j'],['D1','diode','1N5822',18,'h','h'],['C11','elecB','100u',21,'g','v'],['R15','res','10',22,'i','h'],['C13','elecB','100u',26,'g','v'],['J4','hdr2','TO BUCK',27,'j'],
+ ['J5','hdr2','5V IN',29,'j'],['C12','elecB','100u',31,'g','v'],['FB1','bead','',32,'h','h'],['C14','elec','10u',35,'g','v'],['C15','cer','100n',36,'g','v'],['J6','hdr2','ADF 5V',37,'j'],
+ ['FB2','bead','',39,'h','h'],['C16','elec','10u',42,'g','v'],['C17','cer','100n',43,'g','v'],['J7','hdr2','PA 5V',44,'j'],
+ ['FB3','bead','',46,'h','h'],['C18','elec','10u',49,'g','v'],['C19','cer','100n',50,'g','v'],['J8','hdr2','LNA 5V',51,'j'],
+ // digital, right side
+ ['J9','hdr10','ESP32',40,'j'],['R16','res','33',41,'f','v'],['R17','res','33',42,'f','v'],['R18','res','33',43,'f','v'],['J10','hdr6','ADF LOGIC',44,'a'],
+ ['JP3','hdr2','CE EN',50,'h'],['R19','res','10k',52,'f','v'],['J11','hdr5','A4988',53,'j'],['R20','res','10k',57,'f','v'],['R21','res','10k',54,'f','v'],['R22','res','10k',55,'f','v'],
+ ['R23','res','10k',57,'g','h'],['R24','res','1k',61,'f','v'],['J12','hdr2','AUDIO R',62,'j'],
+];
+const bbParts={};
+BB.forEach(([ref,kind,val,col,row,or])=>{
+  let m; if(kind==='res') m=resistor(val); else if(kind==='film') m=filmCap(); else if(kind==='cer') m=cerCap(); else if(kind==='elec') m=elecCap(false); else if(kind==='elecB') m=elecCap(true);
+  else if(kind==='diode') m=diode(); else if(kind==='bead') m=bead(); else if(kind==='dip') m=dip8(); else if(kind.startsWith('hdr')) m=header(parseInt(kind.slice(3)));
+  const x=hx(col), z=rowZ[row];
+  if(kind==='dip'){ m.position.set(x+PITCH*1.5,BBH,rowZ['e']+PITCH*0.5+0.0006); }
+  else if(kind.startsWith('hdr')){ m.position.set(x,BBH,z); }
+  else if(or==='h'){ m.position.set(x+PITCH*1.5,BBH+0.0018,z); }
+  else { m.rotation.y=Math.PI/2; m.position.set(x,BBH+0.0018,z+PITCH*1.5); if(kind==='film'||kind==='cer'||kind.startsWith('elec')){ m.rotation.y=Math.PI/2; m.position.set(x,BBH,z+PITCH*0.5);} }
+  bbG.add(m); bbParts[ref]=m;
+  const cls = ref.startsWith('J')?'pow':(ref.startsWith('U')?'dsp':(ref.startsWith('R')||ref.startsWith('C')?'dsp':'ok'));
+  const bomId = kind==='dip'?'C15b':(kind==='diode'?'C15b':(kind==='bead'?'C15b':'C15b'));
+  reg('C15b',m,`${ref} ${val}`.trim(),cls); m.userData.ref=ref; addLabel(m,ref+(val?' '+val:''),cls,new THREE.Vector3(0,0.010,0));
+});
+// a handful of jumpers to make it read as wired: rails and inter-bank hops
+[[2,'e',2,'R3',0x111111],[3,'e',3,'R3',0x111111],[9,'e',9,'R4',0xe0a020],[19,'e',19,'R4',0xe0a020],[24,'e',24,'R4',0xe0a020],[29,'e',29,'R4',0xe0a020],[34,'e',34,'R4',0xe0a020],
+ [45,'e',45,'R3',0x111111],[1,'j',1,'R1',0xc0392b],[6,'j',6,'R2',0x111111],[16,'i',16,'R1',0xc0392b],[30,'i',30,'R1',0xc0392b],[13,'f',10,'R2',0x111111],[38,'f',35,'R2',0x111111],
+ [41,'i',44,'b',0x2e86de],[42,'i',45,'b',0x2e86de],[43,'i',46,'b',0x2e86de],[4,'a',5,'c',0x2ecc71],[8,'c',9,'a',0x2ecc71],[15,'e',11,'d',0x2ecc71],[19,'a',20,'c',0x2ecc71]].forEach(([c1,r1,c2,r2,col])=>bbG.add(jumper(c1,r1,c2,r2,col)));
+addLabel(bbBody,'breadboard · video amp · bias · power · harness','dsp',new THREE.Vector3(0,0.03,0.03));
+
+// --- ESP32 devkit, LM2596, terminal block ---
+const esp=box(0.055,0.0016,0.028,M.black); esp.position.set(0.10,TOP+0.0008,0.085); bench.add(esp); reg('C14',esp,'ESP32 devkit — radar_ctl','ok');
+const espMod=box(0.018,0.003,0.026,M.alu); espMod.position.set(-0.016,0.0023,0); esp.add(espMod); const usbc=box(0.008,0.003,0.007,M.alu); usbc.position.set(0.024,0.002,0); esp.add(usbc);
+for(let i=0;i<19;i++){ [-0.012,0.012].forEach(z=>{ const p=box(0.0006,0.006,0.0006,M.sma); p.position.set(-0.023+i*PITCH,-0.002,z); esp.add(p);}); }
+addLabel(esp,'ESP32 devkit','ok');
+const buck=box(0.043,0.012,0.021,M.pcbBlue); buck.position.set(-0.17,TOP+0.006,0.16); bench.add(buck); reg('C16b',buck,'LM2596 buck → 5.00 V','pow');
+const ind=cyl(0.005,0.006,M.black,12); ind.position.set(-0.008,0.009,0); buck.add(ind); const pot=box(0.007,0.006,0.005,M.dsp); pot.position.set(0.013,0.009,0.005); buck.add(pot);
+addLabel(buck,'LM2596','pow');
+const term=box(0.05,0.010,0.012,M.ok); term.position.set(-0.05,TOP+0.005,0.17); bench.add(term); reg('D17',term,'terminal block — star ground');
+addLabel(term,'terminal block · star ground','pow');
+// 12 V supply brick off the board
+const psu=box(0.11,0.032,0.05,M.brick); psu.position.set(0.34,0.016,0.12); world.add(psu); reg('C16a',psu,'12 V 3 A supply','pow'); addLabel(psu,'12 V 3 A supply','pow',new THREE.Vector3(0,0.03,0));
+world.add(tube([new THREE.Vector3(0.285,0.016,0.12),new THREE.Vector3(0.24,0.02,0.15),new THREE.Vector3(-0.02,TOP+0.012,0.17)],0.002,M.rubber));
+// UCA202 sound card + RCA leads
+const uca=box(0.088,0.020,0.060,new THREE.MeshStandardMaterial({color:0x3c4148,roughness:.6})); uca.position.set(-0.36,0.010,0.15); world.add(uca); reg('C13',uca,'Behringer UCA202 — the ADC','dsp');
+[[-0.03,0xdd3333],[-0.015,0xeeeeee]].forEach(([x,c])=>{ const r=cyl(0.004,0.006,new THREE.MeshStandardMaterial({color:c}),12); r.rotation.x=Math.PI/2; r.position.set(x,0.006,0.032); uca.add(r); });
+addLabel(uca,'UCA202 sound card','dsp',new THREE.Vector3(0,0.03,0));
+world.add(tube([new THREE.Vector3(-0.39,0.016,0.18),new THREE.Vector3(-0.26,0.03,0.03),new THREE.Vector3(-0.02,TOP+0.03,0.035),new THREE.Vector3(-0.075+hx(47),TOP+BBH+0.01,0.085+rowZ['a'])],0.0015,M.rubber));
+world.add(tube([new THREE.Vector3(-0.375,0.016,0.18),new THREE.Vector3(-0.20,0.03,0.15),new THREE.Vector3(0.06,TOP+0.03,0.14),new THREE.Vector3(-0.075+hx(62),TOP+BBH+0.01,0.085+rowZ['j'])],0.0015,M.rubber));
+// laptop
+const lap=new THREE.Group(); lap.position.set(-0.55,0,0.05); world.add(lap);
+const base=box(0.32,0.012,0.22,M.brick); base.position.y=0.006; lap.add(base); const lid=box(0.32,0.21,0.008,M.brick); lid.position.set(0,0.115,-0.105); lid.rotation.x=-0.25; lap.add(lid);
+const scr=box(0.29,0.18,0.002,M.screen); scr.position.set(0,0.115,-0.10); scr.rotation.x=-0.25; lap.add(scr); reg('C13b',lap,'laptop — radar_acquire.py + console','dsp'); addLabel(lap,'laptop · console','dsp',new THREE.Vector3(0,0.24,0));
+world.add(tube([new THREE.Vector3(-0.40,0.01,0.12),new THREE.Vector3(-0.42,0.012,0.15),new THREE.Vector3(-0.395,0.02,0.15)],0.0015,M.rubber));
+// UMC404HD (stage 3)
+const umc=box(0.20,0.045,0.12,new THREE.MeshStandardMaterial({color:0x2a2d31,roughness:.5})); umc.position.set(-0.36,0.0225,0.28); world.add(umc); reg('F25',umc,'Behringer UMC404HD — 4 inputs, one clock (stage 3)','dsp'); addLabel(umc,'UMC404HD (stage 3)','dsp',new THREE.Vector3(0,0.04,0));
+// stage-3 second receive chain
+const lna2=module(0.040,0.012,0.028,M.pcbBlue,[{name:'out',side:'l',y:0.006},{name:'in',side:'r',y:0.006}]); at(lna2,0.100,TOP,RZ+0.06); bench.add(lna2); reg('F22',lna2,'2nd LNA (stage 3)','rf');
+const mix2=module(0.020,0.012,0.020,M.alu,[{name:'lo',side:'l'},{name:'rf',side:'r'},{name:'if',side:'f'}]); at(mix2,0.040,TOP,RZ+0.064); bench.add(mix2); reg('F22',mix2,'2nd mixer ZX05-43MH-S+ (stage 3)','rf');
+const spl2=module(0.032,0.014,0.022,M.alu,[{name:'s',side:'l'},{name:'o1',side:'r',off:-0.006},{name:'o2',side:'r',off:0.006}]); at(spl2,-0.030,TOP,RZ+0.06); bench.add(spl2); reg('F23',spl2,'2nd splitter — LO to both mixers (stage 3)','rf');
+const stage3=[h3,lna2,mix2,spl2,umc];
+
+// --- coax runs (stage-aware) ---
+function tube(pts,r,mat){ const c=new THREE.CatmullRomCurve3(pts); return new THREE.Mesh(new THREE.TubeGeometry(c,24,r,8,false),mat); }
+function coaxBetween(a,b,lift,mat){ const m=a.clone().add(b).multiplyScalar(.5); m.y+=lift; return tube([a,m,b],0.0022,mat||M.coax); }
+const coaxG=new THREE.Group(); bench.add(coaxG);
+function buildCoax(stage){
+  while(coaxG.children.length) coaxG.remove(coaxG.children[0]);
+  bench.updateMatrixWorld(true);
+  const P=(mod,n)=>bench.worldToLocal(portWorld(mod,n));
+  const runs=[[P(adf,'out'),P(att,'in'),0.01],[P(att,'out'),P(pa,'in'),0.01],[P(pa,'out'),P(spl,'s'),0.012],[P(spl,'o2'),P(mix,'lo'),0.02],[P(lna,'out'),P(mix,'rf'),0.02],[P(bpf,'out'),P(lna,'in'),0.012]];
+  runs.forEach(([a,b,l])=>{ const t=coaxBetween(a,b,l); reg('A6',t,'SMA RG316 jumper','rf'); coaxG.add(t); });
+  const tx = stage===1? h1tx : h2tx, rx = stage===1? h1rx : h2rx;
+  const feed=(h)=>{ const v=new THREE.Vector3(0,0.009,0); h.userData.feed.localToWorld(v); return bench.worldToLocal(v); };
+  const t1=tube([P(spl,'o1'),new THREE.Vector3(-0.10,TOP+0.05,-0.08),new THREE.Vector3(-0.145,HY+0.06,HZ+0.10),feed(tx)],0.0022,M.coax); reg('A6',t1,'SMA RG316 jumper — to TX horn','rf'); coaxG.add(t1);
+  const t2=tube([P(bpf,'in'),new THREE.Vector3(0.19,TOP+0.05,-0.08),new THREE.Vector3(0.145,HY+0.06,HZ+0.10),feed(rx)],0.0022,M.coaxRx); reg('A6',t2,'SMA RG316 jumper — from RX horn','dsp'); coaxG.add(t2);
+  // IF pigtail to J1
+  const ifp=tube([P(mix,'if'),new THREE.Vector3(0.04,TOP+0.03,0.03),new THREE.Vector3(-0.075+hx(1),TOP+BBH+0.012,0.085+rowZ['a'])],0.0015,M.rubber); reg('A7',ifp,'IF pigtail — mixer IF → J1'); coaxG.add(ifp);
+  if(stage===3){ const t3=tube([feed(h3),new THREE.Vector3(0.20,HY-0.2,HZ+0.08),new THREE.Vector3(0.16,TOP+0.05,-0.02),P(lna2,'in')],0.0022,M.coaxRx); coaxG.add(t3);
+    coaxG.add(coaxBetween(P(lna2,'out'),P(mix2,'rf'),0.02)); coaxG.add(coaxBetween(P(spl2,'o2'),P(mix2,'lo'),0.02)); }
+}
+
+// beam: 34 x 36 deg from the TX horn, toward the drone
+function beamCone(halfAz,halfEl,len){ const w=Math.tan(halfAz*Math.PI/180)*len, h=Math.tan(halfEl*Math.PI/180)*len; const t=[0,0,0], c=[[-w,-h,-len],[w,-h,-len],[w,h,-len],[-w,h,-len]]; const pts=[]; for(let i=0;i<4;i++){const j=(i+1)%4; pts.push(...t,...c[i],...c[j]);} const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pts,3)); g.computeVertexNormals(); return new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:0xe59055,transparent:true,opacity:.10,side:THREE.DoubleSide,depthWrite:false})); }
+const beam=beamCone(18,17,3.6); beam.position.set(-0.145,HY,HZ-FL); beam.visible=false; bench.add(beam);
+// --- the drone and the phone (room view) ---
+const drone=new THREE.Group(); const dbody=box(0.03,0.012,0.03,M.black); drone.add(dbody);
+[[-.03,-.03],[.03,-.03],[-.03,.03],[.03,.03]].forEach(([x,z])=>{ const arm=box(0.035,0.004,0.006,M.black); arm.position.set(x/2,0,z/2); arm.rotation.y=Math.atan2(-z,x); drone.add(arm); const rot=cyl(0.015,0.001,new THREE.MeshStandardMaterial({color:0x8aa0b2,transparent:true,opacity:.55}),16); rot.position.set(x,0.008,z); drone.add(rot); });
+drone.position.set(0.3,1.1,-3.2); world.add(drone); reg('E',drone,'ESP-FLY — stock kit, ESP-Drone on ch 1 at 10 dBm','link'); addLabel(drone,'ESP-FLY · 3 m out','link',new THREE.Vector3(0,0.06,0));
+const phone=box(0.07,0.15,0.008,M.black); phone.position.set(0.5,1.2,0.9); world.add(phone); reg('E',phone,'your phone — ESP-Drone app, behind the horns','link'); addLabel(phone,'phone (operator, behind the horns)','link',new THREE.Vector3(0,0.1,0));
+
+// =====================================================================
+// BOM panel
+// =====================================================================
+const BOM=[
+ ['A · RF chain',[
+  ['A1','ZX05-43MH-S+ mixer','1','$73','Mini-Circuits — order first'],['A2','ADF4351 PLL board','1','$27'],['A3a','SPF5189Z module — PA role','1','—','from the 4-pack'],['A3b','SPF5189Z module — LNA role','1','$24','4-pack; chip is EOL, buy spares'],
+  ['A4','2-way SMA splitter 800–2500 MHz','1','$13'],['A5','SMA 3 dB attenuator','1','$9'],['A6','SMA M-M RG316 jumpers','6','$18'],['A7','SMA adapter assortment · IF pigtail','1','$12'],['A7b','2.4 GHz band-pass filter, SMA inline','1','$20']]],
+ ['B · Horns',[
+  ['B8','Copper sheet 24 ga 12" × 24"','2','$45','= the horns'],['B9','SMA female 4-hole flange, solder cup','10','$12','the feed on each horn'],['B10','Brass rod 1/16"','1','$5','the 28 mm probe'],
+  ['B11','60/40 solder + paste flux','1','$15','consumable'],['B12','Aviation snips','1','$18','tool']]],
+ ['C · Baseband, control, power',[
+  ['C13','Behringer UCA202 USB sound card','1','$30'],['C13b','Laptop','1','—','you have it'],['C14','ESP32 devkit (WROOM-32)','1','$10'],['C15a','830-point breadboard','1','—','in the kit'],['C15b','TL072 ×2 + resistors, capacitors, diode, ferrites, headers','1','$25','every part shown on the breadboard'],
+  ['C16a','12 V 3 A supply','1','$18'],['C16b','LM2596 buck ×2','1','—','one shown']]],
+ ['D · Mechanical (stage 2)',[
+  ['D17','Plywood 18" × 15", L-brackets, M3 hardware, terminal block','1','$28'],['D18a','NEMA-17 stepper','1','$25','with the A4988'],['D18b','Lazy-susan bearing 150 mm','1','—'],['D18c','A4988 driver','1','—']]],
+ ['E · Drone',[
+  ['E','Stock ESP-FLY kit, phone-flown — $0 added','1','$0','ESP-Drone on WiFi ch 1, 10 dBm']]],
+ ['F · Stage 3 (later)',[
+  ['F22','2nd ZX05-43MH-S+ mixer + 2nd LNA','1','$73'],['F23','2nd 2-way splitter','1','$13'],['F24','3rd horn (materials in B)','1','$0'],['F25','Behringer UMC404HD 4-in interface','1','$100']]],
+];
+const NOTMODELLED=new Set(['B11','B12']);
+const bomEl=document.getElementById('bom'); let selRow=null;
+BOM.forEach(([title,rows])=>{ const h=document.createElement('h2'); h.textContent=title; bomEl.appendChild(h);
+  rows.forEach(([id,name,qty,price,note])=>{ const r=document.createElement('div'); r.className='row'+(NOTMODELLED.has(id)?' na':''); r.dataset.id=id;
+    r.innerHTML=`<span class="n">${id}</span><span>${name}${note?`<small>${note}</small>`:''}</span><span class="q">${qty} · ${price}</span>`;
+    if(!NOTMODELLED.has(id)) r.onclick=()=>{ selectBom(id,r); }; bomEl.appendChild(r); }); });
+const tot=document.createElement('div'); tot.className='total'; tot.innerHTML='Stage 1 ≈ $374 · + stage 2 ≈ $424 · + stage 3 ≈ $650<br><span class="legend"><span class="sw" style="background:#c2622a"></span>RF <span class="sw" style="background:#2f77b0"></span>baseband/ADC <span class="sw" style="background:#2c9c68"></span>control <span class="sw" style="background:#b8860b"></span>power <span class="sw" style="background:#6a4fbf"></span>drone</span>'; bomEl.appendChild(tot);
+
+let highlight=[]; let hlT=0;
+function selectBom(id,rowEl){
+  if(selRow) selRow.classList.remove('sel'); selRow=rowEl; if(rowEl) rowEl.classList.add('sel');
+  highlight.forEach(o=>{ o.material=o.userData.origMat; }); highlight=[];
+  const objs=(registry[id]||[]).filter(o=>isShown(o));
+  if(!objs.length) return;
+  objs.forEach(o=>o.traverse(m=>{ if(m.isMesh){ if(!m.userData.origMat) m.userData.origMat=m.material; m.material=M.glow; highlight.push(m);} }));
+  hlT=performance.now();
+  // frame the first object
+  const bb=new THREE.Box3(); objs.forEach(o=>bb.expandByObject(o)); const c=bb.getCenter(new THREE.Vector3()); const size=bb.getSize(new THREE.Vector3()).length();
+  flyTo(c, Math.max(0.12, size*1.6), id.startsWith('E')?-0.3:az, id.startsWith('E')?0.15:0.45);
+  status.textContent=objs[0].userData.name||id;
+}
+function isShown(o){ let p=o; while(p){ if(!p.visible) return false; p=p.parent; } return true; }
+
+// =====================================================================
+// stages, views, controls
+// =====================================================================
+let stage=1;
+function setStage(s){ stage=s; stage1.visible=(s===1); stage23.visible=(s!==1); stage3.forEach(o=>o.visible=(s===3)); document.querySelectorAll('[data-stage]').forEach(b=>b.classList.toggle('on',+b.dataset.stage===s)); buildCoax(s); }
+document.querySelectorAll('[data-stage]').forEach(b=>b.onclick=()=>setStage(+b.dataset.stage));
+let az=-0.62, el=0.42, dist=1.0, tgt=new THREE.Vector3(0,0.16,0.02);
+let goal=null;
+function place(){ camera.position.set(tgt.x+dist*Math.cos(el)*Math.sin(az), tgt.y+dist*Math.sin(el), tgt.z+dist*Math.cos(el)*Math.cos(az)); camera.lookAt(tgt); }
+function flyTo(t,d,a,e){ goal={t:t.clone(),d,a:(a!==undefined?a:az),e:(e!==undefined?e:el)}; }
+const views={ bench:{t:new THREE.Vector3(0,0.16,0.02),d:1.0,a:-0.62,e:0.42}, bb:{t:new THREE.Vector3(-0.075,TOP+0.01,0.085),d:0.22,a:-0.15,e:0.9}, room:{t:new THREE.Vector3(0.15,0.6,-1.3),d:3.0,a:-0.38,e:0.16} };
+function setView(k){ ['bench','bb','room'].forEach(v=>document.getElementById('b-'+v).classList.toggle('on',v===k)); const v=views[k]; flyTo(v.t,v.d,v.a,v.e); beam.visible=(k==='room'); }
+['bench','bb','room'].forEach(k=>document.getElementById('b-'+k).onclick=()=>setView(k));
+let showLabels=true, showCoax=true;
+document.getElementById('b-labels').onclick=e=>{showLabels=!showLabels;e.target.classList.toggle('on',showLabels);};
+document.getElementById('b-coax').onclick=e=>{showCoax=!showCoax;e.target.classList.toggle('on',showCoax);coaxG.visible=showCoax;};
+let drag=false,px=0,py=0,moved=false;
+cv.addEventListener('pointerdown',e=>{drag=true;moved=false;px=e.clientX;py=e.clientY;cv.setPointerCapture(e.pointerId);});
+cv.addEventListener('pointerup',e=>{drag=false; if(!moved) pick(e,true);});
+cv.addEventListener('pointermove',e=>{ if(drag){ const dx=e.clientX-px, dy=e.clientY-py; if(Math.abs(dx)+Math.abs(dy)>2) moved=true; az-=dx*0.008; el=Math.max(-0.2,Math.min(1.45,el+dy*0.006)); px=e.clientX;py=e.clientY; goal=null; place(); } else pick(e,false); });
+cv.addEventListener('wheel',e=>{e.preventDefault(); dist=Math.max(0.08,Math.min(8,dist*(e.deltaY>0?1.12:0.89))); goal=null; place();},{passive:false});
+const ray=new THREE.Raycaster(), mouse=new THREE.Vector2();
+function pick(e,click){ const r=cv.getBoundingClientRect(); mouse.x=((e.clientX-r.left)/r.width)*2-1; mouse.y=-((e.clientY-r.top)/r.height)*2+1; ray.setFromCamera(mouse,camera);
+  const hits=ray.intersectObjects(pickables.filter(isShown),false); if(hits.length){ const o=hits[0].object; tip.textContent=o.userData.name||''; tip.style.left=(e.clientX-r.left)+'px'; tip.style.top=(e.clientY-r.top)+'px'; tip.style.opacity=1; cv.style.cursor='pointer';
+    if(click){ const id=o.userData.bom; const row=document.querySelector(`.row[data-id="${id}"]`); if(row){ row.scrollIntoView({block:'nearest'}); } selectBom(id,row); } }
+  else { tip.style.opacity=0; cv.style.cursor='grab'; } }
+const status=document.getElementById('status');
+
+function resize(){ const w=vp.clientWidth,h=vp.clientHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); place(); }
+window.addEventListener('resize',resize);
+const v=new THREE.Vector3(); const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches; let t0=performance.now();
+function frame(now){ const dt=(now-t0)/1000; t0=now;
+  if(goal){ const k=1-Math.pow(0.001,dt); tgt.lerp(goal.t,k); dist+=(goal.d-dist)*k; az+=(goal.a-az)*k; el+=(goal.e-el)*k; if(Math.abs(dist-goal.d)<1e-3 && tgt.distanceTo(goal.t)<1e-3) goal=null; place(); }
+  if(!reduced && stage!==1){ rotG.rotation.y=Math.sin(now/4000)*0.6; }
+  if(!reduced){ drone.rotation.y+=dt*0.4; drone.position.y=1.1+Math.sin(now/900)*0.03; }
+  if(highlight.length){ M.glow.emissiveIntensity=0.5+0.5*Math.abs(Math.sin((now-hlT)/250)); if(now-hlT>4000){ highlight.forEach(o=>o.material=o.userData.origMat); highlight=[]; } }
+  renderer.render(scene,camera);
+  const w=vp.clientWidth,h=vp.clientHeight; const bbView = dist<0.35;
+  labels.forEach(L=>{ const isBB = L.obj.userData.ref!==undefined; const vis=showLabels && isShown(L.obj) && (isBB ? bbView : !bbView); if(!vis){L.el.style.opacity=0;return;}
+    L.obj.getWorldPosition(v); v.add(L.off); v.project(camera); if(v.z>1){L.el.style.opacity=0;return;} L.el.style.left=((v.x*0.5+0.5)*w)+'px'; L.el.style.top=((-v.y*0.5+0.5)*h)+'px'; L.el.style.opacity=1; });
+  requestAnimationFrame(frame);
+}
+setStage(1); resize(); place(); status.textContent='stage 1 · fixed horn pair · hover for names, click a BOM row to fly to it'; requestAnimationFrame(frame);
+})();
+</script>
