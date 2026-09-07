@@ -18,4 +18,5 @@ build or test the radar.
 
 **The passive RF system this project replaced** (sniffer nodes multilaterating the drone's own WiFi; ~2 m accuracy, could not see altitude)
 - `feasibility.md`, `espfly.md`, `espblast.md`, `SETUP.md`, `BUILD.md`, `3d-sensing.md`, `interception.md`
-- code still in the tree: `firmware/{drone_beacon,rx_node,rx_node_ftm,hub_node,mac_scanner,commander}`, `ground_station/{locate,calibrate,geometry,guidance,pursuit_sim,autopilot,digital_twin}.py`
+- code: `firmware/archive/{drone_beacon,rx_node,rx_node_ftm,hub_node,mac_scanner,commander}` (moved out of the live firmware tree), `ground_station/{locate,calibrate,geometry,guidance,pursuit_sim,autopilot,digital_twin}.py` (still imported by the console)
+- `firmware/archive/espfly-915/` — the esp-fc CLI settings for the 915 MHz fallback

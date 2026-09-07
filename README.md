@@ -26,7 +26,7 @@ the band by sweeping above the WiFi channel.
 | range cell / accuracy | 3.75 m / ~0.2 m after peak interpolation |
 | azimuth | turntable, 12° steps, amplitude centroid → 2.5° |
 | drone echo at 10 m | −74 dBm, 71 dB SNR after 64 chirps |
-| phone link margin | ~20 dB at the drone's receiver; AP at +8 dBm, band-pass and operator placement protect the radar |
+| phone link margin | ~20 dB at the drone's receiver; AP at 10 dBm, band-pass and operator placement protect the radar |
 | stages | 1 range + velocity · 2 turntable → position · 3 stacked RX horn → elevation |
 
 ## Implement
@@ -37,8 +37,8 @@ moving on.
 1. **[`hardware/BOM.md`](hardware/BOM.md)** — every part, priced and stock-checked (Sept 2026). Order the mixer first.
 2. **[`docs/radar-hardware.md`](docs/radar-hardware.md)** — horns (cut list), RF chain in MIT order, the breadboard video amp, sync, power, turntable, stacked RX.
 3. **[`docs/radar-software.md`](docs/radar-software.md)** — flash `firmware/radar_ctl`, run `ground_station/radar_acquire.py`, feed the console.
-4. **[`docs/drone-hardware.md`](docs/drone-hardware.md)** — nothing changes on the airframe; what to take off.
-5. **[`docs/drone-software.md`](docs/drone-software.md)** — ESP-Drone on WiFi channel 1 at +8 dBm; the coexistence sweep.
+4. **[`docs/drone-hardware.md`](docs/drone-hardware.md)** — build the kit exactly per its guide; the one thing to leave off.
+5. **[`docs/drone-software.md`](docs/drone-software.md)** — the kit's official build and flash, with two menuconfig changes (channel 1, 10 dBm); the coexistence sweep and ping test.
 
 Schematics: [`hardware/kicad/`](hardware/kicad/) — `radar_breadboard.kicad_sch` (the breadboard and everything it connects to) and `radar_multisim.kicad_sch` (every value on the page, one frame per test). Both render in KiCad 7/8; PNGs alongside.
 

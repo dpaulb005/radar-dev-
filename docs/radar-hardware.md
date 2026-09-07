@@ -33,7 +33,8 @@ sweep generator differs from MIT: their XR-2206 ramp + ZX95 VCO is a
 discontinued part, so the ESP32 steps an ADF4351 PLL instead (details and
 the one trade-off in [`radar-software.md`](radar-software.md) §1).
 
-**Band:** the sweep is 2400–2483.5 MHz, the ISM band, *not* MIT's 2.36–2.50
+**Band:** the sweep stays inside 2400–2480 MHz — the ISM band with a 3.5 MHz
+emission margin at the top — *not* MIT's 2.36–2.50
 GHz (2360–2395 MHz is licensed aeronautical telemetry — see
 [`archive/mit-radar.md`](archive/mit-radar.md) §1). 83.5 MHz → 1.80 m range resolution.
 
@@ -138,7 +139,7 @@ run is short and nothing crosses (the 3-D model is the layout):
    the LNA input: the horn is wideband and the SPF5189Z amplifies
    50–4000 MHz, so without it every signal in the building reaches the
    mixer. It does *not* reject the drone's channel-1 WiFi — that is handled
-   by turning the drone's AP power down (`drone-software.md` §0). **Torque SMA
+   by the drone's AP running at 10 dBm (`drone-software.md` §0). **Torque SMA
    by hand plus 1/8 turn with a wrench** — finger-tight SMA is a 1 dB loss
    you will chase for an evening.
 3. Mark the modules' **DC feed** direction (SPF5189Z boards and the ADF4351
@@ -292,7 +293,7 @@ stages 1 and 2 first; stage 3 is a second project on top of a working radar.
 
 - +10 dBm into a 13 dBi horn is 0.2 W EIRP — under the Part 15 limits for the
   band, but keep the mouths pointed away from people at < 1 m out of habit.
-- The sweep stays inside 2400–2483.5 MHz. Do not "extend it for resolution".
+- The sweep stays inside 2400–2480 MHz (firmware refuses anything else). Do not "extend it for resolution".
 - The drone is flown by phone over its WiFi AP on **channel 1**, and the
   radar sweeps **2440–2480 MHz** above it — set that before the drone is
   ever in the air with the radar sweeping, and do the ping test in

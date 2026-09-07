@@ -14,7 +14,7 @@ for the radar, and CRSF is CRSF whether it arrives at 2.4 GHz or 915 MHz.
 2. EdgeTX on the **Pocket** (model, module, switches)
 3. esp-fc on the **XIAO** (serial port, CRSF, arm/mode switches, failsafe)
 
-The esp-fc part is captured as a CLI script: `firmware/espfly/espfly-915.cli`.
+The esp-fc part is captured as a CLI script: `firmware/archive/espfly-915/espfly-915.cli`.
 
 Props OFF for everything until §6.
 
@@ -79,7 +79,7 @@ If they twitch or drop: wrong UART, or TX/RX wires swapped.
 
 ## 4. esp-fc — CLI script
 
-`firmware/espfly/espfly-915.cli` pins the receiver wiring, the serial
+`firmware/archive/espfly-915/espfly-915.cli` pins the receiver wiring, the serial
 function and the failsafe in a form you can paste back after any reset.
 Open the **CLI** tab and paste it line by line (or all at once if your
 configurator passes multi-line). It ends with `save`.

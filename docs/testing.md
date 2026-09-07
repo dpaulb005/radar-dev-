@@ -105,7 +105,7 @@ Drone on the bench 1 m in front of the horns, phone connected, props off,
 | `SET f0_mhz 2400`, full band (crosses channel 1) | loss appears — proves the margin is real |
 | drone AP on/off, phone streaming | radar noise floor and CFAR threshold do not move |
 
-Fail → AP power to +8 dBm, then the band-pass filter, then `SET f0_mhz 2450`,
+Fail → confirm the AP is at 10 dBm, then the band-pass filter, then `SET f0_mhz 2450`,
 then the 915 MHz fallback (`archive/drone-915.md`).
 
 ## §7 · Tracking (`drone-hardware.md` §4)

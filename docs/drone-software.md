@@ -1,9 +1,10 @@
 # ESP-FLY drone software — step by step (fly by phone, radar on the same band)
 
-**Decision: the drone is flown from the phone.** That means the ESP-FLY runs
-the **ESP-Drone** firmware and is controlled over its own WiFi access point.
-There is no radio, no ELRS, no esp-fc receiver setup. The drone-side "software"
-is one firmware option and one test.
+**Decision: the drone is flown from the phone.** The ESP-FLY is built and
+flashed exactly as its official guide describes (ESP-Drone firmware, ESP-IDF,
+the ESP-Drone app over the drone's own WiFi access point). The kit's radio
+option is not used. The only deviations from the guide are two `menuconfig`
+values, and there is one test the guide does not have.
 
 The catch, stated once: the XIAO ESP32-S3's radio is **2.4 GHz only** — no
 5 GHz WiFi, and Bluetooth is 2.4 GHz too. So the phone link lives inside the
@@ -52,7 +53,7 @@ AP at +20 dBm**, which is in the beam by definition:
 | into the radar receiver | at the LNA | at the mixer RF | margin to compression* |
 |---|---|---|---|
 | drone AP +20 dBm, 5 m, in beam | −21 dBm | −9 dBm | **~8 dB** with WiFi's +10 dB peaks |
-| drone AP turned down to +8 dBm | −33 dBm | −21 dBm | ~20 dB |
+| drone AP turned down to +10 dBm | −31 dBm | −19 dBm | ~18 dB |
 | phone +15 dBm, in the beam at 3 m | −21 dBm | −9 dBm | ~8 dB |
 | phone behind the horns (F/B ≈ 25 dB) | −43 dBm | −31 dBm | ~30 dB |
 | TX→RX leakage, 35 dB isolation | −25 dBm | −13 dBm | ~12 dB |
@@ -61,10 +62,10 @@ AP at +20 dBm**, which is in the beam by definition:
 
 So the plan needs three things Kevin pointed at:
 
-1. **Turn the drone's AP power down.** ESP-Drone/ESP-IDF: `CONFIG_ESP_PHY_MAX_WIFI_TX_POWER`
-   (or `esp_wifi_set_max_tx_power(32)` = 8 dBm) — indoors at 10 m, 8 dBm is
-   plenty for the phone link and buys 12 dB at the radar. Do this in the
-   same rebuild as the channel change.
+1. **Turn the drone's AP power down to 10 dBm** — `menuconfig` →
+   Component config → PHY → Max WiFi TX power (its minimum), in the same
+   build as the channel change (§1). Indoors at 10 m that is plenty for the
+   phone link and buys 10 dB at the radar.
 2. **A 2.4 GHz band-pass filter between the RX horn and the LNA** (2400–2500
    MHz SMA inline, ~$20, `hardware/BOM.md` row 7b). It cannot separate
    channel 1 from the sweep — no cheap filter has a 17 MHz transition — but
@@ -83,35 +84,63 @@ commands on `radar_ctl` (§3).
 
 ---
 
-## 1. ESP-Drone firmware on channel 1
+## 1. Build the drone and flash ESP-Drone — the official way, with two settings changed
 
-ESP-Drone defaults to **channel 6** (`CONFIG_WIFI_CHANNEL=6`), which sits in
-the middle of the band and leaves no room for a useful sweep on either side.
-Rebuild it on channel 1:
+Follow the kit's own guide **exactly** — the ESP-FLY tutorial video and the
+Elektor build article linked from the official repository
+(`Seeed-Projects/Co-Create_ESP-FLY`). Nothing in that procedure changes
+except two `menuconfig` values set **before** the flash step. In the guide's
+order:
 
-1. Clone Seeed's ESP-FLY firmware (the `Firmware/` tree of
-   `Seeed-Projects/Co-Create_ESP-FLY`, an esp-drone fork for the XIAO S3)
-   with ESP-IDF installed.
-2. `idf.py menuconfig` → **ESPDrone Config → Wi-Fi/ESP-Now Channel** = **1**
-   (or add `CONFIG_WIFI_CHANNEL=1` to `sdkconfig.defaults`). While there:
-   `WIFI_BASE_SSID` / `WIFI_PASSWORD` are the AP name and password; leave
-   `WIFI_MAX_STA_CONN` at 3.
-3. `idf.py -p <port> flash`.
+1. Install **ESP-IDF 5.0.7** (the guide's version; PowerShell + ESP32-S3
+   support in the installer).
+2. Download the guide's pre-configured firmware, extract it, and `cd` into
+   its `esp-drone` folder in the ESP-IDF PowerShell.
+3. **Deviation 1 — the channel.** Run
 
-**Checkpoint 1:** a WiFi-analyser app on the phone shows the `ESP-DRONE-xxxx`
-AP on **channel 1**. If it is on 6, the sdkconfig didn't take.
+   ```
+   idf.py menuconfig
+   ```
+
+   → **ESPDrone Config → Wi-Fi/ESP-Now Channel** → set **1**
+   (`CONFIG_WIFI_CHANNEL`; the default is 6, which sits inside the radar's
+   sweep). Leave **Wi-Fi Base SSID** (`ESP-DRONE`) and **Wi-Fi Password**
+   (`12345678`) as they are, so the app steps in the guide still apply.
+4. **Deviation 2 — the AP power.** Same `menuconfig` →
+   **Component config → PHY → Max WiFi TX power (dBm)** → set **10**
+   (`CONFIG_ESP_PHY_MAX_WIFI_TX_POWER`; default 20, and 10 is the lowest the
+   option allows). 10 dBm is plenty for a phone 3 m away and takes 10 dB off
+   what the radar's receiver has to swallow (§0). Save and exit.
+5. Flash and watch the log, exactly as the guide does:
+
+   ```
+   idf.py -p COMX flash monitor
+   ```
+
+   with your COM port. **"Ready to Fly"** in the log is the guide's success
+   line and yours too.
+
+Do **not** use the repository's prebuilt
+`ESP32Drone_Firmware_FlashdownloadTool_0x00.bin`: it is built for channel 6.
+
+**Checkpoint 1:** a WiFi-analyser app on the phone shows `ESP-DRONE-xxxx`
+on **channel 1**. If it shows 6, the sdkconfig didn't take — re-run
+menuconfig and re-flash.
 
 Channel 11 (2451–2473) with the sweep **below** it (`SET f0_mhz 2400`,
-`SET bw_mhz 40`) is the mirror-image alternative; channel 1 is preferred
-because it leaves 3.5 MHz more sweep. Channels 12–13 are not usable in the US.
+`SET bw_mhz 40`) is the mirror-image alternative; channel 1 is preferred.
+Channels 12–13 are not usable in the US.
 
-## 2. App
+## 2. Phone — as the guide says
 
-Connect the phone to the drone's AP (password from §1), open the ESP-Drone
-app, connect (default host 192.168.43.42, UDP 2390 — check the app's
-connection settings if it doesn't find the drone). Fly it once **with the
-radar off** to confirm nothing about the flight changed — it hasn't, this is
-the stock ESP-FLY phone-flying path.
+1. Power the drone on a **flat, still surface** — the guide's own step; the
+   IMU calibrates at power-up.
+2. Join the phone to `ESP-DRONE-xxxx`, password `12345678`.
+3. Open the **ESP-Drone** app (App Store; Android APK per the guide), tap
+   **connect** — the drone's **green LED** lights. Left stick throttle/yaw,
+   right stick pitch/roll.
+4. Fly once **with the radar off**. Nothing about the flight has changed —
+   this is the stock phone-flying path.
 
 **Checkpoint 2:** stable hover from the phone, radar powered off.
 
@@ -174,11 +203,11 @@ Only if checkpoint 4 fails. It costs ~$130 (RadioMaster Pocket + Bandit Nano
 915 module + a 0.7 g Nano 915 receiver — your T8L has no module bay and
 cannot do 900 MHz) and switches the drone to esp-fc with a CRSF receiver.
 The full procedure is kept in [`archive/drone-915.md`](archive/drone-915.md); the esp-fc CLI
-settings are in `firmware/espfly/espfly-915.cli`. It also gives you back the
+settings are in `firmware/archive/espfly-915/espfly-915.cli`. It also gives you back the
 full 80 MHz sweep.
 
 ## 7. What is deliberately *not* on the drone
 
-- No beacon firmware, no MAC filtering, no esp-fc patches — those were the
-  passive system. The radar sees the airframe.
+- No custom firmware of any kind: stock ESP-Drone from the kit's guide,
+  two menuconfig values changed. The radar sees the airframe.
 - No radio. The phone is the transmitter; the WiFi AP is the receiver.

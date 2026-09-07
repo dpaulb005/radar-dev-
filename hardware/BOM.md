@@ -1,4 +1,4 @@
-# Bill of Materials — horn-fed FMCW radar + ESP-FLY on 915 MHz
+# Bill of Materials — horn-fed FMCW radar (drone: stock ESP-FLY, flown by phone)
 
 Researched September 2026 (Mini-Circuits store checked directly; Amazon /
 FPV retailers for the rest). Prices are US street, rounded. Order in the
@@ -57,8 +57,10 @@ Dimensions: aperture 263.8 × 193.1 mm, WR-340 throat 86.4 × 43.2 mm, flare
 
 ## E. Drone — nothing (flown from the phone)
 
-The drone is the stock ESP-FLY on ESP-Drone firmware, AP on WiFi channel 1;
-the radar sweeps 2440–2480 MHz above it. **$0.** The table below is the
+The drone is the stock ESP-FLY kit built per its official guide, ESP-Drone
+firmware with the AP on WiFi channel 1 at 10 dBm; the radar sweeps
+2440–2480 MHz above it. Do not buy or fit the kit's radio-controller option.
+**$0.** The table below is the
 fallback if the coexistence test in `docs/drone-software.md` §4 fails.
 
 ### E-fallback. 915 MHz control link — ~$130

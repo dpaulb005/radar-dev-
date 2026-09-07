@@ -1,21 +1,23 @@
 # ESP-FLY drone hardware — step by step (fly by phone)
 
-**Nothing changes on the airframe.** The phone-flying ESP-FLY is the stock
-build: XIAO ESP32-S3, the flight-controller board, MPU-6050, four coreless
-motors, 1S battery, ESP-Drone firmware. The receiver you fitted for the T8L
-(RP1 V2) is simply not used — leave it or remove it (−0.9 g), your call.
+**Build the kit exactly as its official guide says** — the ESP-FLY tutorial
+video and Elektor article linked from `Seeed-Projects/Co-Create_ESP-FLY`:
+XIAO ESP32-S3, the flight-controller board, MPU-6050, four 615 coreless
+motors, 30 mm props, 1S battery. The radar needs nothing added to it. The
+one deviation is what you **leave off**.
 
 What *does* matter for the radar is where the drone's WiFi sits and what
 the radar can see:
 
-## 1. Take the RP1 V2 off, or power it down
+## 1. Do not fit the radio-controller receiver
 
-An ELRS 2.4 receiver that is powered but unbound sends nothing, so it is
-harmless to the radar. But if it is bound to a T8L that is switched on, the
-link hops over the whole 2.4 GHz band at 25–100 mW — right through the
-radar's sweep, in both directions. **Either unsolder the RP1 V2, or never
-have the T8L on during radar sessions.** Unsoldering is the version that
-cannot be forgotten.
+The kit's optional radio-controller path (an ESP-NOW transmitter, or the
+ELRS receiver — RP1 V2 — used with the ESP-FC firmware) is **2.4 GHz** and,
+when bound to a live transmitter, hops across the whole band at 25–100 mW —
+straight through the radar's sweep, in both directions. The phone-flying
+build does not use it. If you already fitted an RP1 V2 for the T8L,
+**unsolder it** (−0.9 g); if not, skip that step of the radio tutorial
+entirely. Never have the T8L switched on during a radar session.
 
 **Checkpoint 1:** with the drone powered, a WiFi-analyser app on the phone
 shows exactly one thing from the drone: its `ESP-DRONE-xxxx` AP.

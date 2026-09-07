@@ -23,7 +23,7 @@ the existing console (`server.py`) through `POST /api/radar`.
 MIT sweeps an analog VCO with a triangle wave. The ZX95-2536C+ is a
 non-catalog part now, so the ESP32 **steps an ADF4351 PLL** instead:
 
-- `N_STEPS` (64) frequencies from 2400.0 to 2483.5 MHz, `STEP_US` (100 µs)
+- `N_STEPS` (64) frequencies across the sweep (default 2400–2480 MHz), `STEP_US` (100 µs)
   each → **6.4 ms up-chirp**, then 1 ms retrace parked at 2400 MHz.
 - Every step is locked to the board's 25 MHz TCXO, so **sweep linearity is
   not a tuning problem** — MIT's biggest practical headache is gone.

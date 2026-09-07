@@ -1,7 +1,7 @@
 # firmware/espfly — what runs on the ESP-FLY
 
 **Current plan: nothing from here.** The drone is flown from the phone on
-the stock ESP-Drone firmware (AP on channel 1) — see `docs/drone-software.md`.
+the stock ESP-Drone firmware (AP on channel 1) — see `docs/drone-software.md` (this directory is archived; the live plan is the phone).
 
 This directory is the **fallback**: esp-fc configuration for a 915 MHz
 ELRS/CRSF receiver, if the phone link and the radar turn out not to coexist:
