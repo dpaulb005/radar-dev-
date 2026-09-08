@@ -40,6 +40,8 @@ moving on.
 4. **[`docs/drone-hardware.md`](docs/drone-hardware.md)** — build the kit exactly per its guide; the one thing to leave off.
 5. **[`docs/drone-software.md`](docs/drone-software.md)** — the kit's official build and flash, with two menuconfig changes (channel 1, 10 dBm); the coexistence sweep and ping test.
 
+Breadboard build sheet: [`hardware/breadboard/`](hardware/breadboard/) — every lead and jumper by hole (`WIRING.md`), verified against the netlist, with an interactive `breadboard.html`.
+
 Schematics: [`hardware/kicad/`](hardware/kicad/) — `radar_breadboard.kicad_sch` (the breadboard and everything it connects to) and `radar_multisim.kicad_sch` (every value on the page, one frame per test). Both render in KiCad 7/8; PNGs alongside.
 
 ## Test

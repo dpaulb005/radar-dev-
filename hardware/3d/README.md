@@ -16,8 +16,7 @@ and the drone 3 m out in the room.
 Screenshots: `radar-bench-bench.png`, `radar-bench-breadboard.png`,
 `radar-bench-stage3.png`, `radar-bench-room.png`.
 
-The breadboard layout is a *suggested* placement that follows the schematic
-in signal order (top bank: IF → U1 → U2 → audio out; bottom bank: bias,
-12 V, 5 V distribution; right: ESP32 / ADF / A4988 harness). Hole-level
-correctness is yours to check as you build — the electrical reference is
-`hardware/kicad/radar_multisim.kicad_sch`.
+The breadboard in this model is a schematic-order placement to give the
+bench a sense of scale. The hole-level, netlist-verified layout to build from
+is `hardware/breadboard/` (`WIRING.md`, `breadboard.svg`, `breadboard.html`);
+the electrical reference is `hardware/kicad/radar_multisim.kicad_sch`.

@@ -1,0 +1,2109 @@
+{
+ "parts": [
+  {
+   "ref": "J1",
+   "kind": "hdr2",
+   "value": "MIXER IF",
+   "pins": [
+    [
+     "1",
+     "a2"
+    ],
+    [
+     "2",
+     "a3"
+    ]
+   ],
+   "note": "1=IF / 2=GND"
+  },
+  {
+   "ref": "R1",
+   "kind": "res",
+   "value": "49.9",
+   "pins": [
+    [
+     "1",
+     "b2"
+    ],
+    [
+     "2",
+     "TR-@2"
+    ]
+   ],
+   "note": "IF termination straight to the top GND rail"
+  },
+  {
+   "ref": "C20",
+   "kind": "cer",
+   "value": "1n",
+   "pins": [
+    [
+     "1",
+     "c2"
+    ],
+    [
+     "2",
+     "TR-@3"
+    ]
+   ],
+   "note": "RF stop, beside R1"
+  },
+  {
+   "ref": "C1",
+   "kind": "film",
+   "value": "100n",
+   "pins": [
+    [
+     "1",
+     "d2"
+    ],
+    [
+     "2",
+     "d4"
+    ]
+   ],
+   "note": "5 mm film cap = 2 columns"
+  },
+  {
+   "ref": "R2",
+   "kind": "res",
+   "value": "10k",
+   "pins": [
+    [
+     "1",
+     "c4"
+    ],
+    [
+     "2",
+     "c1"
+    ]
+   ],
+   "note": "AP -> VREF node (col 1)"
+  },
+  {
+   "ref": "U1",
+   "kind": "dip8",
+   "value": "TL072CP",
+   "pins": [
+    [
+     "1",
+     "e5"
+    ],
+    [
+     "2",
+     "e6"
+    ],
+    [
+     "3",
+     "e7"
+    ],
+    [
+     "4",
+     "e8"
+    ],
+    [
+     "8",
+     "f5"
+    ],
+    [
+     "7",
+     "f6"
+    ],
+    [
+     "6",
+     "f7"
+    ],
+    [
+     "5",
+     "f8"
+    ]
+   ],
+   "note": "pin 1 (notch) at column 5, straddling the channel"
+  },
+  {
+   "ref": "R3",
+   "kind": "res",
+   "value": "100k",
+   "pins": [
+    [
+     "1",
+     "b14"
+    ],
+    [
+     "2",
+     "b10"
+    ]
+   ],
+   "note": "feedback A: pin 1 at AM (col 14), pin 2 at AOUT (col 10)"
+  },
+  {
+   "ref": "C2",
+   "kind": "film",
+   "value": "100n",
+   "pins": [
+    [
+     "1",
+     "c10"
+    ],
+    [
+     "2",
+     "c12"
+    ]
+   ],
+   "note": "AOUT -> BP"
+  },
+  {
+   "ref": "R4",
+   "kind": "res",
+   "value": "1k",
+   "pins": [
+    [
+     "1",
+     "c14"
+    ],
+    [
+     "2",
+     "c17"
+    ]
+   ],
+   "note": "AM -> VREF (col 17). 4.7k here for gain 22 on first power-up"
+  },
+  {
+   "ref": "R6",
+   "kind": "res",
+   "value": "10k",
+   "pins": [
+    [
+     "1",
+     "b12"
+    ],
+    [
+     "2",
+     "b16"
+    ]
+   ],
+   "note": "BP -> VREF (col 16)"
+  },
+  {
+   "ref": "R7",
+   "kind": "res",
+   "value": "10k",
+   "pins": [
+    [
+     "1",
+     "b23"
+    ],
+    [
+     "2",
+     "b19"
+    ]
+   ],
+   "note": "feedback B: pin 1 at BM (col 23), pin 2 at BOUT (col 19). Wire link here = gain 1"
+  },
+  {
+   "ref": "R8",
+   "kind": "res",
+   "value": "1k",
+   "pins": [
+    [
+     "1",
+     "c23"
+    ],
+    [
+     "2",
+     "c26"
+    ]
+   ],
+   "note": "BM -> VREF (col 26)"
+  },
+  {
+   "ref": "R12",
+   "kind": "res",
+   "value": "1k",
+   "pins": [
+    [
+     "1",
+     "c19"
+    ],
+    [
+     "2",
+     "c22"
+    ]
+   ],
+   "note": "BOUT -> LP (col 22)"
+  },
+  {
+   "ref": "C9",
+   "kind": "cer",
+   "value": "10n",
+   "pins": [
+    [
+     "1",
+     "d22"
+    ],
+    [
+     "2",
+     "d24"
+    ]
+   ],
+   "note": "LP -> VREF (col 24)"
+  },
+  {
+   "ref": "U2",
+   "kind": "dip8",
+   "value": "TL072CP",
+   "pins": [
+    [
+     "1",
+     "e30"
+    ],
+    [
+     "2",
+     "e31"
+    ],
+    [
+     "3",
+     "e32"
+    ],
+    [
+     "4",
+     "e33"
+    ],
+    [
+     "8",
+     "f30"
+    ],
+    [
+     "7",
+     "f31"
+    ],
+    [
+     "6",
+     "f32"
+    ],
+    [
+     "5",
+     "f33"
+    ]
+   ],
+   "note": "pin 1 (notch) at column 30, straddling the channel"
+  },
+  {
+   "ref": "R13",
+   "kind": "res",
+   "value": "100",
+   "pins": [
+    [
+     "1",
+     "i31"
+    ],
+    [
+     "2",
+     "i35"
+    ]
+   ],
+   "note": "OBUF (U2 pin 7, col 31 bottom) -> OISO (col 35)"
+  },
+  {
+   "ref": "C10",
+   "kind": "elec",
+   "value": "10u",
+   "pins": [
+    [
+     "1",
+     "h35"
+    ],
+    [
+     "2",
+     "h36"
+    ]
+   ],
+   "note": "+ toward R13 (col 35), - toward J2 (col 36)"
+  },
+  {
+   "ref": "R14",
+   "kind": "res",
+   "value": "100k",
+   "pins": [
+    [
+     "1",
+     "g36"
+    ],
+    [
+     "2",
+     "BR-@36"
+    ]
+   ],
+   "note": "output bleed to the bottom GND rail"
+  },
+  {
+   "ref": "J2",
+   "kind": "hdr2",
+   "value": "AUDIO L",
+   "pins": [
+    [
+     "1",
+     "f36"
+    ],
+    [
+     "2",
+     "f37"
+    ]
+   ],
+   "note": "1=AUDIO_L / 2=GND"
+  },
+  {
+   "ref": "R9",
+   "kind": "res",
+   "value": "10k",
+   "pins": [
+    [
+     "1",
+     "a36"
+    ],
+    [
+     "2",
+     "a32"
+    ]
+   ],
+   "note": "VANA stub (col 36 top, jumpered to BR+) -> VDIV (col 32 = U2 pin 3)"
+  },
+  {
+   "ref": "R10",
+   "kind": "res",
+   "value": "10k",
+   "pins": [
+    [
+     "1",
+     "b32"
+    ],
+    [
+     "2",
+     "TR-@33"
+    ]
+   ],
+   "note": "VDIV -> GND rail"
+  },
+  {
+   "ref": "C5",
+   "kind": "elec",
+   "value": "10u",
+   "pins": [
+    [
+     "1",
+     "c32"
+    ],
+    [
+     "2",
+     "TR-@35"
+    ]
+   ],
+   "note": "+ at VDIV, - bent up to the GND rail"
+  },
+  {
+   "ref": "R11",
+   "kind": "res",
+   "value": "47",
+   "pins": [
+    [
+     "1",
+     "b30"
+    ],
+    [
+     "2",
+     "b26"
+    ]
+   ],
+   "note": "VBUF (U2 pin 1, col 30) -> VREF node (col 26)"
+  },
+  {
+   "ref": "C6",
+   "kind": "elec",
+   "value": "47u",
+   "pins": [
+    [
+     "1",
+     "d26"
+    ],
+    [
+     "2",
+     "TR-@26"
+    ]
+   ],
+   "note": "+ at VREF"
+  },
+  {
+   "ref": "J3",
+   "kind": "hdr2",
+   "value": "12V IN",
+   "pins": [
+    [
+     "1",
+     "j10"
+    ],
+    [
+     "2",
+     "j11"
+    ]
+   ],
+   "note": "1=VIN12 / 2=GND"
+  },
+  {
+   "ref": "D1",
+   "kind": "diode",
+   "value": "1N5822",
+   "pins": [
+    [
+     "A",
+     "i10"
+    ],
+    [
+     "K",
+     "i13"
+    ]
+   ],
+   "note": "band (cathode) toward col 13 = VPROT"
+  },
+  {
+   "ref": "C11",
+   "kind": "elec",
+   "value": "100u",
+   "pins": [
+    [
+     "1",
+     "h13"
+    ],
+    [
+     "2",
+     "BR-@13"
+    ]
+   ],
+   "note": "+ at VPROT"
+  },
+  {
+   "ref": "J4",
+   "kind": "hdr2",
+   "value": "TO BUCK IN",
+   "pins": [
+    [
+     "1",
+     "j13"
+    ],
+    [
+     "2",
+     "j14"
+    ]
+   ],
+   "note": "1=VPROT / 2=GND"
+  },
+  {
+   "ref": "R15",
+   "kind": "res",
+   "value": "10",
+   "pins": [
+    [
+     "1",
+     "g13"
+    ],
+    [
+     "2",
+     "g16"
+    ]
+   ],
+   "note": "VPROT -> VANA node (col 16 bottom)"
+  },
+  {
+   "ref": "C13",
+   "kind": "elec",
+   "value": "100u",
+   "pins": [
+    [
+     "1",
+     "h16"
+    ],
+    [
+     "2",
+     "BR-@16"
+    ]
+   ],
+   "note": "+ at VANA"
+  },
+  {
+   "ref": "J5",
+   "kind": "hdr2",
+   "value": "FROM BUCK 5V",
+   "pins": [
+    [
+     "1",
+     "j18"
+    ],
+    [
+     "2",
+     "j19"
+    ]
+   ],
+   "note": "1=V5 / 2=GND"
+  },
+  {
+   "ref": "C12",
+   "kind": "elec",
+   "value": "100u",
+   "pins": [
+    [
+     "1",
+     "h18"
+    ],
+    [
+     "2",
+     "BR-@18"
+    ]
+   ],
+   "note": "+ at V5"
+  },
+  {
+   "ref": "C3",
+   "kind": "cer",
+   "value": "100n",
+   "pins": [
+    [
+     "1",
+     "g5"
+    ],
+    [
+     "2",
+     "BR-@5"
+    ]
+   ],
+   "note": "U1 V+ (pin 8, col 5 bottom) to GND, right at the pin"
+  },
+  {
+   "ref": "C7",
+   "kind": "cer",
+   "value": "100n",
+   "pins": [
+    [
+     "1",
+     "g30"
+    ],
+    [
+     "2",
+     "BR-@30"
+    ]
+   ],
+   "note": "U2 V+ (pin 8, col 30 bottom) to GND"
+  },
+  {
+   "ref": "FB1",
+   "kind": "bead",
+   "value": "FB",
+   "pins": [
+    [
+     "1",
+     "TR+@38"
+    ],
+    [
+     "2",
+     "a38"
+    ]
+   ],
+   "note": "from the top 5 V rail down into the column"
+  },
+  {
+   "ref": "C14",
+   "kind": "elec",
+   "value": "10u",
+   "pins": [
+    [
+     "1",
+     "b38"
+    ],
+    [
+     "2",
+     "TR-@39"
+    ]
+   ],
+   "note": "+ at the module rail"
+  },
+  {
+   "ref": "C15",
+   "kind": "cer",
+   "value": "100n",
+   "pins": [
+    [
+     "1",
+     "c38"
+    ],
+    [
+     "2",
+     "TR-@40"
+    ]
+   ],
+   "note": ""
+  },
+  {
+   "ref": "J6",
+   "kind": "hdr2",
+   "value": "ADF4351 5V",
+   "pins": [
+    [
+     "1",
+     "d38"
+    ],
+    [
+     "2",
+     "d39"
+    ]
+   ],
+   "note": "1=5V / 2=GND"
+  },
+  {
+   "ref": "FB2",
+   "kind": "bead",
+   "value": "FB",
+   "pins": [
+    [
+     "1",
+     "TR+@41"
+    ],
+    [
+     "2",
+     "a41"
+    ]
+   ],
+   "note": "from the top 5 V rail down into the column"
+  },
+  {
+   "ref": "C16",
+   "kind": "elec",
+   "value": "10u",
+   "pins": [
+    [
+     "1",
+     "b41"
+    ],
+    [
+     "2",
+     "TR-@42"
+    ]
+   ],
+   "note": "+ at the module rail"
+  },
+  {
+   "ref": "C17",
+   "kind": "cer",
+   "value": "100n",
+   "pins": [
+    [
+     "1",
+     "c41"
+    ],
+    [
+     "2",
+     "TR-@43"
+    ]
+   ],
+   "note": ""
+  },
+  {
+   "ref": "J7",
+   "kind": "hdr2",
+   "value": "PA 5V",
+   "pins": [
+    [
+     "1",
+     "d41"
+    ],
+    [
+     "2",
+     "d42"
+    ]
+   ],
+   "note": "1=5V / 2=GND"
+  },
+  {
+   "ref": "FB3",
+   "kind": "bead",
+   "value": "FB",
+   "pins": [
+    [
+     "1",
+     "TR+@44"
+    ],
+    [
+     "2",
+     "a44"
+    ]
+   ],
+   "note": "from the top 5 V rail down into the column"
+  },
+  {
+   "ref": "C18",
+   "kind": "elec",
+   "value": "10u",
+   "pins": [
+    [
+     "1",
+     "b44"
+    ],
+    [
+     "2",
+     "TR-@45"
+    ]
+   ],
+   "note": "+ at the module rail"
+  },
+  {
+   "ref": "C19",
+   "kind": "cer",
+   "value": "100n",
+   "pins": [
+    [
+     "1",
+     "c44"
+    ],
+    [
+     "2",
+     "TR-@46"
+    ]
+   ],
+   "note": ""
+  },
+  {
+   "ref": "J8",
+   "kind": "hdr2",
+   "value": "LNA 5V",
+   "pins": [
+    [
+     "1",
+     "d44"
+    ],
+    [
+     "2",
+     "d45"
+    ]
+   ],
+   "note": "1=5V / 2=GND"
+  },
+  {
+   "ref": "J9",
+   "kind": "hdr10",
+   "value": "ESP32",
+   "pins": [
+    [
+     "1",
+     "j44"
+    ],
+    [
+     "2",
+     "j45"
+    ],
+    [
+     "3",
+     "j46"
+    ],
+    [
+     "4",
+     "j47"
+    ],
+    [
+     "5",
+     "j48"
+    ],
+    [
+     "6",
+     "j49"
+    ],
+    [
+     "7",
+     "j50"
+    ],
+    [
+     "8",
+     "j51"
+    ],
+    [
+     "9",
+     "j52"
+    ],
+    [
+     "10",
+     "j53"
+    ]
+   ],
+   "note": "1=GND / 2=SCK / 3=MOSI / 4=LE / 5=LD / 6=SYNC / 7=STEP / 8=DIR / 9=EN / 10=3V3"
+  },
+  {
+   "ref": "R16",
+   "kind": "res",
+   "value": "33",
+   "pins": [
+    [
+     "1",
+     "f45"
+    ],
+    [
+     "2",
+     "e46"
+    ]
+   ],
+   "note": "SCK (bottom col 45) straight across the channel to top col 46"
+  },
+  {
+   "ref": "R17",
+   "kind": "res",
+   "value": "33",
+   "pins": [
+    [
+     "1",
+     "f46"
+    ],
+    [
+     "2",
+     "e47"
+    ]
+   ],
+   "note": "MOSI (bottom col 46) across to top col 47"
+  },
+  {
+   "ref": "R18",
+   "kind": "res",
+   "value": "33",
+   "pins": [
+    [
+     "1",
+     "f47"
+    ],
+    [
+     "2",
+     "e48"
+    ]
+   ],
+   "note": "LE (bottom col 47) across to top col 48"
+  },
+  {
+   "ref": "J10",
+   "kind": "hdr6",
+   "value": "ADF LOGIC",
+   "pins": [
+    [
+     "1",
+     "a52"
+    ],
+    [
+     "2",
+     "a53"
+    ],
+    [
+     "3",
+     "a54"
+    ],
+    [
+     "4",
+     "a55"
+    ],
+    [
+     "5",
+     "a56"
+    ],
+    [
+     "6",
+     "a57"
+    ]
+   ],
+   "note": "1=GND / 2=SCK_O / 3=MOSI_O / 4=LE_O / 5=LD / 6=CE"
+  },
+  {
+   "ref": "R19",
+   "kind": "res",
+   "value": "10k",
+   "pins": [
+    [
+     "1",
+     "b57"
+    ],
+    [
+     "2",
+     "TR-@57"
+    ]
+   ],
+   "note": "CE pull-down"
+  },
+  {
+   "ref": "JP3",
+   "kind": "hdr2",
+   "value": "CE EN",
+   "pins": [
+    [
+     "1",
+     "d57"
+    ],
+    [
+     "2",
+     "d58"
+    ]
+   ],
+   "note": "1=CE / 2=3V3"
+  },
+  {
+   "ref": "J11",
+   "kind": "hdr5",
+   "value": "A4988 LOGIC",
+   "pins": [
+    [
+     "1",
+     "j58"
+    ],
+    [
+     "2",
+     "j59"
+    ],
+    [
+     "3",
+     "j60"
+    ],
+    [
+     "4",
+     "j61"
+    ],
+    [
+     "5",
+     "j62"
+    ]
+   ],
+   "note": "1=GND / 2=3V3 / 3=STEP / 4=DIR / 5=EN"
+  },
+  {
+   "ref": "R20",
+   "kind": "res",
+   "value": "10k",
+   "pins": [
+    [
+     "1",
+     "i59"
+    ],
+    [
+     "2",
+     "i62"
+    ]
+   ],
+   "note": "EN pull-up: pin 1 at 3V3 (col 59), pin 2 at EN (col 62)"
+  },
+  {
+   "ref": "R21",
+   "kind": "res",
+   "value": "10k",
+   "pins": [
+    [
+     "1",
+     "h60"
+    ],
+    [
+     "2",
+     "BR-@60"
+    ]
+   ],
+   "note": "STEP pull-down"
+  },
+  {
+   "ref": "R22",
+   "kind": "res",
+   "value": "10k",
+   "pins": [
+    [
+     "1",
+     "h61"
+    ],
+    [
+     "2",
+     "BR-@61"
+    ]
+   ],
+   "note": "DIR pull-down"
+  },
+  {
+   "ref": "R23",
+   "kind": "res",
+   "value": "10k",
+   "pins": [
+    [
+     "1",
+     "b60"
+    ],
+    [
+     "2",
+     "b63"
+    ]
+   ],
+   "note": "SYNC (jumpered up to col 60 top) -> AUDIO_R (col 63)"
+  },
+  {
+   "ref": "R24",
+   "kind": "res",
+   "value": "1k",
+   "pins": [
+    [
+     "1",
+     "c63"
+    ],
+    [
+     "2",
+     "TR-@63"
+    ]
+   ],
+   "note": "0.3 V divider bottom leg"
+  },
+  {
+   "ref": "J12",
+   "kind": "hdr2",
+   "value": "AUDIO R",
+   "pins": [
+    [
+     "1",
+     "d63"
+    ],
+    [
+     "2",
+     "d62"
+    ]
+   ],
+   "note": "1=AUDIO_R (col 63), 2=GND stub (col 62)"
+  }
+ ],
+ "wires": [
+  {
+   "a": "e3",
+   "b": "TR-@4",
+   "colour": "black",
+   "why": "J1 GND"
+  },
+  {
+   "a": "j37",
+   "b": "BR-@37",
+   "colour": "black",
+   "why": "J2 GND"
+  },
+  {
+   "a": "f11",
+   "b": "BR-@11",
+   "colour": "black",
+   "why": "J3 GND"
+  },
+  {
+   "a": "f14",
+   "b": "BR-@14",
+   "colour": "black",
+   "why": "J4 GND"
+  },
+  {
+   "a": "f19",
+   "b": "BR-@19",
+   "colour": "black",
+   "why": "J5 GND"
+  },
+  {
+   "a": "e39",
+   "b": "TR-@41",
+   "colour": "black",
+   "why": "J6 GND"
+  },
+  {
+   "a": "e42",
+   "b": "TR-@44",
+   "colour": "black",
+   "why": "J7 GND"
+  },
+  {
+   "a": "e45",
+   "b": "TR-@47",
+   "colour": "black",
+   "why": "J8 GND"
+  },
+  {
+   "a": "f44",
+   "b": "BR-@44",
+   "colour": "black",
+   "why": "J9 pin 1 GND"
+  },
+  {
+   "a": "e52",
+   "b": "TR-@52",
+   "colour": "black",
+   "why": "J10 pin 1 GND"
+  },
+  {
+   "a": "f58",
+   "b": "BR-@58",
+   "colour": "black",
+   "why": "J11 pin 1 GND"
+  },
+  {
+   "a": "e62",
+   "b": "TR-@62",
+   "colour": "black",
+   "why": "J12 GND"
+  },
+  {
+   "a": "a8",
+   "b": "TR-@8",
+   "colour": "black",
+   "why": "U1 pin 4 (V-) to GND"
+  },
+  {
+   "a": "a33",
+   "b": "TR-@34",
+   "colour": "black",
+   "why": "U2 pin 4 (V-) to GND"
+  },
+  {
+   "a": "h5",
+   "b": "BR+@5",
+   "colour": "red",
+   "why": "U1 pin 8 (V+, strip f-j col 5) to the VANA rail"
+  },
+  {
+   "a": "h30",
+   "b": "BR+@30",
+   "colour": "red",
+   "why": "U2 pin 8 (V+, col 30) to the VANA rail"
+  },
+  {
+   "a": "f16",
+   "b": "BR+@16",
+   "colour": "red",
+   "why": "VANA node (R15/C13) feeds the bottom red rail"
+  },
+  {
+   "a": "e36",
+   "b": "BR+@36",
+   "colour": "red",
+   "why": "R9's VANA end (top col 36) down to the VANA rail"
+  },
+  {
+   "a": "g18",
+   "b": "TR+@18",
+   "colour": "orange",
+   "why": "V5 (J5/C12, bottom col 18) up to the top red rail"
+  },
+  {
+   "a": "TR-@1",
+   "b": "BR-@1",
+   "colour": "black",
+   "why": "tie the two GND rails together"
+  },
+  {
+   "a": "TR+@31",
+   "b": "TR+@32",
+   "colour": "orange",
+   "why": "rail bridge (omit if your rails are continuous)"
+  },
+  {
+   "a": "TR-@31",
+   "b": "TR-@32",
+   "colour": "black",
+   "why": "rail bridge"
+  },
+  {
+   "a": "BR+@31",
+   "b": "BR+@32",
+   "colour": "red",
+   "why": "rail bridge"
+  },
+  {
+   "a": "BR-@31",
+   "b": "BR-@32",
+   "colour": "black",
+   "why": "rail bridge"
+  },
+  {
+   "a": "a4",
+   "b": "a7",
+   "colour": "green",
+   "why": "AP (C1/R2 node) into U1 pin 3 (IN+ A)"
+  },
+  {
+   "a": "a5",
+   "b": "a10",
+   "colour": "green",
+   "why": "U1 pin 1 (OUT A) to the AOUT node (col 10)"
+  },
+  {
+   "a": "a14",
+   "b": "a6",
+   "colour": "green",
+   "why": "AM node (R3/R4) back to U1 pin 2 (IN- A)"
+  },
+  {
+   "a": "d12",
+   "b": "g8",
+   "colour": "green",
+   "why": "BP (C2/R6 node) across the channel into U1 pin 5 (IN+ B)"
+  },
+  {
+   "a": "g6",
+   "b": "a19",
+   "colour": "green",
+   "why": "U1 pin 7 (OUT B) up to the BOUT node (col 19)"
+  },
+  {
+   "a": "a23",
+   "b": "i7",
+   "colour": "green",
+   "why": "BM node (R7/R8) across to U1 pin 6 (IN- B)"
+  },
+  {
+   "a": "e22",
+   "b": "h33",
+   "colour": "green",
+   "why": "LP (R12/C9 node) across to U2 pin 5 (IN+ B)"
+  },
+  {
+   "a": "j31",
+   "b": "j32",
+   "colour": "green",
+   "why": "U2 pin 7 to pin 6: unity-gain buffer"
+  },
+  {
+   "a": "a30",
+   "b": "a31",
+   "colour": "green",
+   "why": "U2 pin 1 to pin 2: VREF buffer, unity gain"
+  },
+  {
+   "a": "a26",
+   "b": "a24",
+   "colour": "violet",
+   "why": "VREF -> C9's VREF end"
+  },
+  {
+   "a": "b24",
+   "b": "c16",
+   "colour": "violet",
+   "why": "VREF -> R6's VREF end (col 16)"
+  },
+  {
+   "a": "d16",
+   "b": "d17",
+   "colour": "violet",
+   "why": "VREF (col 16) -> R4's VREF end (col 17)"
+  },
+  {
+   "a": "a1",
+   "b": "a16",
+   "colour": "violet",
+   "why": "VREF -> R2's VREF end (col 1): long run along row a"
+  },
+  {
+   "a": "a46",
+   "b": "b53",
+   "colour": "blue",
+   "why": "R16 out (top col 46) -> J10 pin 2 SCK_O (col 53)"
+  },
+  {
+   "a": "a47",
+   "b": "b54",
+   "colour": "blue",
+   "why": "R17 out (top col 47) -> J10 pin 3 MOSI_O (col 54)"
+  },
+  {
+   "a": "a48",
+   "b": "b55",
+   "colour": "blue",
+   "why": "R18 out (top col 48) -> J10 pin 4 LE_O (col 55)"
+  },
+  {
+   "a": "f48",
+   "b": "b56",
+   "colour": "blue",
+   "why": "J9 pin 5 LD (bottom col 48) -> J10 pin 5 LD (top col 56)"
+  },
+  {
+   "a": "f53",
+   "b": "e58",
+   "colour": "yellow",
+   "why": "J9 pin 10 3V3 (bottom col 53) -> JP3 pin 2 (top col 58)"
+  },
+  {
+   "a": "g53",
+   "b": "g59",
+   "colour": "yellow",
+   "why": "3V3 -> J11 pin 2 / R20 (bottom col 59)"
+  },
+  {
+   "a": "g50",
+   "b": "g60",
+   "colour": "white",
+   "why": "J9 pin 7 STEP (col 50) -> J11 pin 3 (col 60)"
+  },
+  {
+   "a": "g51",
+   "b": "g61",
+   "colour": "white",
+   "why": "J9 pin 8 DIR (col 51) -> J11 pin 4 (col 61)"
+  },
+  {
+   "a": "g52",
+   "b": "g62",
+   "colour": "white",
+   "why": "J9 pin 9 EN (col 52) -> J11 pin 5 (col 62)"
+  },
+  {
+   "a": "h49",
+   "b": "a60",
+   "colour": "grey",
+   "why": "J9 pin 6 SYNC (bottom col 49) up to R23 (top col 60)"
+  }
+ ],
+ "rails": {
+  "TR+": "V5",
+  "TR-": "GND",
+  "BR+": "VANA",
+  "BR-": "GND"
+ },
+ "nets": {
+  "+3V3": [
+   [
+    "J11",
+    "2"
+   ],
+   [
+    "J9",
+    "10"
+   ],
+   [
+    "JP3",
+    "2"
+   ],
+   [
+    "R20",
+    "1"
+   ]
+  ],
+  "AUDIO_L": [
+   [
+    "C10",
+    "2"
+   ],
+   [
+    "J2",
+    "1"
+   ],
+   [
+    "R14",
+    "1"
+   ]
+  ],
+  "AUDIO_R": [
+   [
+    "J12",
+    "1"
+   ],
+   [
+    "R23",
+    "2"
+   ],
+   [
+    "R24",
+    "1"
+   ]
+  ],
+  "CE": [
+   [
+    "J10",
+    "6"
+   ],
+   [
+    "JP3",
+    "1"
+   ],
+   [
+    "R19",
+    "1"
+   ]
+  ],
+  "DIR": [
+   [
+    "J11",
+    "4"
+   ],
+   [
+    "J9",
+    "8"
+   ],
+   [
+    "R22",
+    "1"
+   ]
+  ],
+  "EN": [
+   [
+    "J11",
+    "5"
+   ],
+   [
+    "J9",
+    "9"
+   ],
+   [
+    "R20",
+    "2"
+   ]
+  ],
+  "GND": [
+   [
+    "C11",
+    "2"
+   ],
+   [
+    "C12",
+    "2"
+   ],
+   [
+    "C13",
+    "2"
+   ],
+   [
+    "C14",
+    "2"
+   ],
+   [
+    "C15",
+    "2"
+   ],
+   [
+    "C16",
+    "2"
+   ],
+   [
+    "C17",
+    "2"
+   ],
+   [
+    "C18",
+    "2"
+   ],
+   [
+    "C19",
+    "2"
+   ],
+   [
+    "C20",
+    "2"
+   ],
+   [
+    "C3",
+    "2"
+   ],
+   [
+    "C5",
+    "2"
+   ],
+   [
+    "C6",
+    "2"
+   ],
+   [
+    "C7",
+    "2"
+   ],
+   [
+    "J1",
+    "2"
+   ],
+   [
+    "J10",
+    "1"
+   ],
+   [
+    "J11",
+    "1"
+   ],
+   [
+    "J12",
+    "2"
+   ],
+   [
+    "J2",
+    "2"
+   ],
+   [
+    "J3",
+    "2"
+   ],
+   [
+    "J4",
+    "2"
+   ],
+   [
+    "J5",
+    "2"
+   ],
+   [
+    "J6",
+    "2"
+   ],
+   [
+    "J7",
+    "2"
+   ],
+   [
+    "J8",
+    "2"
+   ],
+   [
+    "J9",
+    "1"
+   ],
+   [
+    "R1",
+    "2"
+   ],
+   [
+    "R10",
+    "2"
+   ],
+   [
+    "R14",
+    "2"
+   ],
+   [
+    "R19",
+    "2"
+   ],
+   [
+    "R21",
+    "2"
+   ],
+   [
+    "R22",
+    "2"
+   ],
+   [
+    "R24",
+    "2"
+   ],
+   [
+    "U1",
+    "4"
+   ],
+   [
+    "U2",
+    "4"
+   ]
+  ],
+  "IF": [
+   [
+    "C1",
+    "1"
+   ],
+   [
+    "C20",
+    "1"
+   ],
+   [
+    "J1",
+    "1"
+   ],
+   [
+    "R1",
+    "1"
+   ]
+  ],
+  "LD": [
+   [
+    "J10",
+    "5"
+   ],
+   [
+    "J9",
+    "5"
+   ]
+  ],
+  "LE": [
+   [
+    "J9",
+    "4"
+   ],
+   [
+    "R18",
+    "1"
+   ]
+  ],
+  "LE_O": [
+   [
+    "J10",
+    "4"
+   ],
+   [
+    "R18",
+    "2"
+   ]
+  ],
+  "MOSI": [
+   [
+    "J9",
+    "3"
+   ],
+   [
+    "R17",
+    "1"
+   ]
+  ],
+  "MOSI_O": [
+   [
+    "J10",
+    "3"
+   ],
+   [
+    "R17",
+    "2"
+   ]
+  ],
+  "N$10": [
+   [
+    "R13",
+    "1"
+   ],
+   [
+    "U2",
+    "6"
+   ],
+   [
+    "U2",
+    "7"
+   ]
+  ],
+  "N$11": [
+   [
+    "C10",
+    "1"
+   ],
+   [
+    "R13",
+    "2"
+   ]
+  ],
+  "N$14": [
+   [
+    "C5",
+    "1"
+   ],
+   [
+    "R10",
+    "1"
+   ],
+   [
+    "R9",
+    "2"
+   ],
+   [
+    "U2",
+    "3"
+   ]
+  ],
+  "N$15": [
+   [
+    "R11",
+    "1"
+   ],
+   [
+    "U2",
+    "1"
+   ],
+   [
+    "U2",
+    "2"
+   ]
+  ],
+  "N$16": [
+   [
+    "D1",
+    "A"
+   ],
+   [
+    "J3",
+    "1"
+   ]
+  ],
+  "N$2": [
+   [
+    "C1",
+    "2"
+   ],
+   [
+    "R2",
+    "1"
+   ],
+   [
+    "U1",
+    "3"
+   ]
+  ],
+  "N$4": [
+   [
+    "R3",
+    "1"
+   ],
+   [
+    "R4",
+    "1"
+   ],
+   [
+    "U1",
+    "2"
+   ]
+  ],
+  "N$5": [
+   [
+    "C2",
+    "1"
+   ],
+   [
+    "R3",
+    "2"
+   ],
+   [
+    "U1",
+    "1"
+   ]
+  ],
+  "N$6": [
+   [
+    "C2",
+    "2"
+   ],
+   [
+    "R6",
+    "1"
+   ],
+   [
+    "U1",
+    "5"
+   ]
+  ],
+  "N$7": [
+   [
+    "R7",
+    "1"
+   ],
+   [
+    "R8",
+    "1"
+   ],
+   [
+    "U1",
+    "6"
+   ]
+  ],
+  "N$8": [
+   [
+    "R12",
+    "1"
+   ],
+   [
+    "R7",
+    "2"
+   ],
+   [
+    "U1",
+    "7"
+   ]
+  ],
+  "N$9": [
+   [
+    "C9",
+    "1"
+   ],
+   [
+    "R12",
+    "2"
+   ],
+   [
+    "U2",
+    "5"
+   ]
+  ],
+  "SCK": [
+   [
+    "J9",
+    "2"
+   ],
+   [
+    "R16",
+    "1"
+   ]
+  ],
+  "SCK_O": [
+   [
+    "J10",
+    "2"
+   ],
+   [
+    "R16",
+    "2"
+   ]
+  ],
+  "STEP": [
+   [
+    "J11",
+    "3"
+   ],
+   [
+    "J9",
+    "7"
+   ],
+   [
+    "R21",
+    "1"
+   ]
+  ],
+  "SYNC": [
+   [
+    "J9",
+    "6"
+   ],
+   [
+    "R23",
+    "1"
+   ]
+  ],
+  "V5": [
+   [
+    "C12",
+    "1"
+   ],
+   [
+    "FB1",
+    "1"
+   ],
+   [
+    "FB2",
+    "1"
+   ],
+   [
+    "FB3",
+    "1"
+   ],
+   [
+    "J5",
+    "1"
+   ]
+  ],
+  "V5_ADF": [
+   [
+    "C14",
+    "1"
+   ],
+   [
+    "C15",
+    "1"
+   ],
+   [
+    "FB1",
+    "2"
+   ],
+   [
+    "J6",
+    "1"
+   ]
+  ],
+  "V5_LNA": [
+   [
+    "C18",
+    "1"
+   ],
+   [
+    "C19",
+    "1"
+   ],
+   [
+    "FB3",
+    "2"
+   ],
+   [
+    "J8",
+    "1"
+   ]
+  ],
+  "V5_PA": [
+   [
+    "C16",
+    "1"
+   ],
+   [
+    "C17",
+    "1"
+   ],
+   [
+    "FB2",
+    "2"
+   ],
+   [
+    "J7",
+    "1"
+   ]
+  ],
+  "VANA": [
+   [
+    "C13",
+    "1"
+   ],
+   [
+    "C3",
+    "1"
+   ],
+   [
+    "C7",
+    "1"
+   ],
+   [
+    "R15",
+    "2"
+   ],
+   [
+    "R9",
+    "1"
+   ],
+   [
+    "U1",
+    "8"
+   ],
+   [
+    "U2",
+    "8"
+   ]
+  ],
+  "VPROT": [
+   [
+    "C11",
+    "1"
+   ],
+   [
+    "D1",
+    "K"
+   ],
+   [
+    "J4",
+    "1"
+   ],
+   [
+    "R15",
+    "1"
+   ]
+  ],
+  "VREF": [
+   [
+    "C6",
+    "1"
+   ],
+   [
+    "C9",
+    "2"
+   ],
+   [
+    "R11",
+    "2"
+   ],
+   [
+    "R2",
+    "2"
+   ],
+   [
+    "R4",
+    "2"
+   ],
+   [
+    "R6",
+    "2"
+   ],
+   [
+    "R8",
+    "2"
+   ]
+  ]
+ },
+ "group_net": {
+  "T1": "VREF",
+  "T2": "IF",
+  "T3": "GND",
+  "T4": "N$2",
+  "T5": "N$5",
+  "B5": "VANA",
+  "T6": "N$4",
+  "B6": "N$8",
+  "T7": "N$2",
+  "B7": "N$7",
+  "T8": "GND",
+  "B8": "N$6",
+  "T10": "N$5",
+  "B10": "N$16",
+  "B11": "GND",
+  "T12": "N$6",
+  "B13": "VPROT",
+  "T14": "N$4",
+  "B14": "GND",
+  "T16": "VREF",
+  "B16": "VANA",
+  "T17": "VREF",
+  "B18": "V5",
+  "T19": "N$8",
+  "B19": "GND",
+  "T22": "N$9",
+  "T23": "N$7",
+  "T24": "VREF",
+  "T26": "VREF",
+  "T30": "N$15",
+  "B30": "VANA",
+  "T31": "N$15",
+  "B31": "N$10",
+  "T32": "N$14",
+  "B32": "N$10",
+  "T33": "GND",
+  "B33": "N$9",
+  "B35": "N$11",
+  "T36": "VANA",
+  "B36": "AUDIO_L",
+  "B37": "GND",
+  "T38": "V5_ADF",
+  "T39": "GND",
+  "T41": "V5_PA",
+  "T42": "GND",
+  "T44": "V5_LNA",
+  "B44": "GND",
+  "T45": "GND",
+  "B45": "SCK",
+  "T46": "SCK_O",
+  "B46": "MOSI",
+  "T47": "MOSI_O",
+  "B47": "LE",
+  "T48": "LE_O",
+  "B48": "LD",
+  "B49": "SYNC",
+  "B50": "STEP",
+  "B51": "DIR",
+  "T52": "GND",
+  "B52": "EN",
+  "T53": "SCK_O",
+  "B53": "+3V3",
+  "T54": "MOSI_O",
+  "T55": "LE_O",
+  "T56": "LD",
+  "T57": "CE",
+  "T58": "+3V3",
+  "B58": "GND",
+  "B59": "+3V3",
+  "T60": "SYNC",
+  "B60": "STEP",
+  "B61": "DIR",
+  "T62": "GND",
+  "B62": "EN",
+  "T63": "AUDIO_R",
+  "TR+L": "V5",
+  "TR+R": "V5",
+  "TR-L": "GND",
+  "TR-R": "GND",
+  "BR+L": "VANA",
+  "BR+R": "VANA",
+  "BR-L": "GND",
+  "BR-R": "GND"
+ }
+}
