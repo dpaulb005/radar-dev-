@@ -34,9 +34,13 @@ ROWS_TOP, ROWS_BOT = "abcde", "fghij"
 P = []
 def part(ref, kind, value, pins, note=""):
     P.append(dict(ref=ref, kind=kind, value=value, pins=pins, note=note))
-def dip(ref, value, col):   # TL072: pins 1-4 on the top bank e-row, 8-5 on the bottom f-row
-    pins = [(str(i + 1), f"e{col + i}") for i in range(4)] + [(str(8 - i), f"f{col + i}") for i in range(4)]
-    part(ref, "dip8", value, pins, f"pin 1 (notch) at column {col}, straddling the channel")
+DIP8_NAMES = {"1": "OUT A", "2": "IN- A", "3": "IN+ A", "4": "V-", "5": "IN+ B", "6": "IN- B", "7": "OUT B", "8": "V+"}
+def dip(ref, value, col):
+    """TL072 straddling the channel, notch / pin-1 dot toward the HIGH column (right).
+    Top view with the notch on the right: e-row reads 4 3 2 1 left->right, f-row reads 5 6 7 8.
+    (A DIP's pin 1 is counter-clockwise from the notch when seen from above.)"""
+    pins = [(str(4 - i), f"e{col + i}") for i in range(4)] + [(str(5 + i), f"f{col + i}") for i in range(4)]
+    part(ref, "dip8", value, pins, f"notch and pin-1 dot toward column {col + 3} (right); pin 1 at e{col + 3}, pin 8 at f{col + 3}")
 def hdr(ref, value, first_col, row, names):   # single-row header, pins left->right
     part(ref, f"hdr{len(names)}", value, [(str(i + 1), f"{row}{first_col + i}") for i in range(len(names))],
          " / ".join(f"{i+1}={n}" for i, n in enumerate(names)))
@@ -47,8 +51,8 @@ part("R1", "res", "49.9", [("1", "b2"), ("2", "TR-@2")], "IF termination straigh
 part("C20", "cer", "1n", [("1", "c2"), ("2", "TR-@3")], "RF stop, beside R1")
 part("C1", "film", "100n", [("1", "d2"), ("2", "d4")], "5 mm film cap = 2 columns")
 part("R2", "res", "10k", [("1", "c4"), ("2", "c1")], "AP -> VREF node (col 1)")
-dip("U1", "TL072CP", 5)                                             # top: 1=e5 OUT A, 2=e6 IN-A, 3=e7 IN+A, 4=e8 V-
-                                                                    # bottom: 8=f5 V+, 7=f6 OUT B, 6=f7 IN-B, 5=f8 IN+B
+dip("U1", "TL072CP", 5)                                             # top: 4=e5 V-, 3=e6 IN+A, 2=e7 IN-A, 1=e8 OUT A
+                                                                    # bottom: 5=f5 IN+B, 6=f6 IN-B, 7=f7 OUT B, 8=f8 V+
 part("R3", "res", "100k", [("1", "b14"), ("2", "b10")], "feedback A: pin 1 at AM (col 14), pin 2 at AOUT (col 10)")
 part("C2", "film", "100n", [("1", "c10"), ("2", "c12")], "AOUT -> BP")
 part("R4", "res", "1k", [("1", "c14"), ("2", "c17")], "AM -> VREF (col 17). 4.7k here for gain 22 on first power-up")
@@ -57,17 +61,17 @@ part("R7", "res", "10k", [("1", "b23"), ("2", "b19")], "feedback B: pin 1 at BM 
 part("R8", "res", "1k", [("1", "c23"), ("2", "c26")], "BM -> VREF (col 26)")
 part("R12", "res", "1k", [("1", "c19"), ("2", "c22")], "BOUT -> LP (col 22)")
 part("C9", "cer", "10n", [("1", "d22"), ("2", "d24")], "LP -> VREF (col 24)")
-dip("U2", "TL072CP", 30)                                            # top: 1=e30 OUT A, 2=e31 IN-A, 3=e32 IN+A, 4=e33 V-
-                                                                    # bottom: 8=f30 V+, 7=f31 OUT B, 6=f32 IN-B, 5=f33 IN+B
-part("R13", "res", "100", [("1", "i31"), ("2", "i35")], "OBUF (U2 pin 7, col 31 bottom) -> OISO (col 35)")
+dip("U2", "TL072CP", 30)                                            # top: 4=e30 V-, 3=e31 IN+A, 2=e32 IN-A, 1=e33 OUT A
+                                                                    # bottom: 5=f30 IN+B, 6=f31 IN-B, 7=f32 OUT B, 8=f33 V+
+part("R13", "res", "100", [("1", "i32"), ("2", "i35")], "OBUF (U2 pin 7, col 32 bottom) -> OISO (col 35)")
 part("C10", "elec", "10u", [("1", "h35"), ("2", "h36")], "+ toward R13 (col 35), - toward J2 (col 36)")
 part("R14", "res", "100k", [("1", "g36"), ("2", "BR-@36")], "output bleed to the bottom GND rail")
 hdr("J2", "AUDIO L", 36, "f", ["AUDIO_L", "GND"])                  # f36 = AUDIO_L, f37 = GND stub
 # --- bias ---------------------------------------------------------------------
-part("R9", "res", "10k", [("1", "a36"), ("2", "a32")], "VANA stub (col 36 top, jumpered to BR+) -> VDIV (col 32 = U2 pin 3)")
-part("R10", "res", "10k", [("1", "b32"), ("2", "TR-@33")], "VDIV -> GND rail")
-part("C5", "elec", "10u", [("1", "c32"), ("2", "TR-@35")], "+ at VDIV, - bent up to the GND rail")
-part("R11", "res", "47", [("1", "b30"), ("2", "b26")], "VBUF (U2 pin 1, col 30) -> VREF node (col 26)")
+part("R9", "res", "10k", [("1", "a36"), ("2", "a31")], "VANA stub (col 36 top, jumpered to BR+) -> VDIV (col 31 = U2 pin 3)")
+part("R10", "res", "10k", [("1", "b31"), ("2", "TR-@33")], "VDIV (col 31) -> GND rail")
+part("C5", "elec", "10u", [("1", "c31"), ("2", "TR-@35")], "+ at VDIV (col 31), - bent up to the GND rail")
+part("R11", "res", "47", [("1", "c33"), ("2", "c29")], "VBUF (U2 pin 1, col 33) -> col 29, then a wire on to the VREF node (col 26)")
 part("C6", "elec", "47u", [("1", "d26"), ("2", "TR-@26")], "+ at VREF")
 # --- power, bottom bank -------------------------------------------------------
 hdr("J3", "12V IN", 10, "j", ["VIN12", "GND"])                     # j10 = VIN12, j11 = GND stub
@@ -78,8 +82,8 @@ part("R15", "res", "10", [("1", "g13"), ("2", "g16")], "VPROT -> VANA node (col 
 part("C13", "elec", "100u", [("1", "h16"), ("2", "BR-@16")], "+ at VANA")
 hdr("J5", "FROM BUCK 5V", 18, "j", ["V5", "GND"])                  # j18 = V5, j19 = GND stub
 part("C12", "elec", "100u", [("1", "h18"), ("2", "BR-@18")], "+ at V5")
-part("C3", "cer", "100n", [("1", "g5"), ("2", "BR-@5")], "U1 V+ (pin 8, col 5 bottom) to GND, right at the pin")
-part("C7", "cer", "100n", [("1", "g30"), ("2", "BR-@30")], "U2 V+ (pin 8, col 30 bottom) to GND")
+part("C3", "cer", "100n", [("1", "g8"), ("2", "BR-@8")], "U1 V+ (pin 8, col 8 bottom) to GND, right at the pin")
+part("C7", "cer", "100n", [("1", "g33"), ("2", "BR-@33")], "U2 V+ (pin 8, col 33 bottom) to GND")
 # --- 5 V distribution, top bank right --------------------------------------
 for i, (col, jref, jval, fb, ca, cb) in enumerate([(38, "J6", "ADF4351 5V", "FB1", "C14", "C15"),
                                                     (41, "J7", "PA 5V", "FB2", "C16", "C17"),
@@ -120,10 +124,10 @@ wire("e39", "TR-@41", BK, "J6 GND"); wire("e42", "TR-@44", BK, "J7 GND"); wire("
 wire("f44", "BR-@44", BK, "J9 pin 1 GND"); wire("e52", "TR-@52", BK, "J10 pin 1 GND"); wire("f58", "BR-@58", BK, "J11 pin 1 GND")
 wire("e62", "TR-@62", BK, "J12 GND")
 # op-amp supplies
-wire("a8", "TR-@8", BK, "U1 pin 4 (V-) to GND")
-wire("a33", "TR-@34", BK, "U2 pin 4 (V-) to GND")
-wire("h5", "BR+@5", RD, "U1 pin 8 (V+, strip f-j col 5) to the VANA rail")
-wire("h30", "BR+@30", RD, "U2 pin 8 (V+, col 30) to the VANA rail")
+wire("a5", "TR-@5", BK, "U1 pin 4 (V-, top col 5) to the GND rail")
+wire("a30", "TR-@30", BK, "U2 pin 4 (V-, top col 30) to the GND rail")
+wire("h8", "BR+@8", RD, "U1 pin 8 (V+, bottom col 8) to the VANA rail")
+wire("h33", "BR+@33", RD, "U2 pin 8 (V+, bottom col 33) to the VANA rail")
 wire("f16", "BR+@16", RD, "VANA node (R15/C13) feeds the bottom red rail")
 wire("e36", "BR+@36", RD, "R9's VANA end (top col 36) down to the VANA rail")
 wire("g18", "TR+@18", OR, "V5 (J5/C12, bottom col 18) up to the top red rail")
@@ -134,16 +138,17 @@ wire("TR-@31", "TR-@32", BK, "rail bridge")
 wire("BR+@31", "BR+@32", RD, "rail bridge")
 wire("BR-@31", "BR-@32", BK, "rail bridge")
 # signal chain
-wire("a4", "a7", GN, "AP (C1/R2 node) into U1 pin 3 (IN+ A)")
-wire("a5", "a10", GN, "U1 pin 1 (OUT A) to the AOUT node (col 10)")
-wire("a14", "a6", GN, "AM node (R3/R4) back to U1 pin 2 (IN- A)")
-wire("d12", "g8", GN, "BP (C2/R6 node) across the channel into U1 pin 5 (IN+ B)")
-wire("g6", "a19", GN, "U1 pin 7 (OUT B) up to the BOUT node (col 19)")
-wire("a23", "i7", GN, "BM node (R7/R8) across to U1 pin 6 (IN- B)")
-wire("e22", "h33", GN, "LP (R12/C9 node) across to U2 pin 5 (IN+ B)")
-wire("j31", "j32", GN, "U2 pin 7 to pin 6: unity-gain buffer")
-wire("a30", "a31", GN, "U2 pin 1 to pin 2: VREF buffer, unity gain")
+wire("a4", "a6", GN, "AP (C1/R2 node) into U1 pin 3 (IN+ A, col 6)")
+wire("a8", "a10", GN, "U1 pin 1 (OUT A, col 8) to the AOUT node (col 10)")
+wire("a14", "a7", GN, "AM node (R3/R4) back to U1 pin 2 (IN- A, col 7)")
+wire("d12", "g5", GN, "BP (C2/R6 node) across the channel into U1 pin 5 (IN+ B, bottom col 5)")
+wire("g7", "a19", GN, "U1 pin 7 (OUT B, bottom col 7) up to the BOUT node (col 19)")
+wire("a23", "i6", GN, "BM node (R7/R8) across to U1 pin 6 (IN- B, bottom col 6)")
+wire("e22", "h30", GN, "LP (R12/C9 node) across to U2 pin 5 (IN+ B, bottom col 30)")
+wire("j32", "j31", GN, "U2 pin 7 (col 32) to pin 6 (col 31): unity-gain buffer")
+wire("a33", "a32", GN, "U2 pin 1 (col 33) to pin 2 (col 32): VREF buffer, unity gain")
 # VREF distribution (source node = col 26: R8, R11, C6)
+wire("b29", "b26", VI, "R11's far end (col 29) to the VREF node (col 26)")
 wire("a26", "a24", VI, "VREF -> C9's VREF end")
 wire("b24", "c16", VI, "VREF -> R6's VREF end (col 16)")
 wire("d16", "d17", VI, "VREF (col 16) -> R4's VREF end (col 17)")
@@ -296,12 +301,19 @@ def svg():
     for p in P:
         pts = [hole_xy(h) for _, h in p["pins"]]
         if p["kind"] == "dip8":
-            xs_ = [q[0] for q in pts]; x0, x1 = min(xs_) - 1.27, max(xs_) + 1.27; y0, y1 = pts[0][1] - 1.0, pts[4][1] + 1.0
-            o.append(f'<rect x="{x0*S}" y="{y0*S}" width="{(x1-x0)*S}" height="{(y1-y0)*S}" fill="#1b1f24" rx="3"/>')
-            o.append(f'<circle cx="{(x0+1.2)*S}" cy="{(y0+1.2)*S}" r="3" fill="#888"/>')
-            o.append(f'<text x="{(x0+x1)/2*S}" y="{((y0+y1)/2+0.6)*S}" font-size="10" fill="#fff" text-anchor="middle" font-weight="bold">{p["ref"]} {p["value"]}</text>')
+            # true to life: 9.9 x 6.4 mm body on 7.62 mm row spacing, notch at the pin-1/pin-8 end (right), dot beside pin 1
+            xs_ = [q[0] for q in pts]; xc = (min(xs_) + max(xs_)) / 2; x0, x1 = xc - 4.95, xc + 4.95
+            yc = (pts[0][1] + pts[4][1]) / 2; y0, y1 = yc - 3.2, yc + 3.2
+            for (pin, h), (x, y) in zip(p["pins"], pts):     # legs from the body edge into the holes
+                o.append(f'<line x1="{x*S}" y1="{(y0 if h[0]=="e" else y1)*S}" x2="{x*S}" y2="{y*S}" stroke="#9a9a9a" stroke-width="3"/>')
+            o.append(f'<rect x="{x0*S}" y="{y0*S}" width="{(x1-x0)*S}" height="{(y1-y0)*S}" fill="#1b1f24" rx="1.5"/>')
+            o.append(f'<path d="M{x1*S},{(yc-1.1)*S} A{1.1*S},{1.1*S} 0 0 0 {x1*S},{(yc+1.1)*S} Z" fill="#efe9d6"/>')   # notch, right end
+            o.append(f'<circle cx="{(x1-1.3)*S}" cy="{(y0+1.2)*S}" r="2.2" fill="#ddd"/>')                             # pin-1 dot (row e end)
+            o.append(f'<text x="{(x0+x1)/2*S}" y="{(yc+0.45)*S}" font-size="6" fill="#fff" stroke="#1b1f24" stroke-width="2" paint-order="stroke" text-anchor="middle" font-weight="bold">{p["ref"]} {p["value"]}</text>')
             for (pin, h), (x, y) in zip(p["pins"], pts):
-                o.append(f'<text x="{x*S}" y="{(y + (-1.3 if h[0]=="e" else 1.9))*S}" font-size="6.5" fill="#333" text-anchor="middle">{pin}</text>')
+                top = h[0] == "e"
+                o.append(f'<text x="{x*S}" y="{(y + (-1.35 if top else 1.95))*S}" font-size="5.5" fill="#333" text-anchor="middle">{pin}</text>')
+                o.append(f'<text transform="translate({x*S},{(y0+0.35 if top else y1-0.35)*S}) rotate(-90)" font-size="4.2" fill="#cfcfcf" text-anchor="{"end" if top else "start"}" dominant-baseline="middle">{DIP8_NAMES[pin]}</text>')
         elif p["kind"].startswith("hdr"):
             x0, x1 = pts[0][0] - 1.27, pts[-1][0] + 1.27; y = pts[0][1]
             o.append(f'<rect x="{x0*S}" y="{(y-1.27)*S}" width="{(x1-x0)*S}" height="{2.54*S}" fill="#222" rx="2"/>')

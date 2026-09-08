@@ -10,7 +10,8 @@ sheet `hardware/kicad/radar_breadboard.kicad_sch`).
 | `WIRING.md` | generated build sheet: component table (lead → hole), numbered jumper list, nets as built |
 | `breadboard.svg` / `.png` | generated top view |
 | `layout.json` | machine-readable placement, wires and strip → net map |
-| `gen_page.py` → `breadboard.html` | interactive page: hover/click any part, wire, net or hole to see what it touches; build checklist |
+| `gen_page.py` → `breadboard.html` | interactive page: hover/click any part, wire, net or hole to see what it touches; build checklist; **Chips & modules** tab with the real TL072, ESP32 (30- and 38-pin), A4988, ADF4351 and UCA202 pinouts and where each used pin lands on the board |
+| `MODULES.md`, `modules.png` | the same pin maps as tables / picture |
 
 ```
 python3 layout.py      # VERIFIED: every net is one group, no shorts, rails correct
@@ -20,5 +21,6 @@ python3 gen_page.py    # rebuild breadboard.html
 Conventions: columns 1–63 left → right, rows a–e (top bank) and f–j (bottom bank); the five holes
 of one column in one bank are one strip. `TR-@12` means the top blue rail, hole nearest column 12
 (use the closest free rail hole). Rails: top red **V5**, top blue **GND**, bottom red **VANA**,
-bottom blue **GND**; four bridge wires at 31|32 cover boards with split rails. U1/U2 pin 1 sits
-at the low column number (e5, e30).
+bottom blue **GND**; four bridge wires at 31|32 cover boards with split rails. U1/U2 sit with the
+notch and pin-1 dot toward the higher column (pin 1 at e8 / e33, pin 8 at f8 / f33): seen from
+above the top row reads 4 3 2 1 left→right and the bottom row 5 6 7 8, as on a real DIP.

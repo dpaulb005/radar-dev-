@@ -35,8 +35,10 @@ non-catalog part now, so the ESP32 **steps an ADF4351 PLL** instead:
 
 Consequences the software handles for you:
 
-- The beat frequency is `f_b = 2·B·R / (c·T_up)`: **870 Hz at 10 m**, 260 Hz
-  at 3 m. Range 0–30 m spans 0–2.6 kHz. Audio.
+- The beat frequency is `f_b = 2·B·R / (c·T_up)`: **417 Hz at 10 m**, 125 Hz
+  at 3 m with the 40 MHz sweep. Range 0–30 m spans 0–1.25 kHz. Audio — the
+  sound card's 48 kHz is 40× more than the 15.9 kHz anti-alias filter lets
+  through, which itself reaches 380 m (`docs/testing.md`, sound-card budget).
 - `T_up` and the PRI are **measured from the SYNC channel every block**, not
   assumed, so `SET steps` / `SET step_us` on the ESP32 need no matching
   change on the laptop.

@@ -41,12 +41,140 @@ STEPS = [
 ]
 
 
+DIP8 = {"1": "OUT A", "2": "IN- A", "3": "IN+ A", "4": "V-", "5": "IN+ B", "6": "IN- B", "7": "OUT B", "8": "V+"}
+
+# Real-board pin maps. Each module: outline in mm, pins as rows top->bottom on the left and right edge
+# (board seen from above, antenna / SMA at the top, USB at the bottom), and what each used pin connects to.
+MODULES = {
+  "esp32_30": dict(title="ESP32 DevKit V1 (DOIT, 30-pin)", w=28.5, h=51.5, pitch=2.54, ant="top", usb="bottom", note="Pins 2.54 mm apart, rows 0.9 in apart. This is the usual '$10 ESP-WROOM-32 devkit'. Power it over USB from the laptop (serial link); VIN is optional.",
+    left=["EN","VP (36)","VN (39)","D34","D35","D32","D33","D25","D26","D27","D14","D12","D13","GND","VIN"],
+    right=["D23","D22","TX0 (1)","RX0 (3)","D21","D19","D18","D5","TX2 (17)","RX2 (16)","D4","D2","D15","GND","3V3"]),
+  "esp32_38": dict(title="ESP32-DevKitC V4 (38-pin)", w=27.9, h=55.0, pitch=2.54, ant="top", usb="bottom", note="Espressif's own board. Rows 1.0 in apart: it covers a whole breadboard bank, so keep it on the harness, not the board.",
+    left=["3V3","EN","VP (36)","VN (39)","D34","D35","D32","D33","D25","D26","D27","D14","D12","GND","D13","SD2 (9)","SD3 (10)","CMD (11)","5V"],
+    right=["GND","D23","D22","TX0 (1)","RX0 (3)","D21","GND","D19","D18","D5","D17","D16","D4","D0","D2","D15","SD1 (8)","SD0 (7)","CLK (6)"]),
+  "a4988": dict(title="A4988 stepper driver (Pololu pinout)", w=15.2, h=20.3, pitch=2.54, pot="top", note="Seen from above with the trimpot at the top. MS1–MS3 all to VDD = 1/16 microstep (STEPS_PER_DEG 8.889). Tie RESET to SLEEP. Set the trimpot for about 0.8 A before connecting the motor.",
+    left=["ENABLE","MS1","MS2","MS3","RESET","SLEEP","STEP","DIR"], right=["VMOT","GND (motor)","2B","2A","1A","1B","VDD","GND (logic)"]),
+  "adf4351": dict(title="ADF4351 PLL board (SMA out, 25 MHz TCXO)", w=45, h=32, pitch=2.54, sma="top", generic=True, note="The eBay/Amazon boards share these pin NAMES but not their order on the header — match by the silkscreen label, not by position. Logic is 3.3 V, so the ESP32 drives it directly (33 Ω in series).",
+    left=["VCC / 5V","GND","CLK","DATA","LE","CE","LD","MUX"], right=[]),
+  "uca202": dict(title="Behringer UCA202 (rear panel)", w=90, h=30, rca=True, note="Both breadboard audio outputs go to the RCA INPUT pair. Input switch to LINE. Monitor off. 48 kHz / 16-bit in the OS, every 'enhancement' off.",
+    left=["INPUT L (white)","INPUT L shell","INPUT R (red)","INPUT R shell"], right=[]),
+}
+# used pins: module -> pin label -> (what it carries, breadboard hole to check with an ohm-meter)
+USED = {
+  "esp32_30": {"D18":("SCK → J9 pin 2","j45"), "D23":("MOSI → J9 pin 3","j46"), "D5":("LE → J9 pin 4","j47"), "D19":("LD ← J9 pin 5","j48"),
+               "D25":("SYNC → J9 pin 6","j49"), "D26":("STEP → J9 pin 7","j50"), "D27":("DIR → J9 pin 8","j51"), "D14":("EN → J9 pin 9","j52"),
+               "3V3":("3.3 V out → J9 pin 10","j53"), "GND":("GND → J9 pin 1","j44"), "VIN":("5 V in from LM2596 #1 (optional; USB powers it)", None)},
+  "esp32_38": {"D18":("SCK → J9 pin 2","j45"), "D23":("MOSI → J9 pin 3","j46"), "D5":("LE → J9 pin 4","j47"), "D19":("LD ← J9 pin 5","j48"),
+               "D25":("SYNC → J9 pin 6","j49"), "D26":("STEP → J9 pin 7","j50"), "D27":("DIR → J9 pin 8","j51"), "D14":("EN → J9 pin 9","j52"),
+               "3V3":("3.3 V out → J9 pin 10","j53"), "GND":("GND → J9 pin 1","j44"), "5V":("5 V in from LM2596 #1 (optional; USB powers it)", None)},
+  "a4988": {"ENABLE":("EN ← J11 pin 5 (10 k pull-up: off at boot)","j62"), "STEP":("STEP ← J11 pin 3","j60"), "DIR":("DIR ← J11 pin 4","j61"),
+            "VDD":("3.3 V ← J11 pin 2","j59"), "GND (logic)":("← J11 pin 1","j58"), "GND (motor)":("12 V supply −",None),
+            "MS1":("→ VDD (1/16 step)",None), "MS2":("→ VDD",None), "MS3":("→ VDD",None), "RESET":("→ SLEEP (wire link)",None), "SLEEP":("→ RESET",None),
+            "VMOT":("12 V supply +, 100 µF (C21) right at the pins",None), "1A":("NEMA-17 coil A",None), "1B":("NEMA-17 coil A",None), "2A":("NEMA-17 coil B",None), "2B":("NEMA-17 coil B",None)},
+  "adf4351": {"VCC / 5V":("← J6 pin 1 (V5_ADF, through FB1)","d38"), "GND":("← J6 pin 2 / J10 pin 1","d39"), "CLK":("← J10 pin 2 SCK_O","a53"),
+              "DATA":("← J10 pin 3 MOSI_O","a54"), "LE":("← J10 pin 4 LE_O","a55"), "LD":("→ J10 pin 5 (lock detect)","a56"), "CE":("← J10 pin 6 (JP3 to 3.3 V)","a57"), "MUX":("leave open",None)},
+  "uca202": {"INPUT L (white)":("← J2 pin 1 AUDIO_L (beat signal)","f36"), "INPUT L shell":("← J2 pin 2 GND","f37"), "INPUT R (red)":("← J12 pin 1 AUDIO_R (0.3 V sync)","d63"), "INPUT R shell":("← J12 pin 2 GND","d62")},
+}
+
 def alias(n): return ALIAS.get(n, n)
+
+
+MOD_JS = r'''
+// ---------- chips & modules: real pinouts ----------
+function drawModule(key) {
+  const m = D.modules[key], used = D.used[key] || {}; const K = 6;   // 6 px per mm
+  const pad = 62, nL = m.left.length, nR = m.right.length, n = Math.max(nL, nR);
+  const w = m.w*K, h = m.h*K, W = w + pad*2, Hh = h + 34;
+  const box = document.createElementNS(NS, "svg"); box.setAttribute("viewBox", `0 0 ${W} ${Hh}`); box.setAttribute("width", W); box.setAttribute("role","img"); box.setAttribute("aria-label", m.title);
+  const E = (t, a, parent) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); (parent||box).appendChild(e); return e; };
+  const T = (a, s, parent) => { const t = E("text", a, parent); t.textContent = s; return t; };
+  const x0 = pad, y0 = 10;
+  E("rect", {x:x0, y:y0, width:w, height:h, rx:6, fill: m.rca ? "#2b2d31" : "#1f3a2f", stroke:"#0d1a14", "stroke-width":1.5});
+  if (m.ant) { E("rect", {x:x0+w*0.25, y:y0+4, width:w*0.5, height:9*K, rx:2, fill:"#c9c4b6"}); T({x:x0+w/2, y:y0+4+9*K/2+3, "font-size":8, "text-anchor":"middle", fill:"#333", "font-family":"var(--mono)"}, "antenna", box);
+             E("rect", {x:x0+w*0.25, y:y0+4+9*K+4, width:w*0.5, height:10*K, rx:2, fill:"#8f8f8f"}); T({x:x0+w/2, y:y0+4+9*K+4+10*K/2+3, "font-size":8, "text-anchor":"middle", fill:"#111", "font-family":"var(--mono)"}, "ESP-WROOM-32", box); }
+  if (m.usb) { E("rect", {x:x0+w/2-4*K, y:y0+h-3*K, width:8*K, height:3*K+4, rx:2, fill:"#aaa"}); T({x:x0+w/2, y:y0+h+14, "font-size":8, "text-anchor":"middle", fill:"var(--ink-2)", "font-family":"var(--mono)"}, "micro-USB → laptop (serial + power)", box); }
+  if (m.pot) { E("circle", {cx:x0+w/2, cy:y0+3*K, r:2.2*K, fill:"#3a6fb0"}); T({x:x0+w/2, y:y0+3*K+3, "font-size":7, "text-anchor":"middle", fill:"#fff", "font-family":"var(--mono)"}, "Vref", box);
+              E("rect", {x:x0+w/2-3*K, y:y0+h/2-2*K, width:6*K, height:6*K, rx:1, fill:"#111"}); T({x:x0+w/2, y:y0+h/2+1.5*K, "font-size":7, "text-anchor":"middle", fill:"#ccc", "font-family":"var(--mono)"}, "A4988", box); }
+  if (m.sma) { E("rect", {x:x0+w-8*K, y:y0-6, width:6*K, height:6*K, rx:3*K, fill:"#d4b25a"}); T({x:x0+w-5*K, y:y0-10, "font-size":8, "text-anchor":"middle", fill:"var(--ink-2)", "font-family":"var(--mono)"}, "RF OUT (SMA) → 3 dB pad → PA", box);
+              E("rect", {x:x0+8, y:y0+h/2-3*K, width:9*K, height:6*K, rx:1, fill:"#111"}); T({x:x0+8+4.5*K, y:y0+h/2+1, "font-size":7, "text-anchor":"middle", fill:"#ccc", "font-family":"var(--mono)"}, "ADF4351", box);
+              E("rect", {x:x0+w/2-4*K, y:y0+h/2+4*K, width:7*K, height:5*K, rx:1, fill:"#8f8f8f"}); T({x:x0+w/2-0.5*K, y:y0+h/2+7*K+1, "font-size":7, "text-anchor":"middle", fill:"#111", "font-family":"var(--mono)"}, "25 MHz", box); }
+  if (m.rca) { [["INPUT L", "#eee", 0.3], ["INPUT R", "#c33", 0.42], ["OUTPUT L", "#eee", 0.62], ["OUTPUT R", "#c33", 0.74]].forEach(([l,c,f]) => { E("circle", {cx:x0+w*f, cy:y0+h/2, r:1.9*K, fill:"#555"}); E("circle", {cx:x0+w*f, cy:y0+h/2, r:1.1*K, fill:c}); T({x:x0+w*f, y:y0+h-4, "font-size":7, "text-anchor":"middle", fill:"#ddd", "font-family":"var(--mono)"}, l, box); });
+              E("rect", {x:x0+w*0.88, y:y0+h/2-1.5*K, width:2.5*K, height:3*K, fill:"#aaa"}); T({x:x0+w*0.9, y:y0+h-4, "font-size":7, "text-anchor":"middle", fill:"#ddd", "font-family":"var(--mono)"}, "USB", box);
+              T({x:x0+w*0.1, y:y0+h/2+3, "font-size":7, "text-anchor":"middle", fill:"#ddd", "font-family":"var(--mono)"}, "LINE", box); }
+  const pinsTop = y0 + (m.rca ? 0 : Math.max(8, (h - (n-1)*m.pitch*K)/2));
+  const side = (list, isLeft) => list.forEach((lab, i) => {
+    const y = m.rca ? y0 + 8 + i*14 : pinsTop + i*m.pitch*K; const x = isLeft ? x0 : x0 + w; const u = used[lab];
+    const g = E("g", {class:"pinrow" + (u ? " used" : "")});
+    if (!m.rca) { E("rect", {x:x-4, y:y-4, width:8, height:8, rx:1, fill: u ? "var(--hl)" : "#d4b25a", stroke:"#222", "stroke-width":.6}, g);
+                  E("rect", {x:x-2, y:y-2, width:4, height:4, fill:"#222"}, g); }
+    const tx = isLeft ? x-8 : x+8;
+    T({x:tx, y:y+3, "font-size":u?9:8, "text-anchor":isLeft?"end":"start", fill: u ? "var(--ink)" : "var(--ink-3)", "font-weight": u ? 700 : 400, "font-family":"var(--mono)"}, m.rca ? "" : lab, g);
+    if (m.rca) { E("circle", {cx:x0+w+10, cy:y, r:4, fill: u ? "var(--hl)" : "#888"}, g); T({x:x0+w+18, y:y+3, "font-size":9, fill:"var(--ink)", "font-weight":700, "font-family":"var(--mono)"}, lab, g); }
+    if (u) { const t = E("title", {}, g); t.textContent = u[0] + (u[1] ? ` — board hole ${u[1]}` : "");
+             if (u[1]) { g.addEventListener("mouseenter", () => { if (!locked) { selectHole(u[1]); scrollTo(u[1]); } }); g.addEventListener("click", () => { locked = {type:"hole", id:u[1]}; selectHole(u[1]); scrollTo(u[1]); }); } }
+  });
+  if (!m.rca) { side(m.left, true); side(m.right, false); }
+  return box;
+}
+function moduleTable(key) {
+  const used = D.used[key] || {}; const m = D.modules[key];
+  const rows = [...m.left, ...m.right].filter(l => used[l]).map(l => `<tr><td class="h">${l}</td><td>${used[l][0]}</td><td>${used[l][1] ? H(used[l][1]) : "<span class=mut>off-board</span>"}</td></tr>`).join("");
+  return `<div class="tablewrap"><table><thead><tr><th>pin</th><th>goes to</th><th>hole</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+const modRoot = document.getElementById("modules");
+// TL072 card: pin map for both chips
+(() => {
+  const card = document.createElement("div"); card.className = "mod";
+  const rows = Object.keys(D.dip8).map(pin => { const holes = ["U1","U2"].map(r => { const h = partByRef[r].pins.find(([p])=>p===pin)[1]; return `${H(h)} ${N(netOfHole(h))}`; }); return `<tr><td class="h">${pin}</td><td>${D.dip8[pin]}</td><td>${holes[0]}</td><td>${holes[1]}</td></tr>`; }).join("");
+  card.innerHTML = `<h3>TL072CP dual op-amp, DIP-8</h3><span class="mut">Seen from above with the notch and pin-1 dot on the RIGHT (toward the higher column): the top row reads 4 3 2 1 left→right, the bottom row 5 6 7 8. Pin numbering runs counter-clockwise from the notch. Straddles the channel, 7.62 mm between rows.</span>
+    <svg viewBox="0 0 300 120" width="300" role="img" aria-label="TL072 top view"><rect x="60" y="30" width="180" height="60" rx="3" fill="#1b1f24"/><path d="M240,50 A10,10 0 0 0 240,70 Z" fill="var(--card)"/><circle cx="226" cy="42" r="4" fill="#ddd"/>
+      ${[4,3,2,1].map((p,i)=>`<rect x="${74+i*45}" y="12" width="8" height="18" fill="#9a9a9a"/><text x="${78+i*45}" y="9" font-size="9" text-anchor="middle" fill="var(--ink)" font-family="var(--mono)">${p}</text><text transform="translate(${78+i*45},48) rotate(-90)" font-size="7.5" text-anchor="end" fill="#ddd" font-family="var(--mono)">${D.dip8[String(p)]}</text>`).join("")}
+      ${[5,6,7,8].map((p,i)=>`<rect x="${74+i*45}" y="90" width="8" height="18" fill="#9a9a9a"/><text x="${78+i*45}" y="118" font-size="9" text-anchor="middle" fill="var(--ink)" font-family="var(--mono)">${p}</text><text transform="translate(${78+i*45},72) rotate(-90)" font-size="7.5" text-anchor="start" fill="#ddd" font-family="var(--mono)">${D.dip8[String(p)]}</text>`).join("")}
+      <text x="150" y="63" font-size="9" text-anchor="middle" fill="#fff" font-family="var(--cond)" font-weight="700">TL072CP</text></svg>
+    <div class="tablewrap"><table><thead><tr><th>pin</th><th>function</th><th>U1 (video amp)</th><th>U2 (buffers)</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  modRoot.appendChild(card);
+})();
+// ESP32 with a variant switch
+(() => {
+  const card = document.createElement("div"); card.className = "mod"; let cur = "esp32_30";
+  const render = () => { const m = D.modules[cur];
+    card.innerHTML = `<h3>${m.title}</h3><span class="mut">${m.note} GPIO numbers come straight from <span class="h">radar_ctl.ino</span>: SCK 18, MOSI 23, LE 5, LD 19, SYNC 25, STEP 26, DIR 27, EN 14.</span><div class="variant"><button type="button" data-v="esp32_30" aria-pressed="${cur==="esp32_30"}">30-pin DevKit V1</button><button type="button" data-v="esp32_38" aria-pressed="${cur==="esp32_38"}">38-pin DevKitC V4</button></div>`;
+    card.appendChild(drawModule(cur)); card.insertAdjacentHTML("beforeend", moduleTable(cur));
+    card.querySelectorAll(".variant button").forEach(b => b.onclick = () => { cur = b.dataset.v; render(); }); };
+  render(); modRoot.appendChild(card);
+})();
+["a4988","adf4351","uca202"].forEach(key => { const m = D.modules[key]; const card = document.createElement("div"); card.className = "mod";
+  card.innerHTML = `<h3>${m.title}</h3><span class="mut">${m.note}</span>`; card.appendChild(drawModule(key)); card.insertAdjacentHTML("beforeend", moduleTable(key)); modRoot.appendChild(card); });
+'''
+
+
+def modules_md():
+    L = ["# Chips and modules — real pinouts\n",
+         "Generated by `gen_page.py`. Boards seen from above, antenna / SMA / trimpot at the top, USB at the bottom.",
+         "`hole` is the breadboard hole the signal must reach (ohm-meter check from the module pin).\n",
+         "## TL072CP (DIP-8)\n",
+         "Notch and pin-1 dot toward the higher column (right). Top row reads 4 3 2 1 left→right, bottom row 5 6 7 8.\n",
+         "| pin | function | U1 hole | U2 hole |", "|---|---|---|---|"]
+    u = {p["ref"]: dict(p["pins"]) for p in D["parts"] if p["kind"] == "dip8"}
+    for pin, name in DIP8.items(): L.append(f"| {pin} | {name} | {u['U1'][pin]} | {u['U2'][pin]} |")
+    for key, m in MODULES.items():
+        L += [f"\n## {m['title']}\n", m["note"] + "\n"]
+        if m.get("right"):
+            L += ["| left, top→bottom | | right, top→bottom | |", "|---|---|---|---|"]
+            for i in range(max(len(m["left"]), len(m["right"]))):
+                l = m["left"][i] if i < len(m["left"]) else ""; r = m["right"][i] if i < len(m["right"]) else ""
+                ul = USED[key].get(l); ur = USED[key].get(r)
+                L.append(f"| {('**'+l+'**') if ul else l} | {ul[0] + (' — '+ul[1] if ul and ul[1] else '') if ul else ''} | {('**'+r+'**') if ur else r} | {ur[0] + (' — '+ur[1] if ur and ur[1] else '') if ur else ''} |")
+        else:
+            L += ["| pin | goes to | hole |", "|---|---|---|"]
+            for l in m["left"]:
+                ul = USED[key].get(l); L.append(f"| {l} | {ul[0] if ul else 'leave as shipped'} | {ul[1] if ul and ul[1] else ''} |")
+    (HERE / "MODULES.md").write_text("\n".join(L) + "\n")
 
 
 def build():
     data = dict(parts=D["parts"], wires=D["wires"], rails=D["rails"], nets=D["nets"], group_net=D["group_net"],
-                alias=ALIAS, net_desc=NET_DESC, kind=KIND, steps=STEPS)
+                alias=ALIAS, net_desc=NET_DESC, kind=KIND, steps=STEPS, dip8=DIP8, modules=MODULES, used=USED)
     js_data = json.dumps(data, separators=(",", ":"))
     n_parts, n_wires, n_nets = len(D["parts"]), len(D["wires"]), len(D["nets"])
     html = f"""<title>ESP-FLY Radar Breadboard</title>
@@ -127,6 +255,17 @@ tbody tr.done td {{ color:var(--ink-3) }} tbody tr.done td .h {{ text-decoration
 .steps li {{ display:grid; grid-template-columns:34px 1fr; gap:10px; padding:10px 12px; border:1px solid var(--line); border-radius:6px; background:var(--card) }}
 .steps li::before {{ counter-increment:s; content:counter(s); font:700 18px var(--cond); color:var(--accent) }}
 .steps b {{ display:block; font-family:var(--cond); font-size:15px; margin-bottom:2px }}
+.modgrid {{ display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:14px }}
+.mod {{ background:var(--card); border:1px solid var(--line); border-radius:6px; padding:12px 14px; min-width:0 }}
+.mod h3 {{ font-family:var(--cond); font-size:16px; margin:0 0 2px }}
+.mod .mut {{ font-size:12.5px; display:block; margin-bottom:8px; max-width:60ch }}
+.mod svg {{ display:block; max-width:100%; height:auto }}
+.mod .variant {{ display:flex; gap:6px; margin-bottom:8px }}
+.mod .variant button {{ font:600 11px var(--cond); letter-spacing:.05em; text-transform:uppercase; padding:4px 9px; border:1px solid var(--line); background:var(--paper-2); color:var(--ink); border-radius:4px; cursor:pointer }}
+.mod .variant button[aria-pressed="true"] {{ background:var(--accent); color:var(--accent-ink); border-color:var(--accent) }}
+.mod table {{ font-size:12.5px; margin-top:8px }} .mod td, .mod th {{ padding:4px 6px }}
+.pinrow {{ cursor:default }} .pinrow.used {{ cursor:pointer }}
+.pinrow.used:hover rect, .pinrow.used:hover text {{ filter:brightness(1.15) }}
 kbd {{ font-family:var(--mono); font-size:11px; padding:1px 5px; border:1px solid var(--line); border-radius:3px; background:var(--paper-2) }}
 @media (prefers-reduced-motion: reduce) {{ * {{ transition:none !important }} }}
 </style>
@@ -156,11 +295,16 @@ kbd {{ font-family:var(--mono); font-size:11px; padding:1px 5px; border:1px soli
   <section class="lists">
     <div class="tabs" role="tablist">
       <button role="tab" aria-selected="true" data-tab="parts">Parts</button>
+      <button role="tab" aria-selected="false" data-tab="modules">Chips &amp; modules</button>
       <button role="tab" aria-selected="false" data-tab="wires">Wires</button>
       <button role="tab" aria-selected="false" data-tab="nets">Nets</button>
       <button role="tab" aria-selected="false" data-tab="steps">Build order</button>
     </div>
     <div class="tab on" id="tab-parts"><div class="tablewrap"><table><thead><tr><th>✓</th><th>Ref</th><th>Part</th><th>Lead → hole</th><th>Note</th></tr></thead><tbody id="parts"></tbody></table></div></div>
+    <div class="tab" id="tab-modules">
+      <p class="mut" style="max-width:70ch;margin:0 0 12px">Real pinouts, boards seen from above. Highlighted pins are the ones this build uses; hover one and the board shows the hole it must end up on. Everything else on a module is left as the board ships.</p>
+      <div class="modgrid" id="modules"></div>
+    </div>
     <div class="tab" id="tab-wires"><div class="tablewrap"><table><thead><tr><th>✓</th><th>#</th><th>From</th><th>To</th><th>Colour</th><th>Length</th><th>Purpose</th></tr></thead><tbody id="wires"></tbody></table></div></div>
     <div class="tab" id="tab-nets"><div class="tablewrap"><table><thead><tr><th>Net</th><th>What it is</th><th>Strips / rails</th><th>Pins</th></tr></thead><tbody id="nets"></tbody></table></div></div>
     <div class="tab" id="tab-steps"><ol class="steps" id="steps"></ol>
@@ -235,12 +379,17 @@ const partEls = {{}};
 D.parts.forEach(p => {{
   const pts = p.pins.map(([,h]) => xy(h)); const g = el("g", {{class:"part","data-ref":p.ref}}, gParts); partEls[p.ref] = g;
   const txt = (a, s) => {{ const t = el("text", a, g); t.textContent = s; return t; }};
-  if (p.kind==="dip8") {{
-    const xs = pts.map(q=>q[0]); const x0 = Math.min(...xs)-1.27, x1 = Math.max(...xs)+1.27, y0 = pts[0][1]-1.0, y1 = pts[4][1]+1.0;
-    el("rect", {{x:x0*S,y:y0*S,width:(x1-x0)*S,height:(y1-y0)*S,rx:3,fill:"#1b1f24"}}, g);
-    el("circle", {{cx:(x0+1.2)*S,cy:(y0+1.2)*S,r:3,fill:"#888"}}, g);
-    txt({{x:(x0+x1)/2*S,y:((y0+y1)/2+0.6)*S,"font-size":10,fill:"#fff","text-anchor":"middle","font-weight":"bold","font-family":"var(--cond)"}}, `${{p.ref}} ${{p.value}}`);
-    p.pins.forEach(([pin,h],i) => txt({{x:pts[i][0]*S,y:(pts[i][1]+(h[0]==="e"?-1.3:1.9))*S,"font-size":6.5,fill:"#333","text-anchor":"middle","font-family":"var(--mono)"}}, pin));
+  if (p.kind==="dip8") {{   // true to life: 9.9 x 6.4 mm body, 7.62 mm row pitch, notch at the pin-1/8 end (right), dot beside pin 1
+    const xs = pts.map(q=>q[0]); const xc = (Math.min(...xs)+Math.max(...xs))/2, x0 = xc-4.95, x1 = xc+4.95;
+    const yc = (pts[0][1]+pts[4][1])/2, y0 = yc-3.2, y1 = yc+3.2;
+    p.pins.forEach(([pin,h],i) => el("line", {{x1:pts[i][0]*S,y1:(h[0]==="e"?y0:y1)*S,x2:pts[i][0]*S,y2:pts[i][1]*S,stroke:"#9a9a9a","stroke-width":3}}, g));
+    el("rect", {{x:x0*S,y:y0*S,width:(x1-x0)*S,height:(y1-y0)*S,rx:1.5,fill:"#1b1f24"}}, g);
+    el("path", {{d:`M${{x1*S}},${{(yc-1.1)*S}} A${{1.1*S}},${{1.1*S}} 0 0 0 ${{x1*S}},${{(yc+1.1)*S}} Z`,fill:"var(--board)"}}, g);
+    el("circle", {{cx:(x1-1.3)*S,cy:(y0+1.2)*S,r:2.2,fill:"#ddd"}}, g);
+    txt({{x:xc*S,y:(yc+0.45)*S,"font-size":6,fill:"#fff",stroke:"#1b1f24","stroke-width":2,"paint-order":"stroke","text-anchor":"middle","font-weight":"bold","font-family":"var(--cond)"}}, `${{p.ref}} ${{p.value}}`);
+    p.pins.forEach(([pin,h],i) => {{ const top = h[0]==="e";
+      txt({{x:pts[i][0]*S,y:(pts[i][1]+(top?-1.35:1.95))*S,"font-size":5.5,fill:"#333","text-anchor":"middle","font-family":"var(--mono)"}}, pin);
+      txt({{transform:`translate(${{pts[i][0]*S}},${{(top?y0+0.35:y1-0.35)*S}}) rotate(-90)`,"font-size":4.2,fill:"#cfcfcf","text-anchor":top?"end":"start","dominant-baseline":"middle","font-family":"var(--mono)"}}, D.dip8[pin]); }});
   }} else if (p.kind.startsWith("hdr")) {{
     const x0 = pts[0][0]-1.27, x1 = pts[pts.length-1][0]+1.27, y = pts[0][1];
     el("rect", {{x:x0*S,y:(y-1.27)*S,width:(x1-x0)*S,height:2.54*S,rx:2,fill:"#222"}}, g);
@@ -379,8 +528,9 @@ document.getElementById("find").addEventListener("input", e => {{
   const lo = q.toLowerCase(); if (/^[a-j]\\d{{1,2}}$/.test(lo) || /^(tr\\+|tr-|br\\+|br-)@\\d+$/.test(lo)) {{ const h = lo.replace(/^(tr|br)/, s=>s.toUpperCase()); locked = {{type:"hole",id:h}}; selectHole(h); scrollTo(h); }}
 }});
 </script>
-"""
+""" + "<script>" + MOD_JS + "</script>\n"
     (HERE / "breadboard.html").write_text(html)
+    modules_md()
     print("wrote breadboard.html", len(html), "bytes")
 
 

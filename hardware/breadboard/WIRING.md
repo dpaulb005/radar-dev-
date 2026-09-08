@@ -25,7 +25,7 @@ Rails are assumed split at columns 31|32; four bridge wires are included (harmle
 | C20 | 1n (cer) | 1→**c2**, 2→**TR-@3** | RF stop, beside R1 |
 | C1 | 100n (film) | 1→**d2**, 2→**d4** | 5 mm film cap = 2 columns |
 | R2 | 10k (res) | 1→**c4**, 2→**c1** | AP -> VREF node (col 1) |
-| U1 | TL072CP (dip8) | 1→**e5**, 2→**e6**, 3→**e7**, 4→**e8**, 8→**f5**, 7→**f6**, 6→**f7**, 5→**f8** | pin 1 (notch) at column 5, straddling the channel |
+| U1 | TL072CP (dip8) | 4→**e5**, 3→**e6**, 2→**e7**, 1→**e8**, 5→**f5**, 6→**f6**, 7→**f7**, 8→**f8** | notch and pin-1 dot toward column 8 (right); pin 1 at e8, pin 8 at f8 |
 | R3 | 100k (res) | 1→**b14**, 2→**b10** | feedback A: pin 1 at AM (col 14), pin 2 at AOUT (col 10) |
 | C2 | 100n (film) | 1→**c10**, 2→**c12** | AOUT -> BP |
 | R4 | 1k (res) | 1→**c14**, 2→**c17** | AM -> VREF (col 17). 4.7k here for gain 22 on first power-up |
@@ -34,15 +34,15 @@ Rails are assumed split at columns 31|32; four bridge wires are included (harmle
 | R8 | 1k (res) | 1→**c23**, 2→**c26** | BM -> VREF (col 26) |
 | R12 | 1k (res) | 1→**c19**, 2→**c22** | BOUT -> LP (col 22) |
 | C9 | 10n (cer) | 1→**d22**, 2→**d24** | LP -> VREF (col 24) |
-| U2 | TL072CP (dip8) | 1→**e30**, 2→**e31**, 3→**e32**, 4→**e33**, 8→**f30**, 7→**f31**, 6→**f32**, 5→**f33** | pin 1 (notch) at column 30, straddling the channel |
-| R13 | 100 (res) | 1→**i31**, 2→**i35** | OBUF (U2 pin 7, col 31 bottom) -> OISO (col 35) |
+| U2 | TL072CP (dip8) | 4→**e30**, 3→**e31**, 2→**e32**, 1→**e33**, 5→**f30**, 6→**f31**, 7→**f32**, 8→**f33** | notch and pin-1 dot toward column 33 (right); pin 1 at e33, pin 8 at f33 |
+| R13 | 100 (res) | 1→**i32**, 2→**i35** | OBUF (U2 pin 7, col 32 bottom) -> OISO (col 35) |
 | C10 | 10u (elec) | 1→**h35**, 2→**h36** | + toward R13 (col 35), - toward J2 (col 36) |
 | R14 | 100k (res) | 1→**g36**, 2→**BR-@36** | output bleed to the bottom GND rail |
 | J2 | AUDIO L (hdr2) | 1→**f36**, 2→**f37** | 1=AUDIO_L / 2=GND |
-| R9 | 10k (res) | 1→**a36**, 2→**a32** | VANA stub (col 36 top, jumpered to BR+) -> VDIV (col 32 = U2 pin 3) |
-| R10 | 10k (res) | 1→**b32**, 2→**TR-@33** | VDIV -> GND rail |
-| C5 | 10u (elec) | 1→**c32**, 2→**TR-@35** | + at VDIV, - bent up to the GND rail |
-| R11 | 47 (res) | 1→**b30**, 2→**b26** | VBUF (U2 pin 1, col 30) -> VREF node (col 26) |
+| R9 | 10k (res) | 1→**a36**, 2→**a31** | VANA stub (col 36 top, jumpered to BR+) -> VDIV (col 31 = U2 pin 3) |
+| R10 | 10k (res) | 1→**b31**, 2→**TR-@33** | VDIV (col 31) -> GND rail |
+| C5 | 10u (elec) | 1→**c31**, 2→**TR-@35** | + at VDIV (col 31), - bent up to the GND rail |
+| R11 | 47 (res) | 1→**c33**, 2→**c29** | VBUF (U2 pin 1, col 33) -> col 29, then a wire on to the VREF node (col 26) |
 | C6 | 47u (elec) | 1→**d26**, 2→**TR-@26** | + at VREF |
 | J3 | 12V IN (hdr2) | 1→**j10**, 2→**j11** | 1=VIN12 / 2=GND |
 | D1 | 1N5822 (diode) | A→**i10**, K→**i13** | band (cathode) toward col 13 = VPROT |
@@ -52,8 +52,8 @@ Rails are assumed split at columns 31|32; four bridge wires are included (harmle
 | C13 | 100u (elec) | 1→**h16**, 2→**BR-@16** | + at VANA |
 | J5 | FROM BUCK 5V (hdr2) | 1→**j18**, 2→**j19** | 1=V5 / 2=GND |
 | C12 | 100u (elec) | 1→**h18**, 2→**BR-@18** | + at V5 |
-| C3 | 100n (cer) | 1→**g5**, 2→**BR-@5** | U1 V+ (pin 8, col 5 bottom) to GND, right at the pin |
-| C7 | 100n (cer) | 1→**g30**, 2→**BR-@30** | U2 V+ (pin 8, col 30 bottom) to GND |
+| C3 | 100n (cer) | 1→**g8**, 2→**BR-@8** | U1 V+ (pin 8, col 8 bottom) to GND, right at the pin |
+| C7 | 100n (cer) | 1→**g33**, 2→**BR-@33** | U2 V+ (pin 8, col 33 bottom) to GND |
 | FB1 | FB (bead) | 1→**TR+@38**, 2→**a38** | from the top 5 V rail down into the column |
 | C14 | 10u (elec) | 1→**b38**, 2→**TR-@39** | + at the module rail |
 | C15 | 100n (cer) | 1→**c38**, 2→**TR-@40** |  |
@@ -97,10 +97,10 @@ Rails are assumed split at columns 31|32; four bridge wires are included (harmle
 | 10 | **e52** | **TR-@52** | black | J10 pin 1 GND |
 | 11 | **f58** | **BR-@58** | black | J11 pin 1 GND |
 | 12 | **e62** | **TR-@62** | black | J12 GND |
-| 13 | **a8** | **TR-@8** | black | U1 pin 4 (V-) to GND |
-| 14 | **a33** | **TR-@34** | black | U2 pin 4 (V-) to GND |
-| 15 | **h5** | **BR+@5** | red | U1 pin 8 (V+, strip f-j col 5) to the VANA rail |
-| 16 | **h30** | **BR+@30** | red | U2 pin 8 (V+, col 30) to the VANA rail |
+| 13 | **a5** | **TR-@5** | black | U1 pin 4 (V-, top col 5) to the GND rail |
+| 14 | **a30** | **TR-@30** | black | U2 pin 4 (V-, top col 30) to the GND rail |
+| 15 | **h8** | **BR+@8** | red | U1 pin 8 (V+, bottom col 8) to the VANA rail |
+| 16 | **h33** | **BR+@33** | red | U2 pin 8 (V+, bottom col 33) to the VANA rail |
 | 17 | **f16** | **BR+@16** | red | VANA node (R15/C13) feeds the bottom red rail |
 | 18 | **e36** | **BR+@36** | red | R9's VANA end (top col 36) down to the VANA rail |
 | 19 | **g18** | **TR+@18** | orange | V5 (J5/C12, bottom col 18) up to the top red rail |
@@ -109,29 +109,30 @@ Rails are assumed split at columns 31|32; four bridge wires are included (harmle
 | 22 | **TR-@31** | **TR-@32** | black | rail bridge |
 | 23 | **BR+@31** | **BR+@32** | red | rail bridge |
 | 24 | **BR-@31** | **BR-@32** | black | rail bridge |
-| 25 | **a4** | **a7** | green | AP (C1/R2 node) into U1 pin 3 (IN+ A) |
-| 26 | **a5** | **a10** | green | U1 pin 1 (OUT A) to the AOUT node (col 10) |
-| 27 | **a14** | **a6** | green | AM node (R3/R4) back to U1 pin 2 (IN- A) |
-| 28 | **d12** | **g8** | green | BP (C2/R6 node) across the channel into U1 pin 5 (IN+ B) |
-| 29 | **g6** | **a19** | green | U1 pin 7 (OUT B) up to the BOUT node (col 19) |
-| 30 | **a23** | **i7** | green | BM node (R7/R8) across to U1 pin 6 (IN- B) |
-| 31 | **e22** | **h33** | green | LP (R12/C9 node) across to U2 pin 5 (IN+ B) |
-| 32 | **j31** | **j32** | green | U2 pin 7 to pin 6: unity-gain buffer |
-| 33 | **a30** | **a31** | green | U2 pin 1 to pin 2: VREF buffer, unity gain |
-| 34 | **a26** | **a24** | violet | VREF -> C9's VREF end |
-| 35 | **b24** | **c16** | violet | VREF -> R6's VREF end (col 16) |
-| 36 | **d16** | **d17** | violet | VREF (col 16) -> R4's VREF end (col 17) |
-| 37 | **a1** | **a16** | violet | VREF -> R2's VREF end (col 1): long run along row a |
-| 38 | **a46** | **b53** | blue | R16 out (top col 46) -> J10 pin 2 SCK_O (col 53) |
-| 39 | **a47** | **b54** | blue | R17 out (top col 47) -> J10 pin 3 MOSI_O (col 54) |
-| 40 | **a48** | **b55** | blue | R18 out (top col 48) -> J10 pin 4 LE_O (col 55) |
-| 41 | **f48** | **b56** | blue | J9 pin 5 LD (bottom col 48) -> J10 pin 5 LD (top col 56) |
-| 42 | **f53** | **e58** | yellow | J9 pin 10 3V3 (bottom col 53) -> JP3 pin 2 (top col 58) |
-| 43 | **g53** | **g59** | yellow | 3V3 -> J11 pin 2 / R20 (bottom col 59) |
-| 44 | **g50** | **g60** | white | J9 pin 7 STEP (col 50) -> J11 pin 3 (col 60) |
-| 45 | **g51** | **g61** | white | J9 pin 8 DIR (col 51) -> J11 pin 4 (col 61) |
-| 46 | **g52** | **g62** | white | J9 pin 9 EN (col 52) -> J11 pin 5 (col 62) |
-| 47 | **h49** | **a60** | grey | J9 pin 6 SYNC (bottom col 49) up to R23 (top col 60) |
+| 25 | **a4** | **a6** | green | AP (C1/R2 node) into U1 pin 3 (IN+ A, col 6) |
+| 26 | **a8** | **a10** | green | U1 pin 1 (OUT A, col 8) to the AOUT node (col 10) |
+| 27 | **a14** | **a7** | green | AM node (R3/R4) back to U1 pin 2 (IN- A, col 7) |
+| 28 | **d12** | **g5** | green | BP (C2/R6 node) across the channel into U1 pin 5 (IN+ B, bottom col 5) |
+| 29 | **g7** | **a19** | green | U1 pin 7 (OUT B, bottom col 7) up to the BOUT node (col 19) |
+| 30 | **a23** | **i6** | green | BM node (R7/R8) across to U1 pin 6 (IN- B, bottom col 6) |
+| 31 | **e22** | **h30** | green | LP (R12/C9 node) across to U2 pin 5 (IN+ B, bottom col 30) |
+| 32 | **j32** | **j31** | green | U2 pin 7 (col 32) to pin 6 (col 31): unity-gain buffer |
+| 33 | **a33** | **a32** | green | U2 pin 1 (col 33) to pin 2 (col 32): VREF buffer, unity gain |
+| 34 | **b29** | **b26** | violet | R11's far end (col 29) to the VREF node (col 26) |
+| 35 | **a26** | **a24** | violet | VREF -> C9's VREF end |
+| 36 | **b24** | **c16** | violet | VREF -> R6's VREF end (col 16) |
+| 37 | **d16** | **d17** | violet | VREF (col 16) -> R4's VREF end (col 17) |
+| 38 | **a1** | **a16** | violet | VREF -> R2's VREF end (col 1): long run along row a |
+| 39 | **a46** | **b53** | blue | R16 out (top col 46) -> J10 pin 2 SCK_O (col 53) |
+| 40 | **a47** | **b54** | blue | R17 out (top col 47) -> J10 pin 3 MOSI_O (col 54) |
+| 41 | **a48** | **b55** | blue | R18 out (top col 48) -> J10 pin 4 LE_O (col 55) |
+| 42 | **f48** | **b56** | blue | J9 pin 5 LD (bottom col 48) -> J10 pin 5 LD (top col 56) |
+| 43 | **f53** | **e58** | yellow | J9 pin 10 3V3 (bottom col 53) -> JP3 pin 2 (top col 58) |
+| 44 | **g53** | **g59** | yellow | 3V3 -> J11 pin 2 / R20 (bottom col 59) |
+| 45 | **g50** | **g60** | white | J9 pin 7 STEP (col 50) -> J11 pin 3 (col 60) |
+| 46 | **g51** | **g61** | white | J9 pin 8 DIR (col 51) -> J11 pin 4 (col 61) |
+| 47 | **g52** | **g62** | white | J9 pin 9 EN (col 52) -> J11 pin 5 (col 62) |
+| 48 | **h49** | **a60** | grey | J9 pin 6 SYNC (bottom col 49) up to R23 (top col 60) |
 
 ## Nets as built (what each strip carries)
 
