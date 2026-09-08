@@ -67,7 +67,7 @@ So the plan needs three things Kevin pointed at:
    build as the channel change (§1). Indoors at 10 m that is plenty for the
    phone link and buys 10 dB at the radar.
 2. **A 2.4 GHz band-pass filter between the RX horn and the LNA** (2400–2500
-   MHz SMA inline, ~$20, `hardware/BOM.md` row 7b). It cannot separate
+   MHz SMA inline, $14–30 from GPIO Labs or Data Alliance, `hardware/BOM.md` row 7b). It cannot separate
    channel 1 from the sweep — no cheap filter has a 17 MHz transition — but
    it takes every out-of-ISM signal (cellular, 5 GHz images, broadcast) off
    the wideband amplifier, which is Kevin's main point.

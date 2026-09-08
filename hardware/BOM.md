@@ -23,7 +23,7 @@ table order — the mixer is the critical path.
 | 5 | SMA 3 dB attenuator, DC–6 GHz | 1 | 9 | Amazon | replaces VAT-3+ |
 | 6 | SMA M-M RG316 jumpers, 20 cm, 3-pack | 2 | 18 | Amazon | 6 runs in the chain |
 | 7 | SMA adapter assortment (M-M barrels, F-F) | 1 | 12 | Amazon | |
-| 7b | **2.4 GHz band-pass filter**, 2400–2500 MHz, SMA inline | 1 | 20 | Amazon / eBay | between RX horn and LNA — keeps out-of-band signals off the wideband SPF5189Z (it cannot reject WiFi ch 1; the drone's AP power is turned down for that) |
+| 7b | **2.4 GHz band-pass filter**, 2400–2500 MHz, SMA inline | 1 | 14–30 | GPIO Labs (2450 MHz ISM BPF, $29.10, >40 dB at 2.2/2.8 GHz, 2.7 dB loss) or Data Alliance (BandPass2450, $13.70, no rejection spec published). The same FBP-2400-style module is listed on Amazon (ASIN B0C3BL74VN, B0C8269CGF) and AliExpress (~$25); Amazon prices were not verifiable from here. Mini-Circuits VBF-2435+ is $57.50 at DigiKey; ZFBP-2400-S+ (50 dB rejection, 2.2 dB loss) is the lab-grade option | between RX horn and LNA — keeps out-of-band signals off the wideband SPF5189Z (it cannot reject WiFi ch 1; the drone's AP power is turned down for that) |
 
 ## B. Horns — ~$95 (materials for three)
 
