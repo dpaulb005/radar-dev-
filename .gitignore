@@ -8,4 +8,4 @@ ground_station/recordings/
 .history/
 
 # concurrent audit tooling
-.codex-audit-*/
+.codex*
