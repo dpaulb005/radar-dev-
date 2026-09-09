@@ -6,6 +6,15 @@ to finish before the bearing moves, and at 10 m with a 2.5° budget that caps a
 4.3 s scan at a target speed of 0.10 m/s. Details and the measurement are in
 [`signal-chain.md`](signal-chain.md) § stage 10.
 
+> **But if the drone holds still, the scan does work — and it is the cheap way
+> to get azimuth on stage 1 hardware.** Measured in
+> [`figures/hover_scan.py`](figures/hover_scan.py): with the right geometry —
+> **3 beams over 48°, 1.42 s**, not the 9 beams over 90° this repo used to
+> specify — the scan holds the 2.5° budget out to **0.5 m/s** of sideways
+> drift, against 0.15 m/s for the 9-beam version. A servo is $15–30 against
+> $167–224 for the second receive chain. See § [the servo scan, and when it is
+> enough](#the-servo-scan-and-when-it-is-enough) at the bottom.
+
 The fix is to stop measuring bearing across time and measure it across
 **space**: two receiving antennas, and the phase difference between them.
 
@@ -165,3 +174,49 @@ simultaneous version has the parts already costed, so start there.
 Elevation. One baseline measures one angle, and putting it horizontal spends it
 on azimuth. Range, azimuth and radial velocity is a 2-D track on the floor
 plane, which is what the console and the tracker already draw.
+
+---
+
+## The servo scan, and when it is enough
+
+The interferometer is the right answer for a *flying* drone. It is not the only
+answer, and it is not the cheap one, so this is the honest comparison.
+
+| | servo scan, 48° / 3 beams | interferometer |
+|---|---|---|
+| extra hardware | one servo, **$15–30** | second mixer, splitter, band-pass, LNA, 4-in interface: **$167–224** |
+| receive chains | the one stage 1 already has | two, phase-matched |
+| time per fix | 1.42 s | **0.47 s** |
+| bearing at rest | 0.74° rms | **0.09°** |
+| holds 2.5° up to | **0.5 m/s** of drift | ≥ 1 m/s, and it is flat — one dwell has nothing to smear |
+| needs calibration | no | yes, and it is 0.43° of bearing per mm of cable |
+| fails on a perfectly still target | yes | yes — same cause |
+
+**Build the servo version if** you want azimuth on stage 1 without buying a
+second receive chain, and you are willing to fly a careful hover or put the
+target on a stand. 0.5 m/s is a real hover for a drone that is being held in
+place, and 0.74° at rest is well inside budget.
+
+**It will not track a drone being flown.** A hand-flown 25 g quad indoors has no
+optical flow and no GPS, so nothing is holding its position but you, and the
+moment it is moving at a walking pace the scan is out of budget while the
+interferometer has not noticed.
+
+**The servo is not wasted either way.** It is how you measure the horn's actual
+beam pattern, and it is how you sweep a corner reflector across boresight to
+find the interferometer's fixed phase offset. Stage 2 keeps it as an optional
+coverage aid ([`goal.md`](goal.md)); this is the other reason to have one.
+
+### The trap in both methods
+
+Neither can see a target with **exactly zero Doppler**, because
+`range_doppler(bg_subtract=True)` subtracts the mean across chirps to kill the
+TX leakage and the room, and a motionless target is indistinguishable from the
+room. Measured, both give 8–9° of nonsense, and — worse — nothing abstains:
+`radar_acquire.py` locks onto a leakage residue at 2.2 m and reports it with
+SNR 49.7 and quality 1.0.
+
+A real hover survives on rotor micro-Doppler and airframe jitter, and 0.05 m/s
+of radial motion is enough to clear it. But if you are bench-testing against a
+corner reflector, **the reflector has to be moving** — on a slow slide, or
+swinging — or you are measuring the room.

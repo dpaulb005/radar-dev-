@@ -206,6 +206,13 @@ while making each sample quieter buys everything. Note also that 160 chirps at
 40 MHz lands exactly where 64 chirps at 80 MHz already was. Integration time
 buys back precisely what the halved bandwidth cost.
 
+> **Every number in this table is for a target pinned at one range and one
+> bearing for the whole scan.** That is the right experiment for "how precise
+> is the centroid", and the wrong one for "does this work on a drone". Let the
+> target move even slightly and the ranking inverts — the 10.7 s row, the best
+> one here, becomes the worst. See § [does it work on a hovering
+> drone](#does-it-work-on-a-hovering-drone) below, which measures it.
+
 ### The limit that outranks both
 
 None of this survives a moving target. The centroid assumes every beam saw the
@@ -224,17 +231,89 @@ caps the 4.3 s scan at 1.4 m/s.
 
 So mechanical scanning is a way to measure the bearing of a **hovering** drone.
 It is not a way to track a flying one, at any dwell or step size, and no amount
-of servo tuning changes that. Bearing on a moving target needs it measured
+of servo tuning changes that. What servo tuning *does* change is how good the
+hover has to be, and that turns out to be worth a factor of three — measured
+next. Bearing on a moving target needs it measured
 within a single dwell, which is what stage 2 does with a second receive horn and
 the phase difference between them. This finding is an argument for going
 there sooner rather than for optimising the scan.
+
+### Does it work on a hovering drone?
+
+The table above never let the target move. This one does, using the same
+pipeline, in [`figures/hover_scan.py`](figures/hover_scan.py) — the target's
+range and bearing are advanced between beams, so the centroid sees what it
+would really see. 16 assertions in `--selftest` hold the conclusions below to
+the saved results.
+
+**First: "perfectly still" is the one case that fails outright.** The
+range-Doppler map is background-subtracted — `range_doppler(bg_subtract=True)`
+does `c -= c.mean(axis=0)` — which is what removes the TX leakage and the room.
+A target with no radial velocity is removed with them.
+
+| radial velocity | 4.3 s scan | one dwell, interferometer |
+|---|---|---|
+| **0.00 m/s** | **8.9° rms** | **8.5° rms** |
+| 0.02 m/s | 7.9° | 8.5° |
+| 0.05 m/s | 2.2° | **0.13°** |
+| 0.10 m/s | 0.26° | 0.11° |
+
+Worse than the error: nothing abstains. At exactly zero Doppler
+`radar_acquire.py` locks onto a leakage residue at 2.2 m and reports it as the
+fix with SNR 49.7 and quality 1.0. So *"hold it as still as you can"* is
+actively the wrong instruction. A real hover is never that still — rotors and
+airframe jitter keep it out of the DC bin — and **0.05 m/s is enough**.
+
+**Second: it is drift speed that matters, not how long you hold.** With enough
+jitter to be visible (0.15 m/s radial), sweeping the sideways drift:
+
+| sideways drift | 4.3 s scan (9 beams) | 10.7 s scan (9 × 160) | interferometer |
+|---|---|---|---|
+| 0 | **0.20°** | 3.12° | 0.09° |
+| 0.05 m/s | 0.36° | 3.46° | 0.09° |
+| 0.10 m/s | 0.95° | 4.03° | 0.09° |
+| 0.20 m/s | 2.12° ✗ | 6.85° ✗ | 0.09° |
+| 0.50 m/s | 6.04° ✗ | 18.2° ✗ | 0.09° |
+| 1.00 m/s | 13.6° ✗ | 32.5° ✗ | **0.09°** |
+
+The 10.7 s configuration — the best row in the previous table, at 0.09° — is
+**the worst one here**, because smear and range walk both grow with scan time.
+Its 0.09° was an artefact of pinning the target's range. The interferometer is
+flat: one dwell, so drift has nothing to act on.
+
+**Third: the 9-beam geometry is the wrong one.** A scan costs time in
+proportion to its beam count, and 12° steps oversample a 36° beam. Spending
+fewer beams buys drift tolerance far faster than the coarser centroid loses
+accuracy:
+
+| sector / beams | scan | at rest | 0.20 m/s | 0.50 m/s | holds 2.5° to |
+|---|---|---|---|---|---|
+| 90° / 9 *(as specified)* | 4.26 s | **0.20°** | 2.12° ✗ | 6.04° ✗ | 0.15 m/s |
+| 90° / 5 | 2.37 s | 0.50° | 1.12° | 2.90° ✗ | 0.30 m/s |
+| 72° / 7 | 3.32 s | 0.20° | 1.53° | 4.31° ✗ | 0.25 m/s |
+| 48° / 5 | 2.37 s | 0.69° | 1.08° | 2.47° ✗ | 0.40 m/s |
+| **48° / 3** | **1.42 s** | 0.74° | **0.82°** | **1.54°** | **0.50 m/s** |
+| 36° / 4 | 1.89 s | 1.77° ✗ | 1.86° ✗ | 2.36° ✗ | never |
+
+**Three beams at −24°, 0°, +24° is the configuration to build.** It is worse
+than 9 beams on a parked target and three times better on a drifting one, with
+the crossover at about 0.1 m/s — and it is a third of the scan time and a third
+of the servo moves.
+
+The last row is the guard rail: 36° is barely wider than the ±12° the targets
+span, so the centroid gets squeezed toward the middle and fails even at rest.
+Fewer beams is not the lesson; **a sector comfortably wider than the target's
+excursion, sampled just often enough**, is.
 
 ### What to do now
 
 - **Range and velocity are unaffected.** They are accurate throughout;
   only bearing is in question, and only for moving targets.
-- **If you keep the 40 MHz sweep**, raise the dwell to 160 chirps. It is a
-  one-line change and it restores the azimuth budget for a hovering target.
+- **If you keep the 40 MHz sweep**, change the scan *geometry*, not the dwell:
+  **3 beams over 48°, 64 chirps, 1.42 s**. Measured below, that holds the
+  budget out to 0.5 m/s of drift where the 9-beam scan gives up at 0.15.
+  Raising the dwell to 160 chirps was the earlier advice here and it is
+  **withdrawn** — it only helps a target that does not move.
 - **If you reclaim the bandwidth**, nothing else needs changing.
 - **For a moving drone**, neither helps. Bearing has to come from one dwell,
   which means two receivers and the phase between them:
