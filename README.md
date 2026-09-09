@@ -42,7 +42,7 @@ moving on.
 
 Breadboard build sheet: [`hardware/breadboard/`](hardware/breadboard/) — every lead and jumper by hole (`WIRING.md`), verified against the netlist, with an interactive `breadboard.html`.
 
-Schematics: [`hardware/kicad/`](hardware/kicad/) — `radar_breadboard.kicad_sch` (the breadboard and everything it connects to) and `radar_multisim.kicad_sch` (every value on the page, one frame per test). Both render in KiCad 7/8; PNGs alongside.
+Schematics: [`hardware/kicad/`](hardware/kicad/) — `radar_flow.kicad_sch` (**start here**: every part wired to every part it touches, in signal order, with the level on each connection), `radar_breadboard.kicad_sch` (the breadboard at component level) and `radar_multisim.kicad_sch` (every value on the page, one frame per test). All render in KiCad 7/8; PNGs alongside.
 
 ## Test
 

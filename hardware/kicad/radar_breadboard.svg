@@ -1540,41 +1540,41 @@
 <text x="902.5" y="646.0" font-size="9.5" fill="#1a3d8f" text-anchor="end" font-weight="bold">AUDIO_L</text>
 <text x="902.5" y="654.1" font-size="9.5" fill="#1a3d8f" text-anchor="end" font-weight="bold">AUDIO_R</text>
 <text x="1017.5" y="646.0" font-size="9.5" fill="#1a3d8f" text-anchor="start" font-weight="bold">USB laptop</text>
-<text x="48.0" y="70.4" font-size="13.0" fill="#222" font-weight="bold">BREADBOARD  —  what you actually build (video amp, bias, power, harness)</text>
-<text x="48.0" y="86.4" font-size="7.8" fill="#222">Mixer IF in on a shielded pigtail. 49.9 R + 1 nF FIRST, right at the input.</text>
-<text x="44.8" y="214.4" font-size="5.7" fill="#222">mixer IF pigtail</text>
-<text x="198.4" y="140.8" font-size="6.2" fill="#222">U1A gain 1+R3/R4 = 101  (4.7k here -> 22 for first power-up)</text>
-<text x="345.6" y="147.2" font-size="6.2" fill="#222">U1B gain 1+R7/R8 = 11</text>
-<text x="435.2" y="256.0" font-size="6.2" fill="#222">R12/C9 = 15.9 kHz LP</text>
-<text x="595.2" y="249.6" font-size="6.2" fill="#222">-> UCA202 LEFT (shielded lead)</text>
-<text x="48.0" y="294.4" font-size="7.3" fill="#222" font-weight="bold">Half-rail reference VREF = VANA/2, buffered</text>
-<text x="294.4" y="294.4" font-size="7.3" fill="#222" font-weight="bold">12 V in -> D1 -> VPROT -> R15/C13 -> VANA (op-amp rail, ~11 V)</text>
-<text x="377.6" y="300.8" font-size="5.7" fill="#222">12 V IN (J3)  /  TO BUCK IN (J4)</text>
-<text x="473.6" y="377.6" font-size="6.2" fill="#222">100 nF at each TL072 V+ pin</text>
-<text x="48.0" y="428.8" font-size="7.3" fill="#222" font-weight="bold">5 V from the LM2596, ferrite + 10u + 100n per RF module</text>
-<text x="44.8" y="488.0" font-size="5.7" fill="#222">from LM2596 OUT</text>
-<text x="256.0" y="451.2" font-size="5.7" fill="#222">ADF4351 5V</text>
-<text x="256.0" y="502.4" font-size="5.7" fill="#222">PA 5V</text>
-<text x="256.0" y="553.6" font-size="5.7" fill="#222">LNA 5V</text>
-<text x="307.2" y="428.8" font-size="7.3" fill="#222" font-weight="bold">ESP32 harness (J9) -> ADF4351 logic (J10, 33 R series) and A4988 logic (J11)</text>
-<text x="307.2" y="544.0" font-size="5.7" fill="#222">J9: GPIO18 23 5 19 25 26 27 14, 3V3 from the devkit</text>
-<text x="544.0" y="480.0" font-size="5.7" fill="#222">to ADF4351 logic pins</text>
-<text x="384.0" y="518.4" font-size="5.7" fill="#222">JP3: CE enable</text>
-<text x="544.0" y="608.0" font-size="5.7" fill="#222">to A4988 logic pins</text>
-<text x="569.6" y="518.4" font-size="5.7" fill="#222">EN pull-up = motor off until firmware</text>
-<text x="550.4" y="684.8" font-size="6.2" fill="#222">0.3 V sync -> UCA202 RIGHT (J12)</text>
-<text x="710.4" y="70.4" font-size="13.0" fill="#222" font-weight="bold">SYSTEM  —  what the breadboard connects to (all 2.4 GHz on SMA coax, never on the breadboard)</text>
-<text x="710.4" y="166.4" font-size="5.7" fill="#222">fuse 1 A in the +12 V lead</text>
-<text x="710.4" y="243.2" font-size="5.7" fill="#222">set 5.00 V BEFORE connecting J5</text>
-<text x="992.8" y="129.2" font-size="5.2" fill="#222">+5 dBm</text>
-<text x="1049.7" y="129.2" font-size="5.2" fill="#222">+2</text>
-<text x="1119.6" y="129.2" font-size="5.2" fill="#222">+14 dBm</text>
-<text x="1171.8" y="186.8" font-size="5.2" fill="#222">+10.5 dBm -> +23 dBm EIRP</text>
-<text x="1092.4" y="265.6" font-size="5.2" fill="#222">LO +10.5 dBm</text>
-<text x="1133.0" y="362.5" font-size="5.2" fill="#222">IF -> shielded pigtail -> J1 on the breadboard</text>
-<text x="921.6" y="352.0" font-size="5.2" fill="#222">echo -74 dBm @ 10 m</text>
-<text x="896.0" y="595.2" font-size="5.2" fill="#222">VMOT from the fused 12 V, NOT through D1. MS1-3 high = 1/16 step. VREF for ~0.8 A.</text>
-<text x="896.0" y="697.6" font-size="5.7" fill="#222">L = beat 0-2.6 kHz, R = sync. 44.1 kHz 16-bit. radar_acquire.py</text>
-<text x="710.4" y="768.0" font-size="6.8" fill="#222">Nets with the same label are connected across both halves (KiCad local labels).</text>
-<text x="710.4" y="780.8" font-size="6.8" fill="#222">Sweep 2440-2480 MHz (drone WiFi on ch 1), 64 steps x 100 us, PRI 7.4 ms. Boots RF OFF.</text>
+<text x="48.0" y="70.4" font-size="13.0" fill="#222" font-weight="bold"><tspan x="48.0" dy="0.0">BREADBOARD  —  what you actually build (video amp, bias, power, harness)</tspan></text>
+<text x="48.0" y="86.4" font-size="7.8" fill="#222"><tspan x="48.0" dy="0.0">Mixer IF in on a shielded pigtail. 49.9 R + 1 nF FIRST, right at the input.</tspan></text>
+<text x="44.8" y="214.4" font-size="5.7" fill="#222"><tspan x="44.8" dy="0.0">mixer IF pigtail</tspan></text>
+<text x="198.4" y="140.8" font-size="6.2" fill="#222"><tspan x="198.4" dy="0.0">U1A gain 1+R3/R4 = 101  (4.7k here -&gt; 22 for first power-up)</tspan></text>
+<text x="345.6" y="147.2" font-size="6.2" fill="#222"><tspan x="345.6" dy="0.0">U1B gain 1+R7/R8 = 11</tspan></text>
+<text x="435.2" y="256.0" font-size="6.2" fill="#222"><tspan x="435.2" dy="0.0">R12/C9 = 15.9 kHz LP</tspan></text>
+<text x="595.2" y="249.6" font-size="6.2" fill="#222"><tspan x="595.2" dy="0.0">-&gt; UCA202 LEFT (shielded lead)</tspan></text>
+<text x="48.0" y="294.4" font-size="7.3" fill="#222" font-weight="bold"><tspan x="48.0" dy="0.0">Half-rail reference VREF = VANA/2, buffered</tspan></text>
+<text x="294.4" y="294.4" font-size="7.3" fill="#222" font-weight="bold"><tspan x="294.4" dy="0.0">12 V in -&gt; D1 -&gt; VPROT -&gt; R15/C13 -&gt; VANA (op-amp rail, ~11 V)</tspan></text>
+<text x="377.6" y="300.8" font-size="5.7" fill="#222"><tspan x="377.6" dy="0.0">12 V IN (J3)  /  TO BUCK IN (J4)</tspan></text>
+<text x="473.6" y="377.6" font-size="6.2" fill="#222"><tspan x="473.6" dy="0.0">100 nF at each TL072 V+ pin</tspan></text>
+<text x="48.0" y="428.8" font-size="7.3" fill="#222" font-weight="bold"><tspan x="48.0" dy="0.0">5 V from the LM2596, ferrite + 10u + 100n per RF module</tspan></text>
+<text x="44.8" y="488.0" font-size="5.7" fill="#222"><tspan x="44.8" dy="0.0">from LM2596 OUT</tspan></text>
+<text x="256.0" y="451.2" font-size="5.7" fill="#222"><tspan x="256.0" dy="0.0">ADF4351 5V</tspan></text>
+<text x="256.0" y="502.4" font-size="5.7" fill="#222"><tspan x="256.0" dy="0.0">PA 5V</tspan></text>
+<text x="256.0" y="553.6" font-size="5.7" fill="#222"><tspan x="256.0" dy="0.0">LNA 5V</tspan></text>
+<text x="307.2" y="428.8" font-size="7.3" fill="#222" font-weight="bold"><tspan x="307.2" dy="0.0">ESP32 harness (J9) -&gt; ADF4351 logic (J10, 33 R series) and A4988 logic (J11)</tspan></text>
+<text x="307.2" y="544.0" font-size="5.7" fill="#222"><tspan x="307.2" dy="0.0">J9: GPIO18 23 5 19 25 26 27 14, 3V3 from the devkit</tspan></text>
+<text x="544.0" y="480.0" font-size="5.7" fill="#222"><tspan x="544.0" dy="0.0">to ADF4351 logic pins</tspan></text>
+<text x="384.0" y="518.4" font-size="5.7" fill="#222"><tspan x="384.0" dy="0.0">JP3: CE enable</tspan></text>
+<text x="544.0" y="608.0" font-size="5.7" fill="#222"><tspan x="544.0" dy="0.0">to A4988 logic pins</tspan></text>
+<text x="569.6" y="518.4" font-size="5.7" fill="#222"><tspan x="569.6" dy="0.0">EN pull-up = motor off until firmware</tspan></text>
+<text x="550.4" y="684.8" font-size="6.2" fill="#222"><tspan x="550.4" dy="0.0">0.3 V sync -&gt; UCA202 RIGHT (J12)</tspan></text>
+<text x="710.4" y="70.4" font-size="13.0" fill="#222" font-weight="bold"><tspan x="710.4" dy="0.0">SYSTEM  —  what the breadboard connects to (all 2.4 GHz on SMA coax, never on the breadboard)</tspan></text>
+<text x="710.4" y="166.4" font-size="5.7" fill="#222"><tspan x="710.4" dy="0.0">fuse 1 A in the +12 V lead</tspan></text>
+<text x="710.4" y="243.2" font-size="5.7" fill="#222"><tspan x="710.4" dy="0.0">set 5.00 V BEFORE connecting J5</tspan></text>
+<text x="992.8" y="129.2" font-size="5.2" fill="#222"><tspan x="992.8" dy="0.0">+5 dBm</tspan></text>
+<text x="1049.7" y="129.2" font-size="5.2" fill="#222"><tspan x="1049.7" dy="0.0">+2</tspan></text>
+<text x="1119.6" y="129.2" font-size="5.2" fill="#222"><tspan x="1119.6" dy="0.0">+14 dBm</tspan></text>
+<text x="1171.8" y="186.8" font-size="5.2" fill="#222"><tspan x="1171.8" dy="0.0">+10.5 dBm -&gt; +23 dBm EIRP</tspan></text>
+<text x="1092.4" y="265.6" font-size="5.2" fill="#222"><tspan x="1092.4" dy="0.0">LO +10.5 dBm</tspan></text>
+<text x="1133.0" y="362.5" font-size="5.2" fill="#222"><tspan x="1133.0" dy="0.0">IF -&gt; shielded pigtail -&gt; J1 on the breadboard</tspan></text>
+<text x="921.6" y="352.0" font-size="5.2" fill="#222"><tspan x="921.6" dy="0.0">echo -74 dBm @ 10 m</tspan></text>
+<text x="896.0" y="595.2" font-size="5.2" fill="#222"><tspan x="896.0" dy="0.0">VMOT from the fused 12 V, NOT through D1. MS1-3 high = 1/16 step. VREF for ~0.8 A.</tspan></text>
+<text x="896.0" y="697.6" font-size="5.7" fill="#222"><tspan x="896.0" dy="0.0">L = beat 0-2.6 kHz, R = sync. 44.1 kHz 16-bit. radar_acquire.py</tspan></text>
+<text x="710.4" y="768.0" font-size="6.8" fill="#222"><tspan x="710.4" dy="0.0">Nets with the same label are connected across both halves (KiCad local labels).</tspan></text>
+<text x="710.4" y="780.8" font-size="6.8" fill="#222"><tspan x="710.4" dy="0.0">Sweep 2440-2480 MHz (drone WiFi on ch 1), 64 steps x 100 us, PRI 7.4 ms. Boots RF OFF.</tspan></text>
 </svg>

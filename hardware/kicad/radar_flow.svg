@@ -1,0 +1,395 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1344.0 950.4000000000001" width="1344.0" height="950.4000000000001" font-family="DejaVu Sans Mono, monospace">
+<rect width="1344.0" height="950.4000000000001" fill="#f7f4ea"/>
+<line x1="678.4000000000001" y1="38.400000000000006" x2="678.4000000000001" y2="912.0" stroke="#bbb" stroke-dasharray="6 6"/>
+<rect x="38.4" y="57.6" width="1267.2" height="198.4" fill="none" stroke="#999" stroke-dasharray="8 6" stroke-width="1.5"/>
+<rect x="38.4" y="268.8" width="601.6" height="115.2" fill="none" stroke="#999" stroke-dasharray="8 6" stroke-width="1.5"/>
+<rect x="38.4" y="396.8" width="1267.2" height="185.6" fill="none" stroke="#999" stroke-dasharray="8 6" stroke-width="1.5"/>
+<rect x="38.4" y="601.6" width="441.6" height="108.8" fill="none" stroke="#999" stroke-dasharray="8 6" stroke-width="1.5"/>
+<rect x="38.4" y="723.2" width="441.6" height="115.2" fill="none" stroke="#999" stroke-dasharray="8 6" stroke-width="1.5"/>
+<rect x="499.2" y="601.6" width="806.4" height="198.4" fill="none" stroke="#999" stroke-dasharray="8 6" stroke-width="1.5"/>
+<rect x="499.2" y="812.8" width="806.4" height="115.2" fill="none" stroke="#999" stroke-dasharray="8 6" stroke-width="1.5"/>
+<line x1="190.5" y1="123.9" x2="263.9" y2="123.9" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="350.5" y1="123.9" x2="414.3" y2="123.9" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="513.7" y1="123.9" x2="588.7" y2="123.9" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="691.3" y1="123.9" x2="766.3" y2="123.9" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="852.9" y1="123.9" x2="945.5" y2="123.9" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="1051.3" y1="123.9" x2="1147.1" y2="123.9" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="1233.7" y1="123.9" x2="1233.7" y2="123.9" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="1233.7" y1="123.9" x2="1233.7" y2="200.7" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="1233.7" y1="200.7" x2="1222.5" y2="200.7" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="1119.9" y1="200.7" x2="1004.9" y2="200.7" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="902.3" y1="200.7" x2="760.1" y2="200.7" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="691.3" y1="132.1" x2="784.0" y2="132.1" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="784.0" y1="132.1" x2="784.0" y2="208.9" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="784.0" y1="208.9" x2="760.1" y2="208.9" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="647.9" y1="200.7" x2="627.2" y2="204.8" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="627.2" y1="204.8" x2="627.2" y2="428.8" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="627.2" y1="428.8" x2="108.8" y2="428.8" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="108.8" y1="428.8" x2="108.8" y2="467.2" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="108.8" y1="467.2" x2="102.3" y2="467.2" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="353.7" y1="326.4" x2="371.2" y2="326.4" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="371.2" y1="326.4" x2="371.2" y2="448.0" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="371.2" y1="448.0" x2="83.2" y2="448.0" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="83.2" y1="448.0" x2="83.2" y2="467.2" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="83.2" y1="467.2" x2="108.8" y2="467.2" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="204.9" y1="467.2" x2="286.3" y2="467.2" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="379.3" y1="467.2" x2="452.7" y2="467.2" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="545.7" y1="467.2" x2="612.7" y2="467.2" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="705.7" y1="467.2" x2="772.7" y2="467.2" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="865.7" y1="467.2" x2="932.7" y2="467.2" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="1025.7" y1="467.2" x2="1099.1" y2="467.2" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="286.3" y1="475.3" x2="263.9" y2="475.3" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="452.7" y1="475.3" x2="430.3" y2="475.3" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="612.7" y1="475.3" x2="590.3" y2="475.3" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="772.7" y1="475.3" x2="750.3" y2="475.3" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="932.7" y1="475.3" x2="910.3" y2="475.3" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="299.3" y1="652.8" x2="337.7" y2="652.8" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="174.3" y1="761.6" x2="135.9" y2="761.6" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="299.3" y1="761.6" x2="337.7" y2="761.6" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="696.1" y1="669.7" x2="811.1" y2="669.7" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="904.1" y1="669.7" x2="1025.5" y2="673.7" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="696.1" y1="677.8" x2="742.4" y2="677.8" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="742.4" y1="677.8" x2="742.4" y2="729.6" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="742.4" y1="729.6" x2="801.5" y2="729.6" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="696.1" y1="661.5" x2="736.0" y2="661.5" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="736.0" y1="661.5" x2="736.0" y2="595.2" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="736.0" y1="595.2" x2="64.0" y2="595.2" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="64.0" y1="595.2" x2="64.0" y2="132.1" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="64.0" y1="132.1" x2="91.1" y2="132.1" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="1192.1" y1="467.2" x2="1248.0" y2="467.2" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="1248.0" y1="467.2" x2="1248.0" y2="636.8" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="1248.0" y1="636.8" x2="1025.5" y2="636.8" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="1025.5" y1="636.8" x2="1025.5" y2="665.6" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="1124.9" y1="665.6" x2="1254.4" y2="669.7" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="1254.4" y1="669.7" x2="1254.4" y2="870.4" stroke="#0b5e2b" stroke-width="1.8"/>
+<line x1="1254.4" y1="870.4" x2="1172.7" y2="870.4" stroke="#0b5e2b" stroke-width="1.8"/>
+<circle cx="108.8" cy="467.2" r="3" fill="#0b5e2b"/>
+<polygon points="99.2,115.8 182.4,115.8 182.4,140.2 99.2,140.2" fill="none" stroke="#8a2d2d" stroke-width="1.6"/>
+<line x1="91.1" y1="123.9" x2="99.2" y2="123.9" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="91.1" cy="123.9" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="102.1" y="125.5" font-size="9" text-anchor="start" fill="#333">+5V</text>
+<line x1="91.1" y1="132.1" x2="99.2" y2="132.1" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="91.1" cy="132.1" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="102.1" y="133.7" font-size="9" text-anchor="start" fill="#333">SPI</text>
+<line x1="190.5" y1="123.9" x2="182.4" y2="123.9" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="190.5" cy="123.9" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="179.5" y="125.5" font-size="9" text-anchor="end" fill="#333">RF</text>
+<text x="140.8" y="108.1" font-size="10" font-weight="bold" fill="#8a2d2d" text-anchor="middle">BADF</text>
+<polygon points="272.0,115.8 342.4,115.8 342.4,132.1 272.0,132.1" fill="none" stroke="#8a2d2d" stroke-width="1.6"/>
+<line x1="263.9" y1="123.9" x2="272.0" y2="123.9" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="263.9" cy="123.9" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="274.9" y="125.5" font-size="9" text-anchor="start" fill="#333">IN</text>
+<line x1="350.5" y1="123.9" x2="342.4" y2="123.9" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="350.5" cy="123.9" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="339.5" y="125.5" font-size="9" text-anchor="end" fill="#333">OUT</text>
+<text x="307.2" y="108.1" font-size="10" font-weight="bold" fill="#8a2d2d" text-anchor="middle">BATT</text>
+<polygon points="422.4,115.8 505.6,115.8 505.6,140.2 422.4,140.2" fill="none" stroke="#8a2d2d" stroke-width="1.6"/>
+<line x1="414.3" y1="123.9" x2="422.4" y2="123.9" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="414.3" cy="123.9" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="425.3" y="125.5" font-size="9" text-anchor="start" fill="#333">IN</text>
+<line x1="414.3" y1="132.1" x2="422.4" y2="132.1" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="414.3" cy="132.1" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="425.3" y="133.7" font-size="9" text-anchor="start" fill="#333">+5V</text>
+<line x1="513.7" y1="123.9" x2="505.6" y2="123.9" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="513.7" cy="123.9" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="502.7" y="125.5" font-size="9" text-anchor="end" fill="#333">OUT</text>
+<text x="464.0" y="108.1" font-size="10" font-weight="bold" fill="#8a2d2d" text-anchor="middle">BPA</text>
+<polygon points="596.8,115.8 683.2,115.8 683.2,140.2 596.8,140.2" fill="none" stroke="#8a2d2d" stroke-width="1.6"/>
+<line x1="588.7" y1="123.9" x2="596.8" y2="123.9" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="588.7" cy="123.9" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="599.7" y="125.5" font-size="9" text-anchor="start" fill="#333">IN</text>
+<line x1="691.3" y1="123.9" x2="683.2" y2="123.9" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="691.3" cy="123.9" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="680.3" y="125.5" font-size="9" text-anchor="end" fill="#333">TX</text>
+<line x1="691.3" y1="132.1" x2="683.2" y2="132.1" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="691.3" cy="132.1" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="680.3" y="133.7" font-size="9" text-anchor="end" fill="#333">LO</text>
+<text x="640.0" y="108.1" font-size="10" font-weight="bold" fill="#8a2d2d" text-anchor="middle">BSPL</text>
+<polygon points="774.4,115.8 844.8,115.8 844.8,132.1 774.4,132.1" fill="none" stroke="#8a2d2d" stroke-width="1.6"/>
+<line x1="766.3" y1="123.9" x2="774.4" y2="123.9" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="766.3" cy="123.9" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="777.3" y="125.5" font-size="9" text-anchor="start" fill="#333">FEED</text>
+<line x1="852.9" y1="123.9" x2="844.8" y2="123.9" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="852.9" cy="123.9" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="841.9" y="125.5" font-size="9" text-anchor="end" fill="#333">BEAM</text>
+<text x="809.6" y="108.1" font-size="10" font-weight="bold" fill="#8a2d2d" text-anchor="middle">BTXH</text>
+<polygon points="953.6,115.8 1043.2,115.8 1043.2,132.1 953.6,132.1" fill="none" stroke="#8a2d2d" stroke-width="1.6"/>
+<line x1="945.5" y1="123.9" x2="953.6" y2="123.9" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="945.5" cy="123.9" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="956.5" y="125.5" font-size="9" text-anchor="start" fill="#333">ILLUM</text>
+<line x1="1051.3" y1="123.9" x2="1043.2" y2="123.9" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="1051.3" cy="123.9" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="1040.3" y="125.5" font-size="9" text-anchor="end" fill="#333">ECHO</text>
+<text x="998.4" y="108.1" font-size="10" font-weight="bold" fill="#8a2d2d" text-anchor="middle">BDRN</text>
+<polygon points="1155.2,115.8 1225.6,115.8 1225.6,132.1 1155.2,132.1" fill="none" stroke="#8a2d2d" stroke-width="1.6"/>
+<line x1="1147.1" y1="123.9" x2="1155.2" y2="123.9" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="1147.1" cy="123.9" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="1158.1" y="125.5" font-size="9" text-anchor="start" fill="#333">BEAM</text>
+<line x1="1233.7" y1="123.9" x2="1225.6" y2="123.9" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="1233.7" cy="123.9" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="1222.7" y="125.5" font-size="9" text-anchor="end" fill="#333">FEED</text>
+<text x="1190.4" y="108.1" font-size="10" font-weight="bold" fill="#8a2d2d" text-anchor="middle">BRXH</text>
+<polygon points="656.0,192.6 752.0,192.6 752.0,217.0 656.0,217.0" fill="none" stroke="#8a2d2d" stroke-width="1.6"/>
+<line x1="647.9" y1="200.7" x2="656.0" y2="200.7" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="647.9" cy="200.7" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="658.9" y="202.3" font-size="9" text-anchor="start" fill="#333">IF</text>
+<line x1="760.1" y1="200.7" x2="752.0" y2="200.7" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="760.1" cy="200.7" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="749.1" y="202.3" font-size="9" text-anchor="end" fill="#333">RF</text>
+<line x1="760.1" y1="208.9" x2="752.0" y2="208.9" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="760.1" cy="208.9" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="749.1" y="210.5" font-size="9" text-anchor="end" fill="#333">LO</text>
+<text x="704.0" y="184.9" font-size="10" font-weight="bold" fill="#8a2d2d" text-anchor="middle">BMIX</text>
+<polygon points="910.4,192.6 996.8,192.6 996.8,208.9 910.4,208.9" fill="none" stroke="#8a2d2d" stroke-width="1.6"/>
+<line x1="902.3" y1="200.7" x2="910.4" y2="200.7" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="902.3" cy="200.7" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="913.3" y="202.3" font-size="9" text-anchor="start" fill="#333">OUT</text>
+<line x1="1004.9" y1="200.7" x2="996.8" y2="200.7" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="1004.9" cy="200.7" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="993.9" y="202.3" font-size="9" text-anchor="end" fill="#333">IN</text>
+<text x="953.6" y="184.9" font-size="10" font-weight="bold" fill="#8a2d2d" text-anchor="middle">BLNA</text>
+<polygon points="1128.0,192.6 1214.4,192.6 1214.4,208.9 1128.0,208.9" fill="none" stroke="#8a2d2d" stroke-width="1.6"/>
+<line x1="1119.9" y1="200.7" x2="1128.0" y2="200.7" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="1119.9" cy="200.7" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="1130.9" y="202.3" font-size="9" text-anchor="start" fill="#333">OUT</text>
+<line x1="1222.5" y1="200.7" x2="1214.4" y2="200.7" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="1222.5" cy="200.7" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="1211.5" y="202.3" font-size="9" text-anchor="end" fill="#333">IN</text>
+<text x="1171.2" y="184.9" font-size="10" font-weight="bold" fill="#8a2d2d" text-anchor="middle">BBPF</text>
+<polygon points="217.6,318.3 345.6,318.3 345.6,334.5 217.6,334.5" fill="none" stroke="#8a2d2d" stroke-width="1.6"/>
+<line x1="209.5" y1="326.4" x2="217.6" y2="326.4" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="209.5" cy="326.4" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="220.5" y="328.0" font-size="9" text-anchor="start" fill="#333">chirp in</text>
+<line x1="353.7" y1="326.4" x2="345.6" y2="326.4" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="353.7" cy="326.4" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="342.7" y="328.0" font-size="9" text-anchor="end" fill="#333">BEAT</text>
+<text x="281.6" y="310.6" font-size="10" font-weight="bold" fill="#8a2d2d" text-anchor="middle">B5</text>
+<polygon points="110.4,459.1 196.8,459.1 196.8,475.3 110.4,475.3" fill="none" stroke="#8a2d2d" stroke-width="1.6"/>
+<line x1="102.3" y1="467.2" x2="110.4" y2="467.2" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="102.3" cy="467.2" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="113.3" y="468.8" font-size="9" text-anchor="start" fill="#333">IF</text>
+<line x1="204.9" y1="467.2" x2="196.8" y2="467.2" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="204.9" cy="467.2" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="193.9" y="468.8" font-size="9" text-anchor="end" fill="#333">OUT</text>
+<text x="153.6" y="451.4" font-size="10" font-weight="bold" fill="#8a2d2d" text-anchor="middle">B1a</text>
+<polygon points="294.4,459.1 371.2,459.1 371.2,483.5 294.4,483.5" fill="none" stroke="#8a2d2d" stroke-width="1.6"/>
+<line x1="286.3" y1="467.2" x2="294.4" y2="467.2" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="286.3" cy="467.2" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="297.3" y="468.8" font-size="9" text-anchor="start" fill="#333">IN</text>
+<line x1="286.3" y1="475.3" x2="294.4" y2="475.3" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="286.3" cy="475.3" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="297.3" y="476.9" font-size="9" text-anchor="start" fill="#333">VREF</text>
+<line x1="379.3" y1="467.2" x2="371.2" y2="467.2" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="379.3" cy="467.2" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="368.3" y="468.8" font-size="9" text-anchor="end" fill="#333">OUT</text>
+<text x="332.8" y="451.4" font-size="10" font-weight="bold" fill="#8a2d2d" text-anchor="middle">B1b</text>
+<polygon points="460.8,459.1 537.6,459.1 537.6,483.5 460.8,483.5" fill="none" stroke="#8a2d2d" stroke-width="1.6"/>
+<line x1="452.7" y1="467.2" x2="460.8" y2="467.2" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="452.7" cy="467.2" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="463.7" y="468.8" font-size="9" text-anchor="start" fill="#333">IN</text>
+<line x1="452.7" y1="475.3" x2="460.8" y2="475.3" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="452.7" cy="475.3" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="463.7" y="476.9" font-size="9" text-anchor="start" fill="#333">VREF</text>
+<line x1="545.7" y1="467.2" x2="537.6" y2="467.2" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="545.7" cy="467.2" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="534.7" y="468.8" font-size="9" text-anchor="end" fill="#333">OUT</text>
+<text x="499.2" y="451.4" font-size="10" font-weight="bold" fill="#8a2d2d" text-anchor="middle">B1c</text>
+<polygon points="620.8,459.1 697.6,459.1 697.6,483.5 620.8,483.5" fill="none" stroke="#8a2d2d" stroke-width="1.6"/>
+<line x1="612.7" y1="467.2" x2="620.8" y2="467.2" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="612.7" cy="467.2" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="623.7" y="468.8" font-size="9" text-anchor="start" fill="#333">IN</text>
+<line x1="612.7" y1="475.3" x2="620.8" y2="475.3" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="612.7" cy="475.3" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="623.7" y="476.9" font-size="9" text-anchor="start" fill="#333">VREF</text>
+<line x1="705.7" y1="467.2" x2="697.6" y2="467.2" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="705.7" cy="467.2" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="694.7" y="468.8" font-size="9" text-anchor="end" fill="#333">OUT</text>
+<text x="659.2" y="451.4" font-size="10" font-weight="bold" fill="#8a2d2d" text-anchor="middle">B1d</text>
+<polygon points="780.8,459.1 857.6,459.1 857.6,483.5 780.8,483.5" fill="none" stroke="#8a2d2d" stroke-width="1.6"/>
+<line x1="772.7" y1="467.2" x2="780.8" y2="467.2" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="772.7" cy="467.2" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="783.7" y="468.8" font-size="9" text-anchor="start" fill="#333">IN</text>
+<line x1="772.7" y1="475.3" x2="780.8" y2="475.3" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="772.7" cy="475.3" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="783.7" y="476.9" font-size="9" text-anchor="start" fill="#333">VREF</text>
+<line x1="865.7" y1="467.2" x2="857.6" y2="467.2" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="865.7" cy="467.2" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="854.7" y="468.8" font-size="9" text-anchor="end" fill="#333">OUT</text>
+<text x="819.2" y="451.4" font-size="10" font-weight="bold" fill="#8a2d2d" text-anchor="middle">B1e</text>
+<polygon points="940.8,459.1 1017.6,459.1 1017.6,483.5 940.8,483.5" fill="none" stroke="#8a2d2d" stroke-width="1.6"/>
+<line x1="932.7" y1="467.2" x2="940.8" y2="467.2" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="932.7" cy="467.2" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="943.7" y="468.8" font-size="9" text-anchor="start" fill="#333">IN</text>
+<line x1="932.7" y1="475.3" x2="940.8" y2="475.3" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="932.7" cy="475.3" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="943.7" y="476.9" font-size="9" text-anchor="start" fill="#333">VREF</text>
+<line x1="1025.7" y1="467.2" x2="1017.6" y2="467.2" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="1025.7" cy="467.2" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="1014.7" y="468.8" font-size="9" text-anchor="end" fill="#333">OUT</text>
+<text x="979.2" y="451.4" font-size="10" font-weight="bold" fill="#8a2d2d" text-anchor="middle">B1f</text>
+<polygon points="1107.2,459.1 1184.0,459.1 1184.0,475.3 1107.2,475.3" fill="none" stroke="#8a2d2d" stroke-width="1.6"/>
+<line x1="1099.1" y1="467.2" x2="1107.2" y2="467.2" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="1099.1" cy="467.2" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="1110.1" y="468.8" font-size="9" text-anchor="start" fill="#333">IN</text>
+<line x1="1192.1" y1="467.2" x2="1184.0" y2="467.2" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="1192.1" cy="467.2" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="1181.1" y="468.8" font-size="9" text-anchor="end" fill="#333">OUT</text>
+<text x="1145.6" y="451.4" font-size="10" font-weight="bold" fill="#8a2d2d" text-anchor="middle">B1g</text>
+<polygon points="182.4,644.7 291.2,644.7 291.2,660.9 182.4,660.9" fill="none" stroke="#8a2d2d" stroke-width="1.6"/>
+<line x1="174.3" y1="652.8" x2="182.4" y2="652.8" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="174.3" cy="652.8" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="185.3" y="654.4" font-size="9" text-anchor="start" fill="#333">12 V</text>
+<line x1="299.3" y1="652.8" x2="291.2" y2="652.8" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="299.3" cy="652.8" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="288.3" y="654.4" font-size="9" text-anchor="end" fill="#333">VANA</text>
+<text x="236.8" y="637.0" font-size="10" font-weight="bold" fill="#8a2d2d" text-anchor="middle">B3</text>
+<polygon points="182.4,753.5 291.2,753.5 291.2,769.7 182.4,769.7" fill="none" stroke="#8a2d2d" stroke-width="1.6"/>
+<line x1="174.3" y1="761.6" x2="182.4" y2="761.6" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="174.3" cy="761.6" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="185.3" y="763.2" font-size="9" text-anchor="start" fill="#333">VANA</text>
+<line x1="299.3" y1="761.6" x2="291.2" y2="761.6" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="299.3" cy="761.6" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="288.3" y="763.2" font-size="9" text-anchor="end" fill="#333">VREF</text>
+<text x="236.8" y="745.8" font-size="10" font-weight="bold" fill="#8a2d2d" text-anchor="middle">B2</text>
+<polygon points="592.0,653.4 688.0,653.4 688.0,685.9 592.0,685.9" fill="none" stroke="#8a2d2d" stroke-width="1.6"/>
+<line x1="583.9" y1="661.5" x2="592.0" y2="661.5" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="583.9" cy="661.5" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="594.9" y="663.1" font-size="9" text-anchor="start" fill="#333">USB 5V</text>
+<line x1="696.1" y1="661.5" x2="688.0" y2="661.5" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="696.1" cy="661.5" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="685.1" y="663.1" font-size="9" text-anchor="end" fill="#333">SPI</text>
+<line x1="696.1" y1="669.7" x2="688.0" y2="669.7" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="696.1" cy="669.7" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="685.1" y="671.3" font-size="9" text-anchor="end" fill="#333">SYNC</text>
+<line x1="696.1" y1="677.8" x2="688.0" y2="677.8" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="696.1" cy="677.8" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="685.1" y="679.4" font-size="9" text-anchor="end" fill="#333">STEP/DIR</text>
+<text x="640.0" y="645.7" font-size="10" font-weight="bold" fill="#8a2d2d" text-anchor="middle">BESP</text>
+<polygon points="819.2,661.5 896.0,661.5 896.0,677.8 819.2,677.8" fill="none" stroke="#8a2d2d" stroke-width="1.6"/>
+<line x1="811.1" y1="669.7" x2="819.2" y2="669.7" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="811.1" cy="669.7" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="822.1" y="671.3" font-size="9" text-anchor="start" fill="#333">GPIO25</text>
+<line x1="904.1" y1="669.7" x2="896.0" y2="669.7" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="904.1" cy="669.7" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="893.1" y="671.3" font-size="9" text-anchor="end" fill="#333">AUDIO_R</text>
+<text x="857.6" y="653.9" font-size="10" font-weight="bold" fill="#8a2d2d" text-anchor="middle">B4</text>
+<polygon points="1033.6,657.5 1116.8,657.5 1116.8,681.9 1033.6,681.9" fill="none" stroke="#8a2d2d" stroke-width="1.6"/>
+<line x1="1025.5" y1="665.6" x2="1033.6" y2="665.6" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="1025.5" cy="665.6" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="1036.5" y="667.2" font-size="9" text-anchor="start" fill="#333">L in</text>
+<line x1="1025.5" y1="673.7" x2="1033.6" y2="673.7" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="1025.5" cy="673.7" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="1036.5" y="675.3" font-size="9" text-anchor="start" fill="#333">R in</text>
+<line x1="1124.9" y1="665.6" x2="1116.8" y2="665.6" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="1124.9" cy="665.6" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="1113.9" y="667.2" font-size="9" text-anchor="end" fill="#333">USB</text>
+<text x="1075.2" y="649.8" font-size="10" font-weight="bold" fill="#8a2d2d" text-anchor="middle">BUCA</text>
+<polygon points="809.6,721.5 905.6,721.5 905.6,737.7 809.6,737.7" fill="none" stroke="#8a2d2d" stroke-width="1.6"/>
+<line x1="801.5" y1="729.6" x2="809.6" y2="729.6" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="801.5" cy="729.6" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="812.5" y="731.2" font-size="9" text-anchor="start" fill="#333">STEP/DIR</text>
+<text x="857.6" y="713.8" font-size="10" font-weight="bold" fill="#8a2d2d" text-anchor="middle">BA49</text>
+<polygon points="1180.8,862.3 1251.2,862.3 1251.2,878.5 1180.8,878.5" fill="none" stroke="#8a2d2d" stroke-width="1.6"/>
+<line x1="1172.7" y1="870.4" x2="1180.8" y2="870.4" stroke="#8a2d2d" stroke-width="1.6"/>
+<circle cx="1172.7" cy="870.4" r="2" fill="none" stroke="#8a2d2d" stroke-width="0.8"/>
+<text x="1183.7" y="872.0" font-size="9" text-anchor="start" fill="#333">USB</text>
+<text x="1216.0" y="854.6" font-size="10" font-weight="bold" fill="#8a2d2d" text-anchor="middle">BLAP</text>
+<text x="263.9" y="473.4" font-size="9.5" fill="#1a3d8f" text-anchor="end" font-weight="bold">VREF</text>
+<text x="430.3" y="473.4" font-size="9.5" fill="#1a3d8f" text-anchor="end" font-weight="bold">VREF</text>
+<text x="590.3" y="473.4" font-size="9.5" fill="#1a3d8f" text-anchor="end" font-weight="bold">VREF</text>
+<text x="750.3" y="473.4" font-size="9.5" fill="#1a3d8f" text-anchor="end" font-weight="bold">VREF</text>
+<text x="910.3" y="473.4" font-size="9.5" fill="#1a3d8f" text-anchor="end" font-weight="bold">VREF</text>
+<text x="337.7" y="650.9" font-size="9.5" fill="#1a3d8f" text-anchor="start" font-weight="bold">VANA</text>
+<text x="135.9" y="759.7" font-size="9.5" fill="#1a3d8f" text-anchor="end" font-weight="bold">VANA</text>
+<text x="337.7" y="759.7" font-size="9.5" fill="#1a3d8f" text-anchor="start" font-weight="bold">VREF</text>
+<text x="48.0" y="73.6" font-size="9.6" fill="#222" font-weight="bold"><tspan x="48.0" dy="0.0">RF FRONT END  —  bought modules, SMA to SMA.  Nothing here has a SPICE model at 2.4 GHz, so every one is measured on the bench, never simulated.</tspan></text>
+<text x="99.2" y="151.1" font-size="7.0" fill="#222" font-weight="bold"><tspan x="99.2" dy="0.0">ADF4351 PLL</tspan></text>
+<text x="99.2" y="162.6" font-size="5.5" fill="#222"><tspan x="99.2" dy="0.0">64 steps of 625 kHz, 100 us each.</tspan><tspan x="99.2" dy="6.7">That is the 6.4 ms up-chirp.</tspan></text>
+<text x="272.0" y="142.9" font-size="7.0" fill="#222" font-weight="bold"><tspan x="272.0" dy="0.0">3 dB pad</tspan></text>
+<text x="272.0" y="154.5" font-size="5.5" fill="#222"><tspan x="272.0" dy="0.0">flattens the PLL</tspan><tspan x="272.0" dy="6.7">into 50 ohm</tspan></text>
+<text x="422.4" y="151.1" font-size="7.0" fill="#222" font-weight="bold"><tspan x="422.4" dy="0.0">SPF5189Z PA</tspan></text>
+<text x="422.4" y="162.6" font-size="5.5" fill="#222"><tspan x="422.4" dy="0.0">+12 dB</tspan></text>
+<text x="596.8" y="151.1" font-size="7.0" fill="#222" font-weight="bold"><tspan x="596.8" dy="0.0">2-way splitter</tspan></text>
+<text x="596.8" y="162.6" font-size="5.5" fill="#222"><tspan x="596.8" dy="0.0">half radiates,</tspan><tspan x="596.8" dy="6.7">half becomes the LO</tspan></text>
+<text x="774.4" y="142.9" font-size="7.0" fill="#222" font-weight="bold"><tspan x="774.4" dy="0.0">TX HORN</tspan></text>
+<text x="774.4" y="154.5" font-size="5.5" fill="#222"><tspan x="774.4" dy="0.0">13.4 dBi, 34 deg</tspan></text>
+<text x="953.6" y="142.9" font-size="7.0" fill="#222" font-weight="bold"><tspan x="953.6" dy="0.0">ESP-FLY 25 g</tspan></text>
+<text x="953.6" y="154.5" font-size="5.5" fill="#222"><tspan x="953.6" dy="0.0">3-10 m out. Flown from the</tspan><tspan x="953.6" dy="6.7">phone over its own AP, ch 1.</tspan></text>
+<text x="1155.2" y="142.9" font-size="7.0" fill="#222" font-weight="bold"><tspan x="1155.2" dy="0.0">RX HORN</tspan></text>
+<text x="1155.2" y="154.5" font-size="5.5" fill="#222"><tspan x="1155.2" dy="0.0">identical horn</tspan></text>
+<text x="211.2" y="115.2" font-size="5.7" fill="#222"><tspan x="211.2" dy="0.0">+5 dBm</tspan></text>
+<text x="364.8" y="115.2" font-size="5.7" fill="#222"><tspan x="364.8" dy="0.0">+2 dBm</tspan></text>
+<text x="531.2" y="115.2" font-size="5.7" fill="#222"><tspan x="531.2" dy="0.0">+14 dBm</tspan></text>
+<text x="707.2" y="115.2" font-size="5.7" fill="#222"><tspan x="707.2" dy="0.0">+10 dBm</tspan></text>
+<text x="867.2" y="115.2" font-size="5.7" fill="#222"><tspan x="867.2" dy="0.0">0.2 W EIRP</tspan></text>
+<text x="1056.0" y="115.2" font-size="5.7" fill="#222"><tspan x="1056.0" dy="0.0">echo comes back</tspan></text>
+<text x="656.0" y="227.9" font-size="7.0" fill="#222" font-weight="bold"><tspan x="656.0" dy="0.0">ZX05-43MH mixer</tspan></text>
+<text x="656.0" y="239.4" font-size="5.5" fill="#222"><tspan x="656.0" dy="0.0">RF x LO.  The carrier cancels and what is left is</tspan><tspan x="656.0" dy="6.7">a tone whose pitch is the range.</tspan></text>
+<text x="910.4" y="219.7" font-size="7.0" fill="#222" font-weight="bold"><tspan x="910.4" dy="0.0">SPF5189Z LNA</tspan></text>
+<text x="910.4" y="231.3" font-size="5.5" fill="#222"><tspan x="910.4" dy="0.0">+12 dB, NF 0.6 dB.</tspan><tspan x="910.4" dy="6.7">Sets the noise floor.</tspan></text>
+<text x="1128.0" y="219.7" font-size="7.0" fill="#222" font-weight="bold"><tspan x="1128.0" dy="0.0">2400-2500 BPF</tspan></text>
+<text x="1128.0" y="231.3" font-size="5.5" fill="#222"><tspan x="1128.0" dy="0.0">keeps everything that is not</tspan><tspan x="1128.0" dy="6.7">the ISM band off the LNA</tspan></text>
+<text x="1241.6" y="166.4" font-size="5.7" fill="#222"><tspan x="1241.6" dy="0.0">-80 dBm</tspan></text>
+<text x="1049.6" y="193.6" font-size="5.7" fill="#222"><tspan x="1049.6" dy="0.0">-83 dBm</tspan></text>
+<text x="806.4" y="193.6" font-size="5.7" fill="#222"><tspan x="806.4" dy="0.0">-71 dBm</tspan></text>
+<text x="659.2" y="176.0" font-size="5.7" fill="#222"><tspan x="659.2" dy="0.0">LO: the same chirp,</tspan><tspan x="659.2" dy="7.0">not delayed</tspan></text>
+<text x="48.0" y="284.8" font-size="10.9" fill="#222" font-weight="bold"><tspan x="48.0" dy="0.0">5   THE RADAR ITSELF  (scaled)</tspan></text>
+<text x="48.0" y="299.2" font-size="6.0" fill="#222"><tspan x="48.0" dy="0.0">Everything in the band above, written as a circuit SPICE can actually run.  Build it first:</tspan><tspan x="48.0" dy="7.4">it shows you a beat tone before you have bought a single RF part.</tspan></text>
+<text x="217.6" y="345.4" font-size="7.0" fill="#222" font-weight="bold"><tspan x="217.6" dy="0.0">chirp x delayed chirp</tspan></text>
+<text x="217.6" y="356.9" font-size="5.5" fill="#222"><tspan x="217.6" dy="0.0">Delay line, multiplier, then the amplifier's own filters.  Bandwidth scaled down 10x and the</tspan><tspan x="217.6" dy="6.7">delay up 10x, because the carrier cancels: 4 MHz over 667 ns gives the same 417 Hz as 40 MHz</tspan><tspan x="217.6" dy="6.7">over 66.7 ns, and lets SPICE step at 10 ns instead of 20 ps.</tspan></text>
+<text x="48.0" y="412.8" font-size="10.9" fill="#222" font-weight="bold"><tspan x="48.0" dy="0.0">1   VIDEO AMPLIFIER  —  40 uV of audio in, line level out.  Everything else on this sheet exists to feed it.</tspan></text>
+<text x="110.4" y="486.2" font-size="7.0" fill="#222" font-weight="bold"><tspan x="110.4" dy="0.0">49.9 R + 1 nF</tspan></text>
+<text x="110.4" y="497.7" font-size="5.5" fill="#222"><tspan x="110.4" dy="0.0">terminates the mixer and</tspan><tspan x="110.4" dy="6.7">shorts its 2.4 GHz LO leak</tspan></text>
+<text x="294.4" y="494.3" font-size="7.0" fill="#222" font-weight="bold"><tspan x="294.4" dy="0.0">C1 / R2</tspan></text>
+<text x="294.4" y="505.9" font-size="5.5" fill="#222"><tspan x="294.4" dy="0.0">159 Hz high-pass</tspan></text>
+<text x="460.8" y="494.3" font-size="7.0" fill="#222" font-weight="bold"><tspan x="460.8" dy="0.0">U1A  x101</tspan></text>
+<text x="460.8" y="505.9" font-size="5.5" fill="#222"><tspan x="460.8" dy="0.0">R3 100k / R4 1k</tspan></text>
+<text x="620.8" y="494.3" font-size="7.0" fill="#222" font-weight="bold"><tspan x="620.8" dy="0.0">C2 / R6</tspan></text>
+<text x="620.8" y="505.9" font-size="5.5" fill="#222"><tspan x="620.8" dy="0.0">159 Hz again</tspan></text>
+<text x="780.8" y="494.3" font-size="7.0" fill="#222" font-weight="bold"><tspan x="780.8" dy="0.0">U1B  x11</tspan></text>
+<text x="780.8" y="505.9" font-size="5.5" fill="#222"><tspan x="780.8" dy="0.0">R7 10k / R8 1k</tspan></text>
+<text x="940.8" y="494.3" font-size="7.0" fill="#222" font-weight="bold"><tspan x="940.8" dy="0.0">R12 / C9</tspan></text>
+<text x="940.8" y="505.9" font-size="5.5" fill="#222"><tspan x="940.8" dy="0.0">15.9 kHz low-pass</tspan></text>
+<text x="1107.2" y="486.2" font-size="7.0" fill="#222" font-weight="bold"><tspan x="1107.2" dy="0.0">U2B buffer</tspan></text>
+<text x="1107.2" y="497.7" font-size="5.5" fill="#222"><tspan x="1107.2" dy="0.0">unity gain, then</tspan><tspan x="1107.2" dy="6.7">100 R and 10 uF out</tspan></text>
+<text x="128.0" y="424.0" font-size="6.5" fill="#222"><tspan x="128.0" dy="0.0">IF  —  -78 dBm at 417 Hz, which is 40 uV pk.  This one wire carries the whole measurement.</tspan></text>
+<text x="678.4" y="307.2" font-size="6.2" fill="#222"><tspan x="678.4" dy="0.0">Block 5 feeds the same wire the mixer does.  That is the point of it:</tspan><tspan x="678.4" dy="7.7">you can bring up the whole amplifier, and see a 417 Hz tone come out of it,</tspan><tspan x="678.4" dy="7.7">with the RF half of the sheet still in its packaging.</tspan></text>
+<text x="230.4" y="459.2" font-size="5.7" fill="#222"><tspan x="230.4" dy="0.0">40 uV</tspan></text>
+<text x="403.2" y="459.2" font-size="5.7" fill="#222"><tspan x="403.2" dy="0.0">20 uV</tspan></text>
+<text x="563.2" y="459.2" font-size="5.7" fill="#222"><tspan x="563.2" dy="0.0">2.0 mV</tspan></text>
+<text x="723.2" y="459.2" font-size="5.7" fill="#222"><tspan x="723.2" dy="0.0">2.0 mV</tspan></text>
+<text x="889.6" y="459.2" font-size="5.7" fill="#222"><tspan x="889.6" dy="0.0">22 mV</tspan></text>
+<text x="1049.6" y="459.2" font-size="5.7" fill="#222"><tspan x="1049.6" dy="0.0">22 mV</tspan></text>
+<text x="128.0" y="547.2" font-size="6.2" fill="#222"><tspan x="128.0" dy="0.0">Gain is 60.2 dB measured from the amplifier's own input, but 53.6 dB from the mixer, because 50 ohm driving 49.9 ohm halves the signal before the first stage.</tspan><tspan x="128.0" dy="7.7">The TX-to-RX leakage arrives alongside the echo at 8 mV and leaves at 27 mV.  That 46 dB head start is what the two high-passes exist to cut down, and it is</tspan><tspan x="128.0" dy="7.7">why the gain is split in two: one stage of 1100 would saturate on the leakage long before the echo ever reached the output.</tspan></text>
+<text x="128.0" y="574.4" font-size="6.2" fill="#222"><tspan x="128.0" dy="0.0">VANA powers all three op-amps here.  VREF is their input reference: on a single supply every stage swings about 5.7 V, not about 0 V.</tspan></text>
+<text x="48.0" y="617.6" font-size="10.9" fill="#222" font-weight="bold"><tspan x="48.0" dy="0.0">3   12 V INPUT</tspan></text>
+<text x="182.4" y="671.8" font-size="7.0" fill="#222" font-weight="bold"><tspan x="182.4" dy="0.0">D1  -&gt;  R15 / C13</tspan></text>
+<text x="182.4" y="683.3" font-size="5.5" fill="#222"><tspan x="182.4" dy="0.0">1N5822 makes a reversed plug harmless: VPROT reads -0.11 mV,</tspan><tspan x="182.4" dy="6.7">not -12 V. R15/C13 then filters the buck's 150 kHz to 4 mVpp.</tspan></text>
+<text x="307.2" y="644.8" font-size="5.7" fill="#222"><tspan x="307.2" dy="0.0">11.58 V</tspan></text>
+<text x="48.0" y="739.2" font-size="10.9" fill="#222" font-weight="bold"><tspan x="48.0" dy="0.0">2   HALF-RAIL REFERENCE</tspan></text>
+<text x="182.4" y="780.6" font-size="7.0" fill="#222" font-weight="bold"><tspan x="182.4" dy="0.0">R9 / R10  -&gt;  U2A</tspan></text>
+<text x="182.4" y="792.1" font-size="5.5" fill="#222"><tspan x="182.4" dy="0.0">VANA / 2, buffered, so the six returns inside block 1</tspan><tspan x="182.4" dy="6.7">cannot pull the reference around.</tspan></text>
+<text x="307.2" y="753.6" font-size="5.7" fill="#222"><tspan x="307.2" dy="0.0">5.7 V</tspan></text>
+<text x="48.0" y="809.6" font-size="6.0" fill="#222"><tspan x="48.0" dy="0.0">VANA and VREF are net labels: every label with the same name is one wire.</tspan><tspan x="48.0" dy="7.4">VANA reaches block 2's divider and block 1's three op-amp rails.</tspan><tspan x="48.0" dy="7.4">VREF reaches six points inside block 1: R2, R4, R6, R8, C9 and the buffer.</tspan></text>
+<text x="508.8" y="617.6" font-size="10.9" fill="#222" font-weight="bold"><tspan x="508.8" dy="0.0">4   SYNC DIVIDER  —  and the two channels the laptop actually records</tspan></text>
+<text x="592.0" y="696.8" font-size="7.0" fill="#222" font-weight="bold"><tspan x="592.0" dy="0.0">ESP32 + radar_ctl</tspan></text>
+<text x="592.0" y="708.3" font-size="5.5" fill="#222"><tspan x="592.0" dy="0.0">Steps the PLL, holds SYNC high for the</tspan><tspan x="592.0" dy="6.7">up-chirp, turns the table between chirps.</tspan><tspan x="592.0" dy="6.7">Boots with the RF off.</tspan></text>
+<text x="819.2" y="688.7" font-size="7.0" fill="#222" font-weight="bold"><tspan x="819.2" dy="0.0">10k / 1k</tspan></text>
+<text x="819.2" y="700.2" font-size="5.5" fill="#222"><tspan x="819.2" dy="0.0">3.3 V logic down to 0.3 V</tspan><tspan x="819.2" dy="6.7">so it cannot clip the input</tspan></text>
+<text x="1033.6" y="692.7" font-size="7.0" fill="#222" font-weight="bold"><tspan x="1033.6" dy="0.0">UCA202</tspan></text>
+<text x="1033.6" y="704.3" font-size="5.5" fill="#222"><tspan x="1033.6" dy="0.0">48 kHz, 16-bit, line level.</tspan><tspan x="1033.6" dy="6.7">Every enhancement off.</tspan></text>
+<text x="809.6" y="748.6" font-size="7.0" fill="#222" font-weight="bold"><tspan x="809.6" dy="0.0">A4988 + NEMA-17</tspan></text>
+<text x="809.6" y="760.1" font-size="5.5" fill="#222"><tspan x="809.6" dy="0.0">1/16 step, 8.889 steps per degree</tspan></text>
+<text x="755.2" y="659.8" font-size="5.7" fill="#222"><tspan x="755.2" dy="0.0">3.3 V square</tspan></text>
+<text x="947.2" y="664.0" font-size="5.7" fill="#222"><tspan x="947.2" dy="0.0">0.3 V</tspan></text>
+<text x="755.2" y="707.2" font-size="5.7" fill="#222"><tspan x="755.2" dy="0.0">step / dir</tspan></text>
+<text x="192.0" y="593.3" font-size="5.5" fill="#222"><tspan x="192.0" dy="0.0">SCK / MOSI / LE, each through 33 R, all the way back up to the PLL</tspan></text>
+<text x="1049.6" y="630.4" font-size="6.2" fill="#222"><tspan x="1049.6" dy="0.0">AUDIO_L  —  19 mV pk at 417 Hz</tspan></text>
+<text x="508.8" y="777.6" font-size="6.0" fill="#222"><tspan x="508.8" dy="0.0">Left channel is the measurement.  Right channel is the clock: radar_acquire.py finds the chirp edges on it and derives T_up and the PRI</tspan><tspan x="508.8" dy="7.4">from them on every block, so changing the sweep on the ESP32 needs no matching change on the laptop.</tspan></text>
+<text x="508.8" y="828.8" font-size="10.4" fill="#222" font-weight="bold"><tspan x="508.8" dy="0.0">SOFTWARE</tspan></text>
+<text x="1180.8" y="889.4" font-size="7.0" fill="#222" font-weight="bold"><tspan x="1180.8" dy="0.0">laptop</tspan></text>
+<text x="1216.0" y="838.4" font-size="5.7" fill="#222"><tspan x="1216.0" dy="0.0">USB</tspan></text>
+<text x="508.8" y="844.8" font-size="6.5" fill="#222"><tspan x="508.8" dy="0.0">ground_station/radar_acquire.py, once per block of 64 chirps:</tspan><tspan x="508.8" dy="8.0"></tspan><tspan x="508.8" dy="8.0">read 48 kHz stereo  -&gt;  find the sync edges (T_up, PRI)  -&gt;  cut into 64 chirps</tspan><tspan x="508.8" dy="8.0">  -&gt;  FFT along one chirp   = RANGE       -&gt;  FFT across the 64 = VELOCITY</tspan><tspan x="508.8" dy="8.0">  -&gt;  CA-CFAR, peak-picked  = DETECTIONS  -&gt;  weight over azimuth = BEARING</tspan><tspan x="508.8" dy="8.0">  -&gt;  {range, velocity, snr} to server.py, drawn in the browser.</tspan></text>
+<text x="48.0" y="857.6" font-size="9.6" fill="#222" font-weight="bold"><tspan x="48.0" dy="0.0">HOW TO READ THIS SHEET</tspan></text>
+<text x="48.0" y="870.4" font-size="6.2" fill="#222"><tspan x="48.0" dy="0.0">Build and bench them in this order, because each needs the one before it:</tspan><tspan x="48.0" dy="7.7">3  first.  Everything else runs on its output.</tspan><tspan x="48.0" dy="7.7">2  next.  Block 1 will not bias without VREF.</tspan><tspan x="48.0" dy="7.7">1  then, driven at its IF pin by a signal generator.</tspan><tspan x="48.0" dy="7.7">4  whenever.  It touches nothing else on the sheet.</tspan><tspan x="48.0" dy="7.7">5  any time, in SPICE alone, before the RF parts arrive.</tspan></text>
+</svg>

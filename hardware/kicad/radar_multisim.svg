@@ -996,43 +996,43 @@
 <text x="294.4" y="625.3" font-size="9.5" fill="#1a3d8f" text-anchor="start" font-weight="bold">TX</text>
 <text x="716.8" y="625.3" font-size="9.5" fill="#1a3d8f" text-anchor="start" font-weight="bold">IF_MODEL</text>
 <text x="902.4" y="625.3" font-size="9.5" fill="#1a3d8f" text-anchor="start" font-weight="bold">TP_BEAT</text>
-<text x="44.8" y="83.2" font-size="10.4" fill="#222" font-weight="bold">1 · VIDEO AMPLIFIER  —  mixer IF in, sound-card line out.  Probe TP_IF TP_AP TP_AOUT TP_BOUT TP_LP TP_AUDIO</text>
-<text x="44.8" y="243.2" font-size="5.7" fill="#222">V_IF: Multisim AC_VOLTAGE. 10 mVpk for the low-gain build,</text>
-<text x="44.8" y="254.4" font-size="5.7" fill="#222">0.5 mVpk for full gain (it clips at 10 mV). Bode: AC sweep 1 Hz-100 kHz</text>
-<text x="83.2" y="144.0" font-size="5.2" fill="#222">mixer IF source impedance</text>
-<text x="198.4" y="294.4" font-size="5.7" fill="#222">gain A = 1 + R3/R4 = 101   (R4 = 4.7k -> 22, first power-up)</text>
-<text x="377.6" y="305.6" font-size="5.7" fill="#222">gain B = 1 + R7/R8 = 11   (R7 = wire link -> 1)</text>
-<text x="480.0" y="294.4" font-size="5.7" fill="#222">R12/C9: 15.9 kHz low-pass</text>
-<text x="723.2" y="243.2" font-size="5.2" fill="#222">R_LOAD = sound-card line input</text>
-<text x="883.2" y="243.2" font-size="5.2" fill="#222">(or drive VREF from frame 2)</text>
-<text x="838.4" y="268.8" font-size="5.7" fill="#222" font-weight="bold">EXPECTED  low gain (R4 4.7k, R7 link): 10 mVpk in -> 107 mVpk at TP_AUDIO</text>
-<text x="838.4" y="281.6" font-size="5.7" fill="#222">full gain: 54.6 dB from V_IF at 1 kHz, -6 dB at 159 Hz, -3 dB at 15.9 kHz; clips at +/-4.1 V</text>
-<text x="838.4" y="294.4" font-size="5.7" fill="#222">radar input 8 mV @ 12.5 Hz + 40 uV @ 417 Hz -> TP_AUDIO 27 mV leak, 19 mV echo</text>
-<text x="838.4" y="307.2" font-size="5.7" fill="#222">U1A/U1B/U2B = TL072CP  (Multisim: Analog > OPAMP > TL072CP)</text>
-<text x="44.8" y="332.8" font-size="10.4" fill="#222" font-weight="bold">2 · HALF-RAIL REFERENCE  —  VREF = VANA/2 buffered</text>
-<text x="44.8" y="460.8" font-size="5.2" fill="#222">ripple test: + 100 mVpk 150 kHz</text>
-<text x="320.0" y="486.4" font-size="5.2" fill="#222">R_LOAD = the six VREF returns</text>
-<text x="44.8" y="515.2" font-size="5.7" fill="#222" font-weight="bold">EXPECTED  TP_VDIV 5.70 V, TP_VREF 5.70 V, ripple at TP_VREF < 1 uV</text>
-<text x="454.4" y="332.8" font-size="10.4" fill="#222" font-weight="bold">3 · 12 V INPUT  —  D1 -> VPROT -> R15/C13 -> VANA</text>
-<text x="454.4" y="486.4" font-size="5.2" fill="#222">ripple test: + 100 mVpk 150 kHz; reverse test: -12 V</text>
-<text x="569.6" y="448.0" font-size="5.2" fill="#222">60 R = the LM2596 drawing 0.2 A</text>
-<text x="672.0" y="448.0" font-size="5.2" fill="#222">1.1k = two TL072 + dividers</text>
-<text x="454.4" y="505.6" font-size="5.7" fill="#222" font-weight="bold">EXPECTED  TP_VPROT 11.7 V, TP_VANA 11.6 V, ripple 4 mVpp;</text>
-<text x="454.4" y="518.4" font-size="5.7" fill="#222">with V_IN = -12 V: TP_VPROT -0.1 mV, 2 uA</text>
-<text x="896.0" y="332.8" font-size="10.4" fill="#222" font-weight="bold">4 · SYNC DIVIDER  —  ESP32 GPIO -> 0.3 V -> sound-card R</text>
-<text x="896.0" y="467.2" font-size="5.2" fill="#222">6.4 ms high, 7.4 ms period, 10 ns edges</text>
-<text x="940.8" y="374.4" font-size="5.2" fill="#222">GPIO output R</text>
-<text x="1056.0" y="448.0" font-size="5.2" fill="#222">C_CPL / R_SC = the sound card's AC-coupled input</text>
-<text x="896.0" y="505.6" font-size="5.7" fill="#222" font-weight="bold">EXPECTED  TP_SYNC 283 mV high / 0 V low;</text>
-<text x="896.0" y="518.4" font-size="5.7" fill="#222">TP_SC +201 mV drooping / -100 mV retrace pulse -> software detects EDGES</text>
-<text x="44.8" y="544.0" font-size="10.4" fill="#222" font-weight="bold">5 · THE RADAR ITSELF, SCALED  —  chirp x delayed chirp = beat. Carrier cancels, so B/10 and delay x10 give the real 417 Hz</text>
-<text x="723.2" y="710.4" font-size="5.2" fill="#222">R12/C9 = the amp's 15.9 kHz LP;  C1/R2, C2/R6 = its two 159 Hz HPs (they kill the leakage tone)</text>
-<text x="44.8" y="755.2" font-size="5.7" fill="#222">Multisim parts: PIECEWISE_LINEAR_VOLTAGE -> VOLTAGE_CONTROLLED_SINE_WAVE; LOSSLESS_LINE_TYPE1; VOLTAGE_GAIN_BLOCK; VOLTAGE_SUMMER; MULTIPLIER</text>
-<text x="44.8" y="768.0" font-size="5.7" fill="#222">Transient: TMAX 10 ns, stop 19.2 ms (3 chirps). Fourier at TP_BEAT over ONE chirp (6.4 ms), Hanning window.</text>
-<text x="44.8" y="787.2" font-size="5.7" fill="#222" font-weight="bold">EXPECTED  leakage gain x0: peak at 417 Hz, 4.5 mV.   TD1 = 333 ns -> 208 Hz.   TD1 = 1.33 us -> 833 Hz (20 m).</text>
-<text x="44.8" y="800.0" font-size="5.7" fill="#222">Leakage gain x1: the 417 Hz line is unchanged but the spectrum floor rises 20 dB near DC - what chirp-to-chirp subtraction removes in software.</text>
-<text x="44.8" y="812.8" font-size="5.7" fill="#222">Real radar: B = 40 MHz, TD = 66.7 ns (10 m), T = 6.4 ms  ->  f_beat = B x TD / T = 417 Hz.  Here: B = 4 MHz, TD = 667 ns. Same answer.</text>
-<text x="44.8" y="825.6" font-size="5.7" fill="#222">The blocks right of the mixer's IF port cannot be simulated in Multisim (no 2.4 GHz models): ADF4351, SPF5189Z, splitter, mixer, horns are measured, not modelled.</text>
-<text x="44.8" y="864.0" font-size="6.2" fill="#222">PARTS  resistors 1 % 1/4 W · 100n / 10n film or C0G · 10u 47u 100u electrolytic 25 V (+ marked) · 1N5822 · TL072CP x3 · single 12 V rail</text>
-<text x="44.8" y="876.8" font-size="6.2" fill="#222">Netlists that produced the EXPECTED lines: hardware/spice/*.cir (ngspice 42).  Same values as the breadboard sheet radar_breadboard.kicad_sch.</text>
+<text x="44.8" y="83.2" font-size="10.4" fill="#222" font-weight="bold"><tspan x="44.8" dy="0.0">1 · VIDEO AMPLIFIER  —  mixer IF in, sound-card line out.  Probe TP_IF TP_AP TP_AOUT TP_BOUT TP_LP TP_AUDIO</tspan></text>
+<text x="44.8" y="243.2" font-size="5.7" fill="#222"><tspan x="44.8" dy="0.0">V_IF: Multisim AC_VOLTAGE. 10 mVpk for the low-gain build,</tspan></text>
+<text x="44.8" y="254.4" font-size="5.7" fill="#222"><tspan x="44.8" dy="0.0">0.5 mVpk for full gain (it clips at 10 mV). Bode: AC sweep 1 Hz-100 kHz</tspan></text>
+<text x="83.2" y="144.0" font-size="5.2" fill="#222"><tspan x="83.2" dy="0.0">mixer IF source impedance</tspan></text>
+<text x="198.4" y="294.4" font-size="5.7" fill="#222"><tspan x="198.4" dy="0.0">gain A = 1 + R3/R4 = 101   (R4 = 4.7k -&gt; 22, first power-up)</tspan></text>
+<text x="377.6" y="305.6" font-size="5.7" fill="#222"><tspan x="377.6" dy="0.0">gain B = 1 + R7/R8 = 11   (R7 = wire link -&gt; 1)</tspan></text>
+<text x="480.0" y="294.4" font-size="5.7" fill="#222"><tspan x="480.0" dy="0.0">R12/C9: 15.9 kHz low-pass</tspan></text>
+<text x="723.2" y="243.2" font-size="5.2" fill="#222"><tspan x="723.2" dy="0.0">R_LOAD = sound-card line input</tspan></text>
+<text x="883.2" y="243.2" font-size="5.2" fill="#222"><tspan x="883.2" dy="0.0">(or drive VREF from frame 2)</tspan></text>
+<text x="838.4" y="268.8" font-size="5.7" fill="#222" font-weight="bold"><tspan x="838.4" dy="0.0">EXPECTED  low gain (R4 4.7k, R7 link): 10 mVpk in -&gt; 107 mVpk at TP_AUDIO</tspan></text>
+<text x="838.4" y="281.6" font-size="5.7" fill="#222"><tspan x="838.4" dy="0.0">full gain: 54.6 dB from V_IF at 1 kHz, -6 dB at 159 Hz, -3 dB at 15.9 kHz; clips at +/-4.1 V</tspan></text>
+<text x="838.4" y="294.4" font-size="5.7" fill="#222"><tspan x="838.4" dy="0.0">radar input 8 mV @ 12.5 Hz + 40 uV @ 417 Hz -&gt; TP_AUDIO 27 mV leak, 19 mV echo</tspan></text>
+<text x="838.4" y="307.2" font-size="5.7" fill="#222"><tspan x="838.4" dy="0.0">U1A/U1B/U2B = TL072CP  (Multisim: Analog &gt; OPAMP &gt; TL072CP)</tspan></text>
+<text x="44.8" y="332.8" font-size="10.4" fill="#222" font-weight="bold"><tspan x="44.8" dy="0.0">2 · HALF-RAIL REFERENCE  —  VREF = VANA/2 buffered</tspan></text>
+<text x="44.8" y="460.8" font-size="5.2" fill="#222"><tspan x="44.8" dy="0.0">ripple test: + 100 mVpk 150 kHz</tspan></text>
+<text x="320.0" y="486.4" font-size="5.2" fill="#222"><tspan x="320.0" dy="0.0">R_LOAD = the six VREF returns</tspan></text>
+<text x="44.8" y="515.2" font-size="5.7" fill="#222" font-weight="bold"><tspan x="44.8" dy="0.0">EXPECTED  TP_VDIV 5.70 V, TP_VREF 5.70 V, ripple at TP_VREF &lt; 1 uV</tspan></text>
+<text x="454.4" y="332.8" font-size="10.4" fill="#222" font-weight="bold"><tspan x="454.4" dy="0.0">3 · 12 V INPUT  —  D1 -&gt; VPROT -&gt; R15/C13 -&gt; VANA</tspan></text>
+<text x="454.4" y="486.4" font-size="5.2" fill="#222"><tspan x="454.4" dy="0.0">ripple test: + 100 mVpk 150 kHz; reverse test: -12 V</tspan></text>
+<text x="569.6" y="448.0" font-size="5.2" fill="#222"><tspan x="569.6" dy="0.0">60 R = the LM2596 drawing 0.2 A</tspan></text>
+<text x="672.0" y="448.0" font-size="5.2" fill="#222"><tspan x="672.0" dy="0.0">1.1k = two TL072 + dividers</tspan></text>
+<text x="454.4" y="505.6" font-size="5.7" fill="#222" font-weight="bold"><tspan x="454.4" dy="0.0">EXPECTED  TP_VPROT 11.7 V, TP_VANA 11.6 V, ripple 4 mVpp;</tspan></text>
+<text x="454.4" y="518.4" font-size="5.7" fill="#222"><tspan x="454.4" dy="0.0">with V_IN = -12 V: TP_VPROT -0.1 mV, 2 uA</tspan></text>
+<text x="896.0" y="332.8" font-size="10.4" fill="#222" font-weight="bold"><tspan x="896.0" dy="0.0">4 · SYNC DIVIDER  —  ESP32 GPIO -&gt; 0.3 V -&gt; sound-card R</tspan></text>
+<text x="896.0" y="467.2" font-size="5.2" fill="#222"><tspan x="896.0" dy="0.0">6.4 ms high, 7.4 ms period, 10 ns edges</tspan></text>
+<text x="940.8" y="374.4" font-size="5.2" fill="#222"><tspan x="940.8" dy="0.0">GPIO output R</tspan></text>
+<text x="1056.0" y="448.0" font-size="5.2" fill="#222"><tspan x="1056.0" dy="0.0">C_CPL / R_SC = the sound card's AC-coupled input</tspan></text>
+<text x="896.0" y="505.6" font-size="5.7" fill="#222" font-weight="bold"><tspan x="896.0" dy="0.0">EXPECTED  TP_SYNC 283 mV high / 0 V low;</tspan></text>
+<text x="896.0" y="518.4" font-size="5.7" fill="#222"><tspan x="896.0" dy="0.0">TP_SC +201 mV drooping / -100 mV retrace pulse -&gt; software detects EDGES</tspan></text>
+<text x="44.8" y="544.0" font-size="10.4" fill="#222" font-weight="bold"><tspan x="44.8" dy="0.0">5 · THE RADAR ITSELF, SCALED  —  chirp x delayed chirp = beat. Carrier cancels, so B/10 and delay x10 give the real 417 Hz</tspan></text>
+<text x="723.2" y="710.4" font-size="5.2" fill="#222"><tspan x="723.2" dy="0.0">R12/C9 = the amp's 15.9 kHz LP;  C1/R2, C2/R6 = its two 159 Hz HPs (they kill the leakage tone)</tspan></text>
+<text x="44.8" y="755.2" font-size="5.7" fill="#222"><tspan x="44.8" dy="0.0">Multisim parts: PIECEWISE_LINEAR_VOLTAGE -&gt; VOLTAGE_CONTROLLED_SINE_WAVE; LOSSLESS_LINE_TYPE1; VOLTAGE_GAIN_BLOCK; VOLTAGE_SUMMER; MULTIPLIER</tspan></text>
+<text x="44.8" y="768.0" font-size="5.7" fill="#222"><tspan x="44.8" dy="0.0">Transient: TMAX 10 ns, stop 19.2 ms (3 chirps). Fourier at TP_BEAT over ONE chirp (6.4 ms), Hanning window.</tspan></text>
+<text x="44.8" y="787.2" font-size="5.7" fill="#222" font-weight="bold"><tspan x="44.8" dy="0.0">EXPECTED  leakage gain x0: peak at 417 Hz, 4.5 mV.   TD1 = 333 ns -&gt; 208 Hz.   TD1 = 1.33 us -&gt; 833 Hz (20 m).</tspan></text>
+<text x="44.8" y="800.0" font-size="5.7" fill="#222"><tspan x="44.8" dy="0.0">Leakage gain x1: the 417 Hz line is unchanged but the spectrum floor rises 20 dB near DC - what chirp-to-chirp subtraction removes in software.</tspan></text>
+<text x="44.8" y="812.8" font-size="5.7" fill="#222"><tspan x="44.8" dy="0.0">Real radar: B = 40 MHz, TD = 66.7 ns (10 m), T = 6.4 ms  -&gt;  f_beat = B x TD / T = 417 Hz.  Here: B = 4 MHz, TD = 667 ns. Same answer.</tspan></text>
+<text x="44.8" y="825.6" font-size="5.7" fill="#222"><tspan x="44.8" dy="0.0">The blocks right of the mixer's IF port cannot be simulated in Multisim (no 2.4 GHz models): ADF4351, SPF5189Z, splitter, mixer, horns are measured, not modelled.</tspan></text>
+<text x="44.8" y="864.0" font-size="6.2" fill="#222"><tspan x="44.8" dy="0.0">PARTS  resistors 1 % 1/4 W · 100n / 10n film or C0G · 10u 47u 100u electrolytic 25 V (+ marked) · 1N5822 · TL072CP x3 · single 12 V rail</tspan></text>
+<text x="44.8" y="876.8" font-size="6.2" fill="#222"><tspan x="44.8" dy="0.0">Netlists that produced the EXPECTED lines: hardware/spice/*.cir (ngspice 42).  Same values as the breadboard sheet radar_breadboard.kicad_sch.</tspan></text>
 </svg>

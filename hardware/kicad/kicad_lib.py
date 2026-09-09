@@ -309,7 +309,8 @@ def write_kicad():
         L.append(f'  (label "{name}" (at {f(x)} {f(y)} {rot}) (fields_autoplaced) (effects (font (size 1.27 1.27)) (justify {jst})) (uuid "{U()}"))')
     for (t, x, y, size, bold) in texts:
         b = " bold" if bold else ""
-        L.append(f'  (text "{t}" (at {f(x)} {f(y)} 0) (effects (font (size {f(size)} {f(size)}){b}) (justify left bottom)) (uuid "{U()}"))')
+        esc = t.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
+        L.append(f'  (text "{esc}" (at {f(x)} {f(y)} 0) (effects (font (size {f(size)} {f(size)}){b}) (justify left bottom)) (uuid "{U()}"))')
     for s in symbols:
         Ls = LIB[s["lib"]]
         vx, vy = (s["x"] + 2.5, s["y"] + 1.5) if s["rot"] == 0 else (s["x"] - 3.5, s["y"] + 5.0)
@@ -392,8 +393,12 @@ def write_svg():
         else:
             if s["lib"].startswith("Radar:") or s["lib"].startswith("Connector:"):
                 n = len([p for p in Ls["pins"] if p[6] == s["unit"]])
-                o.append(f'<text x="{(x-6)*S:.1f}" y="{(y - (8 if s["lib"].startswith("Radar:") else 3.2))*S:.1f}" font-size="10" font-weight="bold" fill="#8a2d2d">{s["ref"]}</text>')
-                o.append(f'<text x="{(x-6)*S:.1f}" y="{(y + n*1.27 + 4.2)*S:.1f}" font-size="9" fill="#333">{s["value"]}</text>')
+                rx, ry = s["rpos"] or (x - 6, y - (8 if s["lib"].startswith("Radar:") else 3.2))
+                anc = ' text-anchor="middle"' if s["rpos"] else ''
+                o.append(f'<text x="{rx*S:.1f}" y="{ry*S:.1f}" font-size="10" font-weight="bold" fill="#8a2d2d"{anc}>{s["ref"]}</text>')
+                if not s["hide_value"]:
+                    vx, vy = s["vpos"] or (x - 6, y + n * 1.27 + 4.2)
+                    o.append(f'<text x="{vx*S:.1f}" y="{vy*S:.1f}" font-size="9" fill="#333"{anc}>{s["value"]}</text>')
             else:
                 dx, dy = (2.3, -1.2) if rot == 0 else (-3.5, -4.6)
                 o.append(f'<text x="{(x+dx)*S:.1f}" y="{(y+dy)*S:.1f}" font-size="9" font-weight="bold" fill="#8a2d2d">{s["ref"]}</text>')
@@ -404,7 +409,10 @@ def write_svg():
         o.append(f'<text x="{x*S:.1f}" y="{(y-0.6)*S:.1f}" font-size="9.5" fill="#1a3d8f" text-anchor="{anchor}" font-weight="bold">{name}</text>')
     for (t, x, y, size, bold) in texts:
         fw = ' font-weight="bold"' if bold else ''
-        o.append(f'<text x="{x*S:.1f}" y="{y*S:.1f}" font-size="{size*5.2:.1f}" fill="#222"{fw}>{t}</text>')
+        esc = lambda v: v.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        lines = t.split("\n")
+        spans = "".join(f'<tspan x="{x*S:.1f}" dy="{0 if i == 0 else size*6.4:.1f}">{esc(ln)}</tspan>' for i, ln in enumerate(lines))
+        o.append(f'<text x="{x*S:.1f}" y="{y*S:.1f}" font-size="{size*5.2:.1f}" fill="#222"{fw}>{spans}</text>')
     o.append('</svg>')
     (OUT / f"{PROJECT}.svg").write_text("\n".join(o))
 
