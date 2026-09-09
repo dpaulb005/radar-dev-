@@ -63,8 +63,10 @@ python server.py                              # console at http://localhost:8080
 
 | | |
 |---|---|
-| `firmware/radar_ctl/` | radar ESP32: ADF4351 sweep, sync line, serial protocol, optional turntable; boots RF-off |
+| `firmware/radar_ctl/` | radar ESP32: ADF4351 sweep, sync line, serial protocol, the stage-2 RF switch (`SWMODE`), optional turntable; boots RF-off |
 | `ground_station/radar_acquire.py` | sound card → chirps → range-Doppler → CFAR → azimuth → console; `--selftest`, `--replay` |
+| `ground_station/interferometer.py` | azimuth from the phase between two receivers, in one dwell: geometry, calibration, switched-mode parity and the refusals |
+| `ground_station/test_radar.py` | the regression suite, 34 cases, no hardware or network needed |
 | `ground_station/server.py` + `web/` | the console (PPI scope, tracker, `/api/radar`) |
 | `ground_station/fmcw_sim.py`, `radar_twin.py`, `scan_design.py`, `tracker.py` | simulator, digital twin, scan sizing, Kalman filter |
 | `antenna/horn.py` | the horn design (optimum pyramidal, WR-340 feed) |

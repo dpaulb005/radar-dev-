@@ -105,6 +105,51 @@ build does not depend on.
 Prices below use the **$29** band-pass (GPIO Labs, the only cheap one that
 publishes rejection figures). The `~$` column in every table is the line total.
 
+### What to order now, if you are building stage 1 and want azimuth later
+
+This is the list. It puts up the three-horn frame, builds two of the horns'
+worth of chain, and buys nothing you will have to replace.
+
+**Order 1 — stage 1, $394**
+
+| item | $ |
+|---|---|
+| mixer, 1.5–4.5 GHz SMA module | 25 |
+| ADF4351 PLL board | 27 |
+| SPF5189Z LNA **4-pack** (2 used now, 2 held for stage 2) | 24 |
+| 2-way splitter | 13 |
+| 3 dB SMA attenuator | 9 |
+| SMA jumpers, 3 packs, **one order** so the cables match | 27 |
+| SMA adapter assortment | 12 |
+| band-pass filter | 14 |
+| three horns: filament, copper tape, SMA flange 10-pack, brass rod, solder | 62 |
+| frame: plywood, L-brackets, M3 hardware, standoffs | 28 |
+| ESP32 devkit | 10 |
+| **two** TL072, breadboard, passives kit | 25 |
+| 12 V 3 A supply + LM2596 ×2 | 18 |
+| **UMC404HD 4-input interface** — not the UCA202 | 100 |
+| | **394** |
+
+**Order 2 — stage 2, when stage 1 works, $70**
+
+| item | $ |
+|---|---|
+| second mixer | 25 |
+| second 2-way splitter, for LO to both mixers | 13 |
+| second band-pass filter | 14 |
+| two more TL072, second passives set, second breadboard | 18 |
+| | **70** |
+
+**$464 of parts, about $500 delivered.** Drop the SMA adapter assortment from
+order 1 until you find you need it and it is $489.
+
+Nothing in order 1 becomes redundant. The interface, the LNA 4-pack, the horn
+count, the frame and the second TL072 are all sized for the finished radar.
+The one item people get wrong here is the sound card: a UCA202 bought in
+stage 1 is $30 thrown away, because two of them cannot measure phase.
+
+---
+
 ### Under $500
 
 Two builds that hit the budget. Both give azimuth; they differ in how the two

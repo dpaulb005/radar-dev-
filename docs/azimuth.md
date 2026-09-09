@@ -109,25 +109,36 @@ stage 1, as § 7 of the hardware doc advises, this line is already paid for.
 
 ---
 
-## What to write
+## The software is written
 
-About fifteen lines, and the plan is already in
-[`radar-software.md`](radar-software.md) § 9.
+`ground_station/interferometer.py`, wired into `radar_acquire.py`. Nothing to
+implement: build the hardware and run it.
 
-1. Read 3 channels instead of 2.
-2. Run `segment_chirps` on both beat channels against the **one** sync channel,
-   so both cubes are cut on the same edges.
-3. Take the range–Doppler of each, keeping it **complex**. `range_doppler`
-   currently returns dB; it needs to return or expose the complex map.
-4. At each CFAR detection, at that exact range–Doppler cell:
-   `Δφ = angle(rd_B · conj(rd_A)) − cal`, then
-   `θ = asin(Δφ · λ / 2π d)`.
-5. Delete the beam-scan centroid from the azimuth path. It is no longer how
-   bearing is measured.
+```
+python radar_acquire.py --interferometer --ctl /dev/ttyUSB0 --f0-mhz 2440 --bw-mhz 40
+python radar_acquire.py --switched      --ctl /dev/ttyUSB0    # RF-switch build
+python radar_acquire.py --selftest --interferometer --st-az -8 --st-vel -1.8
+python test_radar.py                                          # 34 cases, no hardware
+```
 
-Calibration is one constant. Put a corner reflector on boresight, read Δφ, store
-it as `cal`, and subtract it from then on. Re-check it after anything is
-unplugged, and after a large temperature change.
+Calibrate once, then forget it:
+
+```
+python radar_acquire.py --interferometer --calibrate --cal-az 0 --ctl /dev/ttyUSB0
+```
+
+Put a corner reflector on boresight, run that, and the fixed offset is measured
+and written to `interferometer_cal.json`, reloaded on every later run. Re-check
+it after anything is unplugged.
+
+It abstains rather than guesses. A detection reports no bearing, with a reason,
+when the phase is outside the ±18.4° cone, when one channel is far weaker at
+that cell, or when switched mode is near its velocity fold. The fix is always
+the strongest return: if that one has no trustworthy bearing the block reports
+no fix at all, instead of promoting a weaker sidelobe that happens to have one.
+
+See [`radar-software.md`](radar-software.md) § 9 for the details, including the
+frame marker switched mode needs and the velocity limit it cannot escape.
 
 ---
 

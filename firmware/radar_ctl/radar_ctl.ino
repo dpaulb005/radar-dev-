@@ -25,13 +25,18 @@
  *   SET steps <n>  -> steps per chirp     (8..256)
  *   SET step_us <n>-> dwell per step, us  (40..2000)
  *   SET retrace_us <n>
+ *   SWMODE 0|1   -> stage 2 switched azimuth: alternate the RX antennas chirp
+ *                   by chirp on PIN_RXSEL and mark each block with a skipped
+ *                   chirp so the laptop can tell the antennas apart
+ *   SWBLOCK <n>  -> chirps per marker, match radar_acquire.py --n-chirps
  *   SET f0_mhz <f> / SET bw_mhz <b>  -> sweep edges (kept inside 2400-2483.5)
  *
  * Wiring (ESP32 devkit, VSPI):
  *   ADF4351  CLK -> GPIO18   DATA -> GPIO23   LE -> GPIO5   CE -> 3V3
  *            LD  -> GPIO19 (optional, lock detect)   board 5V in <- 5 V
  *   SYNC     GPIO25 -> 10k -> sound card R tip ; 1k from tip to GND
- *   A4988    STEP GPIO26  DIR GPIO27  EN GPIO14 (LOW = enabled)
+ *   A4988    STEP GPIO26  DIR GPIO27  EN GPIO14 (LOW = enabled)  [optional turntable]
+ *   RX SW    GPIO32 -> SPDT RF switch select (LOW = antenna A)  [SWMODE builds]
  *   Servo    GPIO26 (if AZ_MODE_SERVO)
  *
  * Board: "ESP32 Dev Module" in Arduino IDE with the esp32 core (2.x or 3.x).
@@ -71,6 +76,8 @@
 #define PIN_DIR   27
 #define PIN_EN    14
 #define PIN_SERVO 26
+#define PIN_RXSEL 32           // stage 2, SWITCHED build: SPDT RF switch select.
+                               // LOW = antenna A, HIGH = antenna B.
 // -----------------------------------------------
 
 static uint64_t f_start    = F_START_HZ;
@@ -78,6 +85,20 @@ static uint64_t sweep_bw   = SWEEP_BW_HZ;
 static uint16_t n_steps    = 64;      // 64 steps x 100 us = 6.4 ms up-chirp
 static uint32_t step_us    = 100;     // PLL relock per step; see docs/radar-software.md
 static uint32_t retrace_us = 1000;    // hold at F_START between chirps
+// ---- stage 2, SWITCHED azimuth build ----
+// One receive chain, an RF switch alternating antennas chirp by chirp. The
+// laptop has to know WHICH antenna each chirp came from, and a block of audio
+// starts at an arbitrary point in the alternation, so parity cannot be
+// recovered from the data: read B as A and every bearing comes out negated.
+// The marker below fixes that. Once per block the sweep SKIPS one chirp --
+// SYNC stays low for a whole extra PRI -- and the switch then returns to
+// antenna A. That doubled gap is unmistakable in the edge times, and
+// ground_station/interferometer.py:tdm_parity() keys off it.
+// Costs one chirp in 65, which is 1.5 % of the dwell.
+static bool     sw_mode      = false;   // SWMODE 1 to enable
+static uint16_t sw_block     = 64;      // chirps per marked block (match --n-chirps)
+static uint16_t sw_count     = 0;       // chirps since the last marker
+static bool     sw_ant_b     = false;   // which antenna is selected right now
 static bool     sweeping   = false;   // boot SILENT: RF output off until SWEEP 1 / CW
 static bool     rf_on      = false;
 static float    az_deg     = 0.0f;
@@ -187,6 +208,20 @@ static void one_chirp() {
   digitalWrite(PIN_SYNC, LOW);
   adf_tune(f_start);
   delayMicroseconds(retrace_us);
+
+  if (sw_mode) {
+    if (++sw_count >= sw_block) {
+      // block marker: hold SYNC low for one whole extra chirp period, then
+      // restart the alternation on antenna A. The receiver finds this gap and
+      // uses it to tell the two antennas apart.
+      sw_count = 0;
+      delayMicroseconds((uint32_t)n_steps * step_us + retrace_us);
+      sw_ant_b = false;
+    } else {
+      sw_ant_b = !sw_ant_b;
+    }
+    digitalWrite(PIN_RXSEL, sw_ant_b ? HIGH : LOW);
+  }
 }
 
 static float chirp_ms() { return n_steps * step_us / 1000.0f; }
@@ -194,10 +229,12 @@ static float chirp_ms() { return n_steps * step_us / 1000.0f; }
 static void status() {
   Serial.printf("{\"fw\":\"radar_ctl\",\"f0_mhz\":%.1f,\"bw_mhz\":%.1f,\"steps\":%u,"
                 "\"step_us\":%lu,\"t_chirp_ms\":%.3f,\"retrace_us\":%lu,"
-                "\"sweep\":%d,\"rf\":%d,\"az\":%.2f,\"lock\":%d}\n",
+                "\"sweep\":%d,\"rf\":%d,\"az\":%.2f,\"lock\":%d,"
+                "\"sw_mode\":%d,\"sw_block\":%u}\n",
                 f_start / 1e6, sweep_bw / 1e6, n_steps,
                 (unsigned long)step_us, chirp_ms(), (unsigned long)retrace_us,
-                sweeping ? 1 : 0, rf_on ? 1 : 0, az_deg, digitalRead(PIN_LD));
+                sweeping ? 1 : 0, rf_on ? 1 : 0, az_deg, digitalRead(PIN_LD),
+                sw_mode ? 1 : 0, sw_block);
 }
 
 static void handle(String line) {
@@ -218,6 +255,21 @@ static void handle(String line) {
     Serial.printf("OK CW %.3f\n", mhz); return;
   }
   if (line == "RFOFF") { sweeping = false; digitalWrite(PIN_SYNC, LOW); adf_rf(false); Serial.println("OK RFOFF"); return; }
+  if (line.startsWith("SWMODE")) {                 // stage 2, switched azimuth
+    int v = line.substring(6).toInt();
+    sw_mode = (v != 0);
+    sw_count = 0; sw_ant_b = false;
+    digitalWrite(PIN_RXSEL, LOW);
+    Serial.printf("OK SWMODE %d (block %u; run radar_acquire.py --switched)\n",
+                  sw_mode ? 1 : 0, sw_block);
+    return;
+  }
+  if (line.startsWith("SWBLOCK")) {                // chirps per marker; match --n-chirps
+    int v = line.substring(7).toInt();
+    if (v < 8 || v > 1024) { Serial.println("ERR SWBLOCK 8..1024"); return; }
+    sw_block = (uint16_t)v; sw_count = 0;
+    Serial.printf("OK SWBLOCK %u\n", sw_block); return;
+  }
   if (line.startsWith("AZ")) {
     float d = line.substring(2).toFloat();
     bool was = sweeping; sweeping = false; digitalWrite(PIN_SYNC, LOW);
@@ -255,6 +307,7 @@ void setup() {
   pinMode(PIN_LE, OUTPUT);   digitalWrite(PIN_LE, LOW);
   pinMode(PIN_LD, INPUT);
   pinMode(PIN_SYNC, OUTPUT); digitalWrite(PIN_SYNC, LOW);
+  pinMode(PIN_RXSEL, OUTPUT); digitalWrite(PIN_RXSEL, LOW);   // antenna A
 #if AZ_MODE_STEPPER
   pinMode(PIN_STEP, OUTPUT); pinMode(PIN_DIR, OUTPUT); pinMode(PIN_EN, OUTPUT);
   digitalWrite(PIN_EN, LOW);

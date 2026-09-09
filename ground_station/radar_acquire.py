@@ -9,9 +9,19 @@ from the sound card instead of the simulator:
     sound card L = beat signal (video amp out)
     sound card R = chirp SYNC from radar_ctl (HIGH during the up-chirp)
 
-Stages:
-    --range-only            stage 1: no azimuth drive, print range/velocity
-    --ctl /dev/ttyUSB0      stage 2/3: step the horns with radar_ctl, centroid
+Modes:
+    --range-only            stage 1: range and velocity from one receiver
+    --interferometer        stage 2: AZIMUTH, from the phase between two
+                            receivers, in one dwell. This is how bearing is
+                            measured. Needs 3 audio channels: beat A, beat B,
+                            sync (a UMC404HD; two UCA202s cannot do phase).
+    --switched              stage 2 on one chain and an RF switch: antennas
+                            alternate chirp by chirp, and the one-PRI motion
+                            phase is corrected from the measured velocity.
+    --ctl /dev/ttyUSB0      drive the optional turntable. It POINTS the beam;
+                            it no longer measures azimuth. The beam-scan
+                            centroid below is legacy and only works on a
+                            target that is nearly stationary.
     --server http://...     push fixes into the console (server.py /api/radar)
 
 Test it with no hardware at all:
@@ -24,6 +34,7 @@ Record raw audio for later replay with --record capture.wav.
 import argparse
 import json
 import math
+import pathlib
 import sys
 import time
 import wave
@@ -31,6 +42,7 @@ import wave
 import numpy as np
 
 import fmcw_sim
+import interferometer as interf
 from radar_twin import ScanningRadar, cfar_detect
 
 F0_HZ = 2.400e9          # defaults: 2400-2480 MHz (3.5 MHz top margin). Overridden by
@@ -43,7 +55,7 @@ SETTLE_FRAC = 0.05       # drop the first 5 % of each chirp (PLL settle)
 # sync + segmentation
 # ----------------------------------------------------------------------
 
-def segment_chirps(beat, sync, fs, n_chirps):
+def segment_chirps(beat, sync, fs, n_chirps, return_edges=False):
     """Cut the beat channel into an (n_chirps, n_samples) cube using the sync
     square wave. Returns (cube, t_chirp_s). t_chirp is MEASURED from the sync,
     never assumed — the stepped PLL sweep's real period is set by the ESP32's
@@ -68,7 +80,7 @@ def segment_chirps(beat, sync, fs, n_chirps):
         return np.array(keep)
     edges, falls = collapse(up), collapse(dn)
     if len(edges) < n_chirps + 1:
-        return None, None
+        return (None, None, None) if return_edges else (None, None)
     # up-chirp length: median rising->falling gap
     lens = []
     for r in edges:
@@ -84,10 +96,12 @@ def segment_chirps(beat, sync, fs, n_chirps):
         if seg.size == n_s:
             rows.append(seg)
     if len(rows) < n_chirps:
-        return None, None
+        return (None, None, None) if return_edges else (None, None)
     cube = np.array(rows, dtype=float)
     cube -= cube.mean(axis=1, keepdims=True)         # kill DC per chirp
     pri = float(np.median(np.diff(edges[:n_chirps + 1]))) / fs
+    if return_edges:
+        return cube, (n_up / fs, pri), edges[:n_chirps + 1]
     return cube, (n_up / fs, pri)
 
 
@@ -119,27 +133,38 @@ def process(cube, fs, timing, n_chirps, min_range=1.5, max_range=30.0,
 # ----------------------------------------------------------------------
 
 class AudioSource:
-    """Blocks of (beat, sync) from a live sound card."""
+    """Blocks from a live sound card.
 
-    def __init__(self, device, fs, block_s, record=None):
+    Two channels (beat, sync) for stage 1 and for the switched interferometer.
+    Three (beat A, beat B, sync) for the simultaneous interferometer, which is
+    why the interface has to be a 4-input one: all of them must ride the same
+    sample clock or the phase between them means nothing.
+
+    read() always returns (beats, sync), where beats is a LIST of channels.
+    """
+
+    def __init__(self, device, fs, block_s, record=None, n_beats=1):
         import sounddevice as sd          # lazy: PortAudio only needed live
         self.sd = sd
         self.device = device
         self.fs = fs
+        self.n_beats = n_beats
+        self.channels = n_beats + 1
         self.frames = int(block_s * fs)
         self.wav = None
         if record:
             self.wav = wave.open(record, "wb")
-            self.wav.setnchannels(2)
+            self.wav.setnchannels(self.channels)
             self.wav.setsampwidth(2)
             self.wav.setframerate(int(fs))
 
     def read(self):
-        x = self.sd.rec(self.frames, samplerate=self.fs, channels=2,
+        x = self.sd.rec(self.frames, samplerate=self.fs, channels=self.channels,
                         dtype="int16", device=self.device, blocking=True)
         if self.wav:
             self.wav.writeframes(x.tobytes())
-        return x[:, 0].astype(float), x[:, 1].astype(float)
+        beats = [x[:, i].astype(float) for i in range(self.n_beats)]
+        return beats, x[:, self.n_beats].astype(float)
 
     def close(self):
         if self.wav:
@@ -147,12 +172,17 @@ class AudioSource:
 
 
 class WavSource:
+    """Replay a recording. 2 channels = beat + sync, 3 = beat A + beat B + sync."""
+
     def __init__(self, path, block_s):
         w = wave.open(path, "rb")
-        assert w.getnchannels() == 2 and w.getsampwidth() == 2, "need 16-bit stereo"
+        assert w.getsampwidth() == 2, "need 16-bit PCM"
+        nch = w.getnchannels()
+        assert nch in (2, 3), f"need 2 or 3 channels, got {nch}"
         self.fs = w.getframerate()
+        self.n_beats = nch - 1
         data = np.frombuffer(w.readframes(w.getnframes()), dtype=np.int16)
-        self.x = data.reshape(-1, 2).astype(float)
+        self.x = data.reshape(-1, nch).astype(float)
         self.frames = int(block_s * self.fs)
         self.pos = 0
 
@@ -161,32 +191,60 @@ class WavSource:
             return None, None
         blk = self.x[self.pos:self.pos + self.frames]
         self.pos += self.frames
-        return blk[:, 0], blk[:, 1]
+        return [blk[:, i] for i in range(self.n_beats)], blk[:, self.n_beats]
 
     def close(self):
         pass
 
 
 class SynthSource:
-    """What the sound card WOULD see for a given target: a single-ended
-    (real) beat signal per up-chirp, a retrace gap, and the sync square wave,
-    at fixed 16-bit levels. Same physics as fmcw_sim.simulate, but the range
-    walk between chirps uses the PRI (up-chirp + retrace) like the hardware,
-    and the level is absolute so beam-to-beam amplitude comparison works."""
+    """What the sound card WOULD see, for one or two receivers.
+
+    Same physics as fmcw_sim.simulate: a single-ended (real) beat signal per
+    up-chirp, a retrace gap, and the sync square wave, at absolute 16-bit
+    levels so beam-to-beam amplitude comparison works. The range walk between
+    chirps uses the PRI (up-chirp + retrace), like the hardware.
+
+    With n_rx=2 it also produces the second receiver. That channel carries the
+    interferometric phase 2*pi*d*sin(az)/lam on every target -- the receive
+    path is longer by d*sin(az), the transmit path is common -- plus whatever
+    fixed chain offset you ask for with cal_rad, which is how the calibration
+    step gets tested. Noise is independent between channels; the sync is one
+    physical channel and is shared.
+
+    switched=True models the RF-switch build instead: one receiver, but the
+    antenna alternates chirp by chirp, so even chirps carry antenna A and odd
+    chirps carry antenna B one PRI later.
+
+    read() returns (beats, sync) where beats is a list of channels.
+    """
 
     ADC_SCALE = 3.0e5          # sqrt(mW) -> counts; leakage ~ -22 dBm fits int16
 
     def __init__(self, fs, t_chirp, n_chirps, targets, retrace_s=1e-3,
                  beam_az=0.0, bw_az=36.0, seed=0, isolation_db=35.0,
-                 f0=None, bw=None):
+                 f0=None, bw=None, n_rx=1, baseline_m=interf.DEFAULT_BASELINE_M,
+                 cal_rad=0.0, switched=False, marker=True, marker_after=2):
         self.fs, self.t_chirp, self.n_chirps = fs, t_chirp, n_chirps
         self.targets, self.retrace_s = targets, retrace_s
         self.beam_az, self.bw_az = beam_az, bw_az
         self.rng = np.random.default_rng(seed)
+        self.n_rx = 1 if switched else int(n_rx)
+        self.baseline_m = float(baseline_m)
+        self.cal_rad = float(cal_rad)
+        self.switched = bool(switched)
+        self.marker, self.marker_after = bool(marker), int(marker_after)
         self.spec = fmcw_sim.RadarSpec(f0=f0 or F0_HZ, bw=bw or BW_HZ, t_chirp=t_chirp, fs=fs,
                                        n_chirps=n_chirps, gt_dbi=13.4, gr_dbi=13.4,
                                        isolation_db=isolation_db)
         self.frames = None
+
+    # -- the extra phase antenna B sees, per target -------------------
+    def _rx_phase(self, rx_index, az_deg):
+        if rx_index == 0:
+            return 0.0
+        return (2.0 * math.pi * self.baseline_m * math.sin(math.radians(az_deg))
+                / self.spec.lam) + self.cal_rad
 
     def read(self):
         from radar_twin import beam_gain
@@ -198,32 +256,61 @@ class SynthSource:
         noise_w = fmcw_sim.K_BOLTZ * fmcw_sim.T0 * (self.fs / 2) * 10 ** (s.nf_db / 10)
         noise_amp = math.sqrt(noise_w * 1e3)
         lk = math.sqrt(10 ** ((s.pt_dbm - s.isolation_db) / 10))
-        beat, sync = [], []
+
+        n_out = self.n_rx
+        beats = [[] for _ in range(n_out)]
+        sync = []
         for k in range(self.n_chirps + 2):
             tk = k * pri
-            sig = np.zeros(n_up)
-            for (r, az, v, rcs) in self.targets:
-                g = beam_gain(az - self.beam_az, self.bw_az)
-                if g <= 1e-3:
-                    continue
-                rt = r + v * tk
-                amp = math.sqrt(10 ** (s.rx_dbm(rt, rcs * g * g) / 10))
-                sig += amp * np.cos(2 * math.pi * s.beat_hz(rt) * t + 4 * math.pi * rt / s.lam)
-            sig += lk * np.cos(2 * math.pi * s.beat_hz(0.3) * t)
-            sig += noise_amp * self.rng.normal(size=n_up)
-            beat.append(sig); sync.append(np.ones(n_up))
-            beat.append(np.zeros(n_gap)); sync.append(np.zeros(n_gap))
-        beat = np.clip(np.concatenate(beat) * self.ADC_SCALE, -32767, 32767)
-        sync = np.concatenate(sync) * 20000.0
-        # model the sound card's AC coupling (~10 Hz one-pole high-pass) on
-        # both channels -- the sync square wave droops and loses its DC level
+            # which antenna is connected on this chirp
+            # A on even chirps counted from the chirp after the marker
+            ant = ((k - self.marker_after - 1) % 2) if self.switched else None
+            for j in range(n_out):
+                rx = ant if self.switched else j
+                sig = np.zeros(n_up)
+                for (r, az, v, rcs) in self.targets:
+                    g = beam_gain(az - self.beam_az, self.bw_az)
+                    if g <= 1e-3:
+                        continue
+                    rt = r + v * tk
+                    amp = math.sqrt(10 ** (s.rx_dbm(rt, rcs * g * g) / 10))
+                    sig += amp * np.cos(2 * math.pi * s.beat_hz(rt) * t
+                                        + 4 * math.pi * rt / s.lam
+                                        + self._rx_phase(rx, az))
+                sig += lk * np.cos(2 * math.pi * s.beat_hz(0.3) * t)
+                sig += noise_amp * self.rng.normal(size=n_up)
+                beats[j].append(sig)
+                beats[j].append(np.zeros(n_gap))
+
+            sync.append(np.ones(n_up))
+            sync.append(np.zeros(n_gap))
+            # radar_ctl marks each block by SKIPPING one chirp -- sync stays low
+            # for a whole extra PRI -- just before the switch returns to antenna
+            # A. The gap is then ~2x every other gap and unmistakable, which is
+            # what lets the receiver tell the two antennas apart at all
+            # (interferometer.tdm_parity). It costs 1.5 % of the dwell.
+            if self.switched and self.marker and k == self.marker_after:
+                sync.append(np.zeros(n_up + n_gap))
+                beats[0].append(np.zeros(n_up + n_gap))
+
+        out = []
+        for j in range(n_out):
+            x = np.clip(np.concatenate(beats[j]) * self.ADC_SCALE, -32767, 32767)
+            out.append(self._couple(x))
+        return out, self._couple(np.concatenate(sync) * 20000.0)
+
+    def _couple(self, x):
+        """The sound card's AC coupling, ~10 Hz one-pole high-pass. The sync
+        square wave droops and loses its DC level; the edges survive."""
         a = math.exp(-2 * math.pi * 10.0 / self.fs)
-        def hp(x):
-            y = np.empty_like(x); prev_x = 0.0; prev_y = 0.0
+        try:
+            from scipy.signal import lfilter
+            return lfilter([a, -a], [1.0, -a], x)
+        except Exception:                      # numpy-only fallback
+            y = np.empty_like(x); px = py = 0.0
             for i, v in enumerate(x):
-                prev_y = a * (prev_y + v - prev_x); prev_x = v; y[i] = prev_y
+                py = a * (py + v - px); px = v; y[i] = py
             return y
-        return hp(beat), hp(sync)
 
     def close(self):
         pass
@@ -282,6 +369,33 @@ def post_fix(url, payload):
         print(f"# server: {e}", file=sys.stderr)
 
 
+def _maps(beats, sync, fs, n, timing_hint, f0, bw, thresh):
+    """Cut every beat channel on the SAME sync edges and transform each one.
+
+    Returns (cubes, timing, rds, ranges, vels, dets) where rds are COMPLEX
+    range-Doppler maps -- the interferometer needs the phase, not the dB.
+    Cutting both channels on one sync is what keeps their cells aligned.
+    """
+    cubes, timing = [], None
+    for bt in beats:
+        cube, tm = segment_chirps(bt, sync, fs, n)
+        if cube is None:
+            return None, None, None, None, None, None
+        cubes.append(cube)
+        timing = timing or tm
+    t_up, pri = timing
+    spec = fmcw_sim.RadarSpec(f0=f0, bw=bw, t_chirp=t_up, fs=fs, n_chirps=cubes[0].shape[0])
+    rds, ranges, vels = [], None, None
+    for cube in cubes:
+        rd, ranges, vels = fmcw_sim.range_doppler(cube.astype(complex), spec,
+                                                  bg_subtract=True, complex_out=True)
+        rds.append(rd)
+    vels = vels * (t_up / pri)                 # the Doppler axis is set by the PRI
+    dets = cfar_detect(20 * np.log10(np.abs(rds[0]) + 1e-15), ranges, vels,
+                       min_range=1.5, max_range=30.0, thresh_db=thresh)
+    return cubes, timing, rds, ranges, vels, dets
+
+
 def run(args):
     n = args.n_chirps
     ctl = Ctl(args.ctl) if args.ctl else None
@@ -295,34 +409,175 @@ def run(args):
           file=sys.stderr)
     block_s = (n + 3) * t_nom               # a few spare chirps for sync slop
 
+    # ---- azimuth mode -------------------------------------------------
+    interf_mode = args.interferometer or args.switched
+    I = None
+    if interf_mode:
+        if args.cal_file and pathlib.Path(args.cal_file).exists() and not args.calibrate:
+            I = interf.Interferometer.load(args.cal_file, f0_hz=f0, bw_hz=bw,
+                                           baseline_m=args.baseline)
+            print(f"# calibration loaded: {math.degrees(I.cal):+.2f} deg from "
+                  f"{args.cal_file}", file=sys.stderr)
+        else:
+            I = interf.Interferometer(baseline_m=args.baseline, f0_hz=f0, bw_hz=bw)
+            if not args.calibrate:
+                print("# WARNING: no calibration. Bearings carry the fixed chain "
+                      "offset until you run --calibrate against a boresight "
+                      "reflector.", file=sys.stderr)
+        if args.switched:
+            print(f"# SWITCHED: velocity folds at +/-"
+                  f"{interf.switched_v_max(t_nom, I.lam):.2f} m/s (half the "
+                  f"simultaneous figure, because every other chirp is thrown "
+                  f"away). Past that the BEARING is wrong, not just the "
+                  f"velocity, so it is reported as no_az=velocity-fold.",
+                  file=sys.stderr)
+        print(f"# interferometer: baseline {I.d*1000:.1f} mm, unambiguous "
+              f"+/-{I.unambiguous_deg:.1f} deg, {I.bearing_error_per_mm_coax():.2f} "
+              f"deg of bearing per mm of cable mismatch"
+              + ("  [SWITCHED: motion-corrected]" if args.switched else ""),
+              file=sys.stderr)
+
+    n_beats = 2 if args.interferometer else 1
+
     if args.selftest:
         targets = [(args.st_range, args.st_az, args.st_vel, 0.01)]
-        src = SynthSource(args.fs, args.t_chirp_ms / 1000.0, n, targets, f0=f0, bw=bw)
+        src = SynthSource(args.fs, args.t_chirp_ms / 1000.0, n, targets, f0=f0, bw=bw,
+                          n_rx=n_beats, baseline_m=args.baseline,
+                          cal_rad=math.radians(args.st_cal_deg), switched=args.switched)
         fs = args.fs
     elif args.replay:
         src = WavSource(args.replay, block_s)
         fs = src.fs
     else:
-        src = AudioSource(args.device, args.fs, block_s, record=args.record)
+        src = AudioSource(args.device, args.fs, block_s, record=args.record,
+                          n_beats=n_beats)
         fs = args.fs
 
     if ctl:
         ctl.sweep(True)                      # the ESP32 boots with RF off
-    scan_mode = (bool(ctl) and not args.range_only) or (args.selftest and not args.st_range_only)
+    # The beam-scan centroid is legacy: it only works on a nearly stationary
+    # target (docs/signal-chain.md § stage 10). It is never used in azimuth mode.
+    scan_mode = (not interf_mode) and (
+        (bool(ctl) and not args.range_only) or (args.selftest and not args.st_range_only))
     radar = ScanningRadar(sector=args.sector) if scan_mode else None
     if radar:
         n_beams = int(round(args.sector / args.step)) + 1
         beams = list(np.linspace(-args.sector / 2, args.sector / 2, n_beams))
-        print(f"# scanning {len(beams)} beams, {args.step:.0f} deg step, "
-              f"{n} chirps/dwell", file=sys.stderr)
+        print(f"# LEGACY beam scan: {len(beams)} beams, {args.step:.0f} deg step, "
+              f"{n} chirps/dwell. Use --interferometer for a moving target.",
+              file=sys.stderr)
 
     try:
         while True:
-            if not scan_mode:
-                beat, sync = src.read()
-                if beat is None:
+            # ---------- azimuth from two receivers ----------
+            if interf_mode:
+                beats, sync = src.read()
+                if beats is None:
                     break
-                cube, timing = segment_chirps(beat, sync, fs, n)
+                if args.switched:
+                    cube, timing, edges = segment_chirps(beats[0], sync, fs, n,
+                                                         return_edges=True)
+                    if cube is None:
+                        print("# no sync", file=sys.stderr); time.sleep(0.2); continue
+                    parity = interf.tdm_parity(edges)
+                    if parity is None:
+                        print("# switched mode: no frame marker in the sync. The "
+                              "antennas cannot be told apart and every bearing "
+                              "would be sign-flipped. Flash radar_ctl with SWMODE 1.",
+                              file=sys.stderr)
+                        if args.selftest and args.once:
+                            return []
+                        time.sleep(0.2); continue
+                    ca, cb = interf.tdm_split(cube, parity)
+                    t_up, pri = timing
+                    spec = fmcw_sim.RadarSpec(f0=f0, bw=bw, t_chirp=t_up, fs=fs,
+                                              n_chirps=ca.shape[0])
+                    rds = []
+                    for c in (ca, cb):
+                        rd, ranges, vels = fmcw_sim.range_doppler(
+                            c.astype(complex), spec, bg_subtract=True, complex_out=True)
+                        rds.append(rd)
+                    vels = vels * (t_up / (2 * pri))    # every other chirp -> 2x PRI
+                    vmax = interf.switched_v_max(pri, I.lam)
+                    dets = cfar_detect(20 * np.log10(np.abs(rds[0]) + 1e-15), ranges,
+                                       vels, min_range=1.5, max_range=30.0,
+                                       thresh_db=args.thresh)
+                else:
+                    _, timing, rds, ranges, vels, dets = _maps(
+                        beats, sync, fs, n, None, f0, bw, args.thresh)
+                    if rds is None:
+                        print("# no sync", file=sys.stderr); time.sleep(0.2); continue
+                    t_up, pri = timing
+
+                if not dets:
+                    print(json.dumps({"t": round(time.time(), 2), "fix": None}), flush=True)
+                    if args.selftest and args.once:
+                        return []
+                    continue
+
+                if args.calibrate:
+                    best = max(dets, key=lambda d: d[3])
+                    vi, ri = interf.cell_of(ranges, vels, best[0], best[1])
+                    cal = I.calibrate(rds[0], rds[1], vi, ri,
+                                      true_az_deg=args.cal_az,
+                                      v_mps=(best[1] if args.switched else None),
+                                      pri_s=(pri if args.switched else None))
+                    print(f"# CALIBRATED on the target at {best[0]:.2f} m, assumed "
+                          f"{args.cal_az:+.1f} deg: offset {math.degrees(cal):+.2f} deg "
+                          f"({math.degrees(cal)/I.bearing_error_per_mm_coax()*I.deg_bearing_per_deg_phase:.1f}"
+                          f" mm equivalent)", file=sys.stderr)
+                    if args.cal_file:
+                        I.save(args.cal_file)
+                        print(f"# written to {args.cal_file}", file=sys.stderr)
+                    args.calibrate = False
+                    if args.once:
+                        return [dict(range=best[0], vel=best[1], snr=best[2],
+                                     az=args.cal_az, cal_deg=math.degrees(cal),
+                                     x=best[0], y=0.0, beams=1)]
+
+                recs = interf.add_bearings(dets, rds[0], rds[1], ranges, vels, I,
+                                           v_mps_for_tdm=args.switched, pri_s=pri)
+                # The fix is the STRONGEST return, full stop. If that one has
+                # no trustworthy bearing then there is no fix: promoting a
+                # weaker sidelobe that happens to have a bearing would be
+                # inventing an answer.
+                best = max(recs, key=lambda r: r["level"]) if recs else None
+                refused = best["az_reason"] if (best and best["az"] is None) else None
+                if refused:
+                    best = None
+                out = {"t": round(time.time(), 2),
+                       "t_chirp_ms": round(t_up * 1e3, 3), "pri_ms": round(pri * 1e3, 3),
+                       "mode": "switched" if args.switched else "interferometer",
+                       **({"v_unambiguous": round(vmax, 2)} if args.switched else {}),
+                       "dets": [{"range": round(r["range"], 2), "vel": round(r["vel"], 2),
+                                 "az": (None if r["az"] is None else round(r["az"], 2)),
+                                 "snr": round(r["snr"], 1), "q": round(r["quality"], 2),
+                                 **({"no_az": r["az_reason"]} if r["az"] is None else {})}
+                                for r in recs[:5]],
+                       **({"no_fix": refused} if refused else {}),
+                       "fix": (None if best is None else
+                               {"range": round(best["range"], 2), "az": round(best["az"], 2),
+                                "vel": round(best["vel"], 2), "snr": round(best["snr"], 1),
+                                "x": round(best["x"], 2), "y": round(best["y"], 2),
+                                "beams": 1})}
+                print(json.dumps(out), flush=True)
+                if best and args.server:
+                    post_fix(args.server, {"x": best["x"], "y": best["y"],
+                                           "range": best["range"], "az": best["az"],
+                                           "vel": best["vel"], "snr": best["snr"],
+                                           "beams": 1, "t": time.time()})
+                if args.selftest and args.once:
+                    if out["fix"]:
+                        return [out["fix"]]
+                    return [{"refused": refused}] if refused else []
+                continue
+
+            # ---------- stage 1: range and velocity ----------
+            if not scan_mode:
+                beats, sync = src.read()
+                if beats is None:
+                    break
+                cube, timing = segment_chirps(beats[0], sync, fs, n)
                 if cube is None:
                     print("# no sync: check the R channel / SWEEP 1", file=sys.stderr)
                     time.sleep(0.2); continue
@@ -337,16 +592,17 @@ def run(args):
                                  x=d[0], y=0.0) for d in dets[:1]]
                 continue
 
+            # ---------- legacy beam scan ----------
             per_beam = []
             for b in beams:
                 if ctl:
                     ctl.az(b)
                 else:
                     src.beam_az = b
-                beat, sync = src.read()
-                if beat is None:
+                beats, sync = src.read()
+                if beats is None:
                     return
-                cube, timing = segment_chirps(beat, sync, fs, n)
+                cube, timing = segment_chirps(beats[0], sync, fs, n)
                 if cube is None:
                     print(f"# beam {b:+.0f}: no sync", file=sys.stderr)
                     continue
@@ -354,7 +610,7 @@ def run(args):
                 radar.spec = spec
                 per_beam.append((b, dets))
             fixes = radar.centroid(per_beam)
-            out = {"t": round(time.time(), 2), "beams": len(per_beam),
+            out = {"t": round(time.time(), 2), "beams": len(per_beam), "mode": "legacy-scan",
                    "fix": ({k: round(v, 2) if isinstance(v, float) else v
                             for k, v in fixes[0].items()} if fixes else None)}
             print(json.dumps(out), flush=True)
@@ -387,7 +643,28 @@ def main():
                     help="sweep start; overridden by radar_ctl status when --ctl is given")
     ap.add_argument("--bw-mhz", type=float, default=80.0,
                     help="sweep width; 40 with --f0-mhz 2440 for WiFi-channel-1 coexistence")
-    ap.add_argument("--ctl", help="radar_ctl serial port -> scanning mode")
+    ap.add_argument("--ctl", help="radar_ctl serial port (sweep on/off; also the optional turntable)")
+    # ---- azimuth ----
+    g = ap.add_argument_group("azimuth (stage 2)")
+    g.add_argument("--interferometer", action="store_true",
+                   help="AZIMUTH from two receivers. Needs 3 audio channels: "
+                        "beat A, beat B, sync, on ONE sample clock")
+    g.add_argument("--switched", action="store_true",
+                   help="azimuth on one chain with an RF switch alternating "
+                        "antennas chirp by chirp; motion-corrected")
+    g.add_argument("--baseline", type=float, default=interf.DEFAULT_BASELINE_M,
+                   help="receive antenna spacing in metres (default 0.1931, "
+                        "two rotated horns touching)")
+    g.add_argument("--calibrate", action="store_true",
+                   help="measure the fixed chain phase offset from the strongest "
+                        "target, assumed to be at --cal-az, then continue")
+    g.add_argument("--cal-az", type=float, default=0.0,
+                   help="true bearing of the calibration reflector (default boresight)")
+    g.add_argument("--cal-file", default="interferometer_cal.json",
+                   help="where the calibration constant is stored and reloaded")
+    g.add_argument("--st-cal-deg", type=float, default=0.0,
+                   help="selftest only: inject this much chain phase offset, to "
+                        "prove --calibrate removes it")
     ap.add_argument("--sector", type=float, default=90.0)
     ap.add_argument("--step", type=float, default=12.0, help="beam step deg (3x oversample)")
     ap.add_argument("--server", help="console URL, e.g. http://localhost:8080")
@@ -411,6 +688,16 @@ def main():
                   "clutter (bg_subtract) -- a real hover still shows rotor "
                   "micro-Doppler and body jitter; use --st-vel != 0", file=sys.stderr)
         fixes = run(args)
+        if fixes and "refused" in fixes[0]:
+            why = fixes[0]["refused"]
+            vmax = interf.switched_v_max(args.t_chirp_ms / 1000.0 + 1e-3,
+                                         interf.wavelength(args.f0_mhz * 1e6,
+                                                           args.bw_mhz * 1e6))
+            expected = args.switched and why == "velocity-fold" and abs(args.st_vel) > 0.8 * vmax
+            print(f"SELFTEST {'PASS (correct refusal: ' + why + ')' if expected else 'FAIL (refused: ' + why + ')'}"
+                  f": switched mode folds above +/-{vmax:.2f} m/s and the target "
+                  f"is at {args.st_vel:+.2f}")
+            sys.exit(0 if expected else 1)
         if not fixes:
             print("SELFTEST FAIL: no fix"); sys.exit(1)
         f = fixes[0]
@@ -422,6 +709,16 @@ def main():
         edge = abs(args.st_az) > args.sector / 2 - args.step
         if args.st_range_only:
             ea, edge = 0.0, False          # stage 1 has no azimuth to check
+        if args.interferometer or args.switched:
+            # a phase interferometer is held to the real budget, not the
+            # 4 deg the beam-scan centroid needed
+            ok = er < 0.5 and ea < 2.5
+            tag = "PASS" if ok else "FAIL"
+            print(f"SELFTEST {tag} [{'switched' if args.switched else 'interferometer'}]: "
+                  f"range {f['range']:.2f} m (mid-dwell truth {r_true:.2f}), "
+                  f"az {f['az']:.2f} deg (true {args.st_az}, error {ea:.2f}), "
+                  f"vel {f['vel']:.2f} m/s (true {args.st_vel})")
+            sys.exit(0 if ok else 1)
         ok = er < 0.5 and (ea < 4.0 or (edge and ea < 8.0))
         tag = "PASS" if ok else "FAIL"
         if ok and edge and ea >= 4.0:

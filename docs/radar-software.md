@@ -284,19 +284,73 @@ side needs nothing new (`AZ` is enough).
 
 ---
 
-## 9. Stage 2 — azimuth from two receivers (not written yet)
+## 9. Stage 2 — azimuth from two receivers
 
-This is how azimuth is measured. It replaces the beam-scan centroid in §5,
-which cannot work on a moving drone. Measured performance, the parts and the
-calibration procedure: [`azimuth.md`](azimuth.md).
+**Written and tested.** `ground_station/interferometer.py` is the engine and
+`radar_acquire.py --interferometer` runs it. Measured performance, the parts
+and the calibration procedure are in [`azimuth.md`](azimuth.md).
 
-With two receive channels at 193 mm spacing, the angle off boresight is
-`θ = asin( Δφ · λ / (2π · d) )` from the phase difference between the two
-range FFTs at the detected bin; ±18.5° unambiguous, which covers the 17°
-half-beam. To add it: capture 3 channels (beat 1, beat 2, sync) from a
-4-input interface, run `segment_chirps` on both beats against the one sync,
-take `range_doppler` of each, and at each CFAR detection read
-`angle(rd1[bin]) − angle(rd2[bin])`. Keep the range-Doppler map **complex** for this; `range_doppler` currently
-returns dB. Calibrate the fixed cable-length phase offset once against a
-reflector on boresight: 1 mm of coax is 3 deg of phase and 0.3 deg of bearing. Everything else (centroid,
-console, tracker) already accepts a `z`.
+```
+# stage 2, two receive chains, three audio channels (beat A, beat B, sync)
+python radar_acquire.py --interferometer --ctl /dev/ttyUSB0 --f0-mhz 2440 --bw-mhz 40
+
+# one chain and an RF switch instead (SWMODE 1 on the ESP32 first)
+python radar_acquire.py --switched --ctl /dev/ttyUSB0 --f0-mhz 2440 --bw-mhz 40
+
+# calibrate once, against a corner reflector on boresight
+python radar_acquire.py --interferometer --calibrate --cal-az 0 --ctl /dev/ttyUSB0
+# -> writes interferometer_cal.json, reloaded automatically from then on
+
+# no hardware at all
+python radar_acquire.py --selftest --interferometer --st-az -8 --st-vel -1.8
+python test_radar.py                       # the whole suite, 34 cases
+```
+
+What it does, per block: cut **both** beat channels on the **one** sync so
+their cells line up, take the complex range–Doppler of each, and at every CFAR
+detection read `angle(rd_B · conj(rd_A)) − cal`, then
+`az = asin(Δφ·λ / 2π d)`.
+
+Three things it refuses to answer rather than guess, reported as `no_az`:
+
+| reason | when |
+|---|---|
+| `ambiguous` | the phase fell outside the ±18.4° cone |
+| `low-quality` | one channel is far weaker at that cell, so one of them is measuring noise |
+| `velocity-fold` | switched mode only, target reported near its ±2.06 m/s fold |
+
+And the fix is always the **strongest** return. If that one has no trustworthy
+bearing the block reports `"fix": null` with `no_fix`, rather than promoting a
+weaker sidelobe that happens to have a bearing.
+
+### Calibration
+
+One constant, in radians, in `interferometer_cal.json`. Point at a reflector
+whose bearing you know, run `--calibrate`, and the fixed offset of chain B
+relative to chain A is measured and stored. 1 mm of extra coax is **4.3°** of
+phase and **0.43°** of bearing — the wave sees the 84.7 mm wavelength inside
+PTFE, not the 121.9 mm one in air — so about 6 mm of unmatched cable spends
+the whole 2.5° budget. Re-check `cal` after anything is unplugged.
+
+### Switched mode needs a frame marker, and this is not optional
+
+A block of audio starts at an arbitrary point in the A/B alternation, so which
+antenna a chirp came from is **not recoverable from the data**. Get it backwards
+and every bearing comes out negated. `radar_ctl`'s `SWMODE 1` therefore skips
+one chirp per block — SYNC stays low for a whole extra PRI — and restarts the
+alternation on antenna A. `interferometer.tdm_parity()` finds that doubled gap.
+Without it the software refuses to report bearings at all rather than risk the
+sign.
+
+### The one limit that is not fixable in software
+
+Switched mode uses every other chirp, so its unambiguous velocity is **half**
+the simultaneous figure: ±2.06 m/s at a 7.4 ms PRI, against ±4.12 m/s. Past
+that the velocity folds, and because the motion correction is computed *from*
+the velocity, a folded target reports a bearing that can be a whole beamwidth
+out. The guard catches targets *reported* near the fold; it cannot catch one
+that folded to a small apparent velocity, and no processing of two alternating
+sub-cubes can, because the alternation puts a second Doppler line half a span
+away whatever the true velocity is. This is the strongest argument for building
+the simultaneous version.
+

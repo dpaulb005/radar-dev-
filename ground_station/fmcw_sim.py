@@ -257,8 +257,13 @@ def simulate(s: RadarSpec, targets, seed=0, leakage=True):
     return cube
 
 
-def range_doppler(cube, s: RadarSpec, bg_subtract=False):
-    """Range FFT then Doppler FFT. Returns (rd_db, range_axis, vel_axis)."""
+def range_doppler(cube, s: RadarSpec, bg_subtract=False, complex_out=False):
+    """Range FFT then Doppler FFT. Returns (rd, range_axis, vel_axis).
+
+    rd is magnitude in dB by default. Pass complex_out=True for the raw complex
+    map, which is what an interferometer needs: the bearing lives in the phase
+    between two receivers at the same cell (see interferometer.py).
+    """
     c = cube.copy()
     if bg_subtract:
         c -= c.mean(axis=0, keepdims=True)     # kill static leakage + clutter
@@ -270,12 +275,13 @@ def range_doppler(cube, s: RadarSpec, bg_subtract=False):
     rng_fft = np.fft.fft(c * win_r, axis=1)[:, :n_half]
     win_d = np.hanning(c.shape[0])[:, None]
     rd = np.fft.fftshift(np.fft.fft(rng_fft * win_d, axis=0), axes=0)
-    rd_db = 20 * np.log10(np.abs(rd) + 1e-15)
     n_bins = rng_fft.shape[1]
     freqs = np.arange(n_bins) * s.fs / c.shape[1]
     ranges = s.range_of_beat(freqs)
     vels = np.fft.fftshift(np.fft.fftfreq(c.shape[0], s.t_chirp)) * s.lam / 2
-    return rd_db, ranges, vels
+    if complex_out:
+        return rd, ranges, vels
+    return 20 * np.log10(np.abs(rd) + 1e-15), ranges, vels
 
 
 def leakage_demo(s: RadarSpec):
