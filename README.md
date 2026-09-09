@@ -46,6 +46,8 @@ Schematics: [`hardware/kicad/`](hardware/kicad/) — `radar_flow.kicad_sch` (**s
 
 ## Test
 
+**[`docs/higher-bands.md`](docs/higher-bands.md)** — what moving to 24 or 60 GHz would cost and buy: $60 for a band swap that reuses the whole baseband, $283 for a tracker that ends the project. Kevin's suggestion, costed.
+
 **[`docs/azimuth.md`](docs/azimuth.md)** — how bearing is actually measured: two receivers, one dwell, 0.09° rms. Scanning cannot do it on a moving target.
 
 **[`docs/signal-chain.md`](docs/signal-chain.md)** — what the signal actually is at every point, from the frequency staircase leaving the antenna to the 100-byte fix, with every figure generated from the running code. Read this to understand *how it works*.

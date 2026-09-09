@@ -382,6 +382,18 @@ first if the budget is tight. $53, and nothing else depends on it.
 
 ---
 
+## 9b. Where this goes next — 24 or 60 GHz
+
+Everything downstream of the mixer's IF is band-independent: the video
+amplifier, the reference, the power, the sound card, the whole DSP, the
+interferometer and its tests. Swapping the 2.4 GHz front end for a single
+24 GHz transceiver module costs about **$60**, takes the range cell from 3.75 m
+to 0.60 m, makes Doppler signed, and deletes the WiFi coexistence problem
+outright. Costed against the 60 GHz alternatives in
+[`higher-bands.md`](higher-bands.md). Do it after this one works, not instead.
+
+---
+
 ## 10. Safety and legality (short)
 
 - +10 dBm into a 13 dBi horn is 0.2 W EIRP — under the Part 15 limits for the
