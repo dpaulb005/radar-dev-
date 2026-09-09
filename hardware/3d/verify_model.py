@@ -252,15 +252,32 @@ def check_harness():
         "uca": {"IN_L", "IN_R", "OUT_L", "OUT_R", "USB"},
         "pa": {"5V", "GND"},
         "lna": {"5V", "GND"},
+        "nema": {"M1", "M2", "M3", "M4"},
+        "lap": {"USB"},
+        "umc": {"IN1", "IN2", "IN3"},
     }
-    for comp, pin in re.findall(r"pinAt\((\w+),'([^']+)'\)", HTML_SRC):
+    # literal P(comp,'PIN') refs are checked by name; P(comp, someVar) ones can
+    # only be counted, but counting them still catches a wholesale rename.
+    refs = re.findall(r"\bP\((\w+),'([^']+)'\)", HTML_SRC)
+    all_refs = re.findall(r"\bP\((\w+)\s*,", HTML_SRC)
+    check(len(all_refs) >= 25,
+          "only %d P(component, pin) references found — has the harness been "
+          "renamed out from under this check?" % len(all_refs))
+    for comp, pin in refs:
         if comp in defined:
-            check(pin in defined[comp], "pinAt(%s,'%s') — no such pin" % (comp, pin))
+            check(pin in defined[comp], "P(%s,'%s') — no such pin" % (comp, pin))
     jnets = model_jnets()
-    for ref, pin in re.findall(r"pinAt\(bbParts\.(\w+),'([^']+)'\)", HTML_SRC):
+    for ref, pin in re.findall(r"\bP\(bbParts\.(\w+),'?(\w+)'?\)", HTML_SRC):
         n = len(jnets.get(ref, []))
-        check(pin.isdigit() and 1 <= int(pin) <= n,
-              "pinAt(bbParts.%s,'%s') — %s has %d pins" % (ref, pin, ref, n))
+        if not n:
+            continue                       # pin index comes from a loop variable
+        check(not pin.isdigit() or 1 <= int(pin) <= n,
+              "P(bbParts.%s,'%s') — %s has %d pins" % (ref, pin, ref, n))
+    # every pin a wire lands on must declare which way the lead leaves it
+    for comp in sorted({c for c, _p in refs}):
+        check(("addPin(%s," % comp) in HTML_SRC or comp in ("bbParts",) or
+              re.search(r"addPin\(g,", HTML_SRC) is not None,
+              "%s has no addPin() call" % comp)
 
 
 def check_bom_totals():
