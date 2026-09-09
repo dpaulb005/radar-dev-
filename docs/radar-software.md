@@ -45,6 +45,15 @@ Consequences the software handles for you:
 - Stepped sweeps have a range ambiguity at `c / (2·Δf)` = 114 m with 64
   steps. Irrelevant indoors.
 
+**Known issue, azimuth at 40 MHz.** The coexistence sweep halves the
+bandwidth, which halves how far the target sits from DC (2.7 FFT bins at
+10 m instead of 5.3) and doubles the range cell to 3.75 m. The centroid
+groups detections within 1.5 cells, so its window widened to ±5.6 m and now
+absorbs leakage-sidelobe false alarms at 3-6 m. Measured azimuth error is up
+to 6.3° against a 2.5° budget; `--selftest` fails on it. Range and velocity
+are unaffected. The same test passes at 2400/80. See
+[`signal-chain.md`](signal-chain.md) § stage 10 for the evidence and options.
+
 ---
 
 ## 2. Install (laptop)

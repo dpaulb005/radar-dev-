@@ -46,6 +46,8 @@ Schematics: [`hardware/kicad/`](hardware/kicad/) — `radar_flow.kicad_sch` (**s
 
 ## Test
 
+**[`docs/signal-chain.md`](docs/signal-chain.md)** — what the signal actually is at every point, from the frequency staircase leaving the antenna to the 100-byte fix, with every figure generated from the running code. Read this to understand *how it works*.
+
 **[`docs/testing.md`](docs/testing.md)** — every test in run order: the DSP with no hardware, each breadboard block in ngspice or Multisim (`hardware/spice/`, `hardware/spice/multisim/`), the horns on a NanoVNA, the RF chain by its leakage tone, the walking-person test, the phone-link ping test with the sweep on, and tracking against floor marks.
 
 ```bash
