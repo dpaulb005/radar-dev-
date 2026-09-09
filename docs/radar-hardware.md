@@ -44,7 +44,7 @@ GHz (2360–2395 MHz is licensed aeronautical telemetry — see
 |---|---|---|
 | 1 | horns bolted down | range + radial velocity |
 | 2 | turntable (stepper) | + azimuth → 2-D position |
-| 3 | 2nd RX horn stacked below, 2nd RX chain, 4-in audio interface | + elevation → 3-D |
+| 3 | 2nd RX horn **beside** the first (193 mm, all horns rotated 90°), 2nd RX chain, 4-in audio interface | azimuth from phase, in one dwell — the only version that works on a moving drone ([`azimuth.md`](azimuth.md)) |
 
 ---
 

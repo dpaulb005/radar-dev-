@@ -236,7 +236,10 @@ there sooner rather than for optimising the scan.
 - **If you keep the 40 MHz sweep**, raise the dwell to 160 chirps. It is a
   one-line change and it restores the azimuth budget for a hovering target.
 - **If you reclaim the bandwidth**, nothing else needs changing.
-- **For a moving drone**, neither helps. Stage 3.
+- **For a moving drone**, neither helps. Bearing has to come from one dwell,
+  which means two receivers and the phase between them:
+  [`azimuth.md`](azimuth.md) measures it at 0.09° rms in 0.47 s, against
+  1.5° in 4.3 s for the scan.
 
 ---
 

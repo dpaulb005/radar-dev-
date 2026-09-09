@@ -71,15 +71,21 @@ fallback if the coexistence test in `docs/drone-software.md` §4 fails.
 | 20 | **RadioMaster Bandit Nano** 915 MHz ELRS TX module | 1 | 40 | FCC915 |
 | 21 | **BetaFPV ELRS Nano RX 915 MHz** (0.7 g) or HappyModel ES900RX (0.6 g) | 1 | 17 | same four CRSF pads as the RP1 V2 |
 
-## F. Stage 3 extras (elevation) — ~$225, later
+## F. Stage 3 — azimuth interferometer — ~$215
+
+Bearing from the phase difference between two receivers, in one 0.47 s dwell,
+which is the only way to get it on a *moving* drone. See
+[`../docs/azimuth.md`](../docs/azimuth.md).
 
 | # | item | qty | ~$ | notes |
 |---|---|---|---|---|
-| 22 | second ZX05-43MH-S+ mixer | 1 | 73 | second receive channel |
+| 22 | second ZX05-43MH-S+ mixer | 1 | 73 | second receive channel. Critical path — order first |
 | 23 | second 2-way splitter (LO to both mixers) | 1 | 13 | |
-| 24 | third horn — materials already in B | — | 0 | stacked 193 mm below RX |
-| 25 | **4-input USB audio interface** (Behringer UMC404HD) | 1 | 100 | beat 1, beat 2, sync on one sample clock — two UCA202s cannot do phase |
-| 26 | second TL072 channel (parts in C) | — | 0 | |
+| 24 | second 2400–2500 band-pass filter | 1 | 29 | in front of the second LNA; same part as row 7b |
+| 25 | third horn — materials already in B | — | 0 | **beside** the first RX at 193 mm centres, all three horns rotated 90° |
+| 26 | **4-input USB audio interface** (Behringer UMC404HD) | 1 | 100 | beat A, beat B, sync on one sample clock. Two UCA202s cannot do phase — independent clocks |
+| 27 | second TL072 channel (parts in C) | — | 0 | |
+| 28 | second LNA (SPF5189Z 4-pack, row 3) | — | 0 | |
 
 ## Totals
 
@@ -88,10 +94,11 @@ fallback if the coexistence test in `docs/drone-software.md` §4 fails.
 | Stage 1 (A + B + C) | **~$374** |
 | + Stage 2 (D) | ~$424 |
 | + Drone fallback to 915 MHz (E-fallback) | ~$554 |
-| + Stage 3 (F) | ~$780 |
+| + Stage 3 (F) | ~$770 |
 
-Not needed: SDRs, external LNAs beyond the two, RF switches, any 2.4 GHz
-sniffer boards, a UWB kit.
+Not needed: SDRs, external LNAs beyond the two, any 2.4 GHz sniffer boards,
+a UWB kit. An RF switch is the cheaper single-chain alternative to section F;
+`docs/azimuth.md` explains why it is not the first choice.
 
 ---
 

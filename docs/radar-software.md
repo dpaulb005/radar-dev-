@@ -284,14 +284,21 @@ side needs nothing new (`AZ` is enough).
 
 ---
 
-## 9. Stage 3 — what the software needs (not written yet)
+## 9. Stage 3 — azimuth from two receivers (not written yet)
 
-With two receive channels at 193 mm vertical spacing, elevation is
+The plan below was written for elevation, with the second horn stacked below.
+For **azimuth**, which is what the project needs, put the second horn *beside*
+the first instead and rotate all three horns 90°. The maths is identical; only
+the baseline's orientation changes. Measured performance and the full build
+note: [`azimuth.md`](azimuth.md).
+
+With two receive channels at 193 mm spacing, the angle off boresight is
 `θ = asin( Δφ · λ / (2π · d) )` from the phase difference between the two
 range FFTs at the detected bin; ±18.5° unambiguous, which covers the 17°
 half-beam. To add it: capture 3 channels (beat 1, beat 2, sync) from a
 4-input interface, run `segment_chirps` on both beats against the one sync,
 take `range_doppler` of each, and at each CFAR detection read
-`angle(rd1[bin]) − angle(rd2[bin])`. Calibrate the fixed cable-length phase
-offset once against a known-height target. Everything else (centroid,
+`angle(rd1[bin]) − angle(rd2[bin])`. Keep the range-Doppler map **complex** for this; `range_doppler` currently
+returns dB. Calibrate the fixed cable-length phase offset once against a
+reflector on boresight: 1 mm of coax is 3 deg of phase and 0.3 deg of bearing. Everything else (centroid,
 console, tracker) already accepts a `z`.

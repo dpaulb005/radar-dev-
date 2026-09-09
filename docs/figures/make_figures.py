@@ -400,6 +400,69 @@ def fig_scan_budget():
 
 
 # ======================================================================
+# 8 — the alternative: bearing from two receivers in one dwell
+# ======================================================================
+def fig_interferometer():
+    """Reads interferometer.json, written by interferometer.py."""
+    import json as _json
+    f = HERE / "interferometer.json"
+    if not f.exists():
+        print("skip 08: run interferometer.py first")
+        return
+    D = _json.loads(f.read_text())
+    fig, ax = plt.subplots(1, 3, figsize=(11.5, 3.5))
+
+    # -- accuracy across the beam --------------------------------------
+    acc = D["accuracy"]
+    t = np.array([r["truth"] for r in acc], float)
+    e = np.array([r["err"] for r in acc], float)
+    sp = np.array([r["spread"] for r in acc], float)
+    ax[0].axhspan(-2.5, 2.5, color=GRN, alpha=0.12)
+    ax[0].axhline(2.7, color=ACC, ls="--", lw=1.3)
+    ax[0].axhline(-2.7, color=ACC, ls="--", lw=1.3)
+    ax[0].errorbar(t, e, yerr=sp, fmt="o-", color=GRN, lw=1.5, ms=4, capsize=2)
+    ax[0].axhline(0, color=GREY, lw=0.9)
+    ax[0].set_ylim(-3.4, 3.4)
+    ax[0].set_xlabel("true azimuth, degrees")
+    ax[0].set_ylabel("bearing error, degrees")
+    ax[0].set_title("8 · Two receivers, ONE dwell")
+    ax[0].annotate("scanning, 9 beams × 64 (4.3 s)", (-15.5, 2.85), color=ACC, fontsize=8)
+    ax[0].annotate(f"interferometer, 0.47 s:\nrms {np.sqrt(np.mean(e**2)):.2f}°, "
+                   f"worst {np.max(np.abs(e)):.2f}°", (-15.5, -2.9), color=GRN, fontsize=8.5)
+    ax[0].annotate(f"unambiguous to ±{D['unambiguous_deg']:.1f}°\non a {D['baseline']*1000:.0f} mm baseline",
+                   (0.52, 0.60), xycoords="axes fraction", color=GREY, fontsize=8)
+
+    # -- how far out it keeps working ----------------------------------
+    sn = D["vs_snr"]
+    x = np.array([r["rcs_db"] for r in sn], float)
+    y = np.array([r["rms"] for r in sn], float)
+    rng_equiv = TARGET_R * 10 ** (-x / 40.0)          # R^4: -10 dB of echo = 1.78x range
+    ax[1].semilogy(rng_equiv, np.maximum(y, 0.02), "o-", color=GRN, lw=1.5, ms=5)
+    ax[1].axhline(2.5, color=ACC, ls="--", lw=1.2)
+    ax[1].set_xlabel("equivalent range for the same echo, metres")
+    ax[1].set_ylabel("bearing rms, degrees")
+    ax[1].set_title("holds until detection itself fails")
+    ax[1].annotate("2.5° budget", (11, 3.2), color=ACC, fontsize=8)
+    ax[1].annotate("the cliff is the CFAR losing\nthe target, not the phase\nmeasurement degrading",
+                   (0.05, 0.55), xycoords="axes fraction", color=GREY, fontsize=8)
+
+    # -- the one thing you must control --------------------------------
+    cal = D["vs_cal"]
+    mm = np.array([r["mm"] for r in cal], float)
+    cy = np.array([r["rms"] for r in cal], float)
+    ax[2].plot(mm, cy, "o-", color=BLU, lw=1.6, ms=5)
+    ax[2].axhline(2.5, color=ACC, ls="--", lw=1.2)
+    ax[2].set_xlabel("uncorrected cable-length mismatch, mm")
+    ax[2].set_ylabel("bearing rms, degrees")
+    ax[2].set_title("calibration is the real requirement")
+    ax[2].annotate("2.5° budget", (13.5, 2.8), color=ACC, fontsize=8)
+    ax[2].annotate("1 mm of coax = 3° of phase\n= 0.3° of bearing.\n"
+                   "Match the cables, or measure\nthe offset once against a\nreflector on boresight.",
+                   (0.05, 0.50), xycoords="axes fraction", color=GREY, fontsize=8)
+    save(fig, "08-interferometer.png")
+
+
+# ======================================================================
 if __name__ == "__main__":
     fig_chirp()
     beat, sync = make_audio()
@@ -413,6 +476,7 @@ if __name__ == "__main__":
     fig_range_doppler(cube, timing, dets)
     t_az, a40, a80 = fig_azimuth()
     fig_scan_budget()
+    fig_interferometer()
 
     print("\n--- numbers used in the doc -------------------------------")
     print(f"audio recorded      : {len(beat)} samples = {len(beat)/FS*1e3:.0f} ms per block")
