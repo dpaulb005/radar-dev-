@@ -3,25 +3,24 @@
 `radar-bench.html` is a self-contained Three.js page (open it in a browser;
 it loads three.js r128 from cdnjs). It shows every row of `hardware/BOM.md`
 as an object on a plywood bench, the 830-point breadboard wired hole by hole,
-the three build stages, and the drone 3 m out in the room.
+the two build stages and the optional turntable, and the drone 3 m out in the room.
 
-- Buttons: stage 1 / 2 / 3, Bench / Breadboard / Room views, labels, coax, wiring.
+- Buttons: stage 1 / 2, the optional turntable, Bench / Breadboard / Room views, labels, coax, wiring.
 - The BOM panel on the right: click a row → the camera flies to the part and
   it pulses; hover any object for its name; click an object → its BOM row.
 - Rows marked *consumable* / *tool* (solder, flux, snips) are listed but not
   modelled. The copper sheet **is** the horns; the SMA flange (B9) and the
   brass probe (B10) are separately clickable on every horn.
-
 ## The RF chain
 
 Laid out in two rows, as in `radar-hardware.md` §3 — transmit (ADF4351 → pad →
 PA → splitter) across the back, receive (band-pass → LNA → mixer) in front of
 it — with every SMA on one centre-line, so each coax jumper leaves both
-connectors along its own axis. Each horn is carried by a mast that grips the
-**waveguide** in a saddle clamp, well behind the flare; the mast top sits
-flush with the guide's underside. In stages 2–3 the horn feeds hand over to
-the turntable through a service loop at the rotation axis, so the cabling
-stays attached as the yoke sweeps.
+connectors along its own axis. Each horn is gripped by a saddle clamp on the
+**waveguide**, well behind the flare, standing on the frame's cross beam, with
+the beam's top face flush to the guide's underside. Every horn feed hands over
+near the rotation axis, so the cabling stays attached if the optional turntable
+turns the frame.
 
 ## The breadboard is the real one
 
@@ -40,18 +39,29 @@ RCA inputs. Hover any pin for its net.
 
 ## Stages
 
-| stage | what the model shows |
-|---|---|
-| 1 | fixed horn pair, 290 mm centres, on two masts |
-| 2 | the pair on the turntable — the stepper, the lazy susan, the yoke |
-| 3 | **azimuth interferometer**: all three horns rolled 90° so the 193.1 mm side is horizontal, two receivers touching at a 193 mm baseline, and the second receive chain (band-pass 2 → LNA 2 → mixer 2) feeding the UMC404HD |
+The model is one **three-horn frame** (`radar-hardware.md` §7), not three
+different rigs. All three horns are rolled 90° so the 193.1 mm side is
+horizontal; TX sits centred 290 mm above the receive row, which keeps the
+leakage path equal into both receivers.
 
-Stage 3 follows [`../../docs/azimuth.md`](../../docs/azimuth.md): side by side
-*unrolled* the phase centres would be 263.8 mm apart, past the 209 mm ambiguity
-limit, so the roll is what makes the baseline legal.
+| button | what the model shows |
+|---|---|
+| 1 · TX + RX A | the frame with two horns fitted and the RX B position built and left empty — range and radial velocity |
+| 2 · + RX B → azimuth | RX B and its receive chain added (band-pass 2 → LNA 2 → mixer 2 into the UMC404HD) — azimuth from phase in one dwell |
+| Turntable | optional at either stage: NEMA-17, lazy susan, and the service loops that let the whole frame turn |
+
+The roll is what makes the baseline legal, per
+[`../../docs/azimuth.md`](../../docs/azimuth.md): side by side *unrolled* the
+phase centres would be 263.8 mm apart, past the 209 mm ambiguity limit, and the
+bearing would wrap at ±13.4° — inside the 17° half-beam. Rolled, the horns
+touch at 193 mm and stay unambiguous to ±18.4°.
+
+Both receive runs leave their feeds the same way and take the same path to the
+board, because 1 mm of extra coax on one channel is 4.3° of phase and about
+0.3° of bearing error.
 
 Screenshots: `radar-bench-bench.png`, `radar-bench-breadboard.png`,
-`radar-bench-stage3.png`, `radar-bench-room.png`.
+`radar-bench-stage2.png`, `radar-bench-room.png`.
 
 The electrical reference is `hardware/kicad/radar_breadboard.kicad_sch`; the
 printable build sheet, with the same holes, is `hardware/breadboard/`.

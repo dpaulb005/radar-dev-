@@ -68,9 +68,9 @@
   <section id="vp">
     <canvas id="cv"></canvas>
     <div id="hud">
-      <div class="grpwrap"><button class="grp on" data-stage="1">1 · fixed pair</button><button class="grp" data-stage="2">2 · turntable</button><button class="grp" data-stage="3">3 · two RX · azimuth</button></div>
+      <div class="grpwrap"><button class="grp on" data-stage="1">1 · TX + RX A</button><button class="grp" data-stage="2">2 · + RX B → azimuth</button></div>
       <button id="b-bench" class="on">Bench</button><button id="b-bb">Breadboard</button><button id="b-room">Room + drone</button>
-      <button id="b-labels" class="on">Labels</button><button id="b-coax" class="on">Coax</button><button id="b-wires" class="on">Wiring</button>
+      <button id="b-turn">Turntable</button><button id="b-labels" class="on">Labels</button><button id="b-coax" class="on">Coax</button><button id="b-wires" class="on">Wiring</button>
     </div>
     <div id="tip"></div>
     <div id="status"></div>
@@ -304,7 +304,7 @@ function horn(tintMat){
   g.userData.feed=p; g.userData.flange=fl; g.userData.probe=probe;
   return g;
 }
-const HY=0.30, HX=0.145, HZ=-0.135, ZCLAMP=-0.045, GUIDE_BOT=HY-GH;
+const HZ=-0.135, ZCLAMP=-0.045;   // horn throat plane, and where the saddle grips
 
 function saddle(hw){
   const g=new THREE.Group();
@@ -315,34 +315,29 @@ function saddle(hw){
   });
   return g;
 }
-function mast(topY,baseY){
-  const g=new THREE.Group(), h=topY-baseY;
-  g.add(at(box(0.046,0.004,0.046,M.alu),0,baseY+0.002,0));
-  [[-0.016,-0.016],[0.016,-0.016],[-0.016,0.016],[0.016,0.016]].forEach(([bx,bz])=>
-    g.add(at(cyl(0.0018,0.0024,M.sma,6),bx,baseY+0.0048,bz)));
-  g.add(at(box(0.018,h,0.018,M.alu),0,baseY+h/2,0));
-  [[0.0091,0],[-0.0091,0],[0,0.0091],[0,-0.0091]].forEach(([gx,gz])=>
-    g.add(at(box(gx?0.0007:0.007,h-0.006,gz?0.0007:0.007,M.aluDark),gx,baseY+h/2,gz)));
-  return g;
-}
-
-const stage1=new THREE.Group(), stage23=new THREE.Group(); bench.add(stage1,stage23);
-const h1tx=horn(M.dark), h1rx=horn(M.dark);
-h1tx.children[3].material=mat({color:0xc2622a,metalness:.35,roughness:.5});
-[[h1tx,-HX],[h1rx,HX]].forEach(([h,x])=>{ h.position.set(x,HY,HZ); h.rotation.y=Math.PI; stage1.add(h); });
-[-HX,HX].forEach(x=>{
-  const m=mast(GUIDE_BOT,TOP); m.position.set(x,0,ZCLAMP); stage1.add(m); reg('D17',m,'horn mast — M3 hardware, L-brackets');
-  const s=saddle(GW); s.position.set(x,GUIDE_BOT,ZCLAMP); stage1.add(s); reg('D17',s,'saddle clamp — holds the waveguide');
-});
-reg('B8',h1tx,'TX horn — 0.021" copper, 264 × 193 mm mouth','rf'); reg('B8',h1rx,'RX horn — same, E-plane vertical','dsp');
-[h1tx,h1rx].forEach(h=>{ reg('B9',h.userData.flange,'SMA 4-hole flange — the horn feed','rf'); reg('B10',h.userData.probe,'brass probe, 28 mm into the guide','rf'); });
-addLabel(h1tx,'TX horn','rf',new THREE.Vector3(0,AH+.03,0),true); addLabel(h1rx,'RX horn','dsp',new THREE.Vector3(0,AH+.03,0),true);
-const scrG=new THREE.Group(); scrG.position.set(0,0,ZCLAMP+0.012); stage1.add(scrG);
-scrG.add(at(box(0.002,0.115,0.088,M.aluDark),0,HY,0));
-scrG.add(at(box(0.006,HY-GH-TOP,0.006,M.dark),0,TOP+(HY-GH-TOP)/2,0));
-scrG.add(at(box(0.030,0.003,0.030,M.alu),0,TOP+0.0015,0));
-reg('D17',scrG,'foil-on-card isolation screen between the horns');
-
+// =====================================================================
+// the three-horn frame (docs/radar-hardware.md 7)
+//
+//        +-----------+      TX centred above, 290 mm centre to centre down to
+//        |    TX     |      the RX row: the same isolation as the old
+//        +-----------+      side-by-side spacing, and symmetric to both
+//              |            receivers so the leakage path into each is equal.
+//           290 mm
+//              |
+//  +-----------+-----------+
+//  |   RX A    |   RX B    |  touching, centres 193 mm apart - the baseline
+//  +-----------+-----------+
+//   stage 1     stage 2
+//
+// All three horns are rolled 90 deg: b1 (193.1) horizontal, a1 (263.8) vertical.
+// Un-rolled the receivers would sit 263.8 mm apart, past the 209 mm ambiguity
+// limit, and the bearing would wrap at +/-13.4 deg inside the 17 deg half-beam.
+// Stage 1 populates TX and RX A; the RX B position is built and left empty, so
+// azimuth is a bolt-on rather than a rebuild.
+const D_BASE=0.1931;                    // RX A to RX B centres: the baseline
+const RXY=0.300, TXY=RXY+0.290;         // horn centres above the frame base
+const UPX=0.213;                        // uprights, just outboard of the RX pair
+const BEAM_RX=RXY-GW-0.010, BEAM_TX=TXY-GW-0.010;
 // --- NEMA-17: 42.3 mm chamfered stack, end caps, tie bolts, boss and D-shaft
 function nema17(){
   const g=new THREE.Group(); const S=0.0423, CH=0.005, LEN=0.040;
@@ -363,56 +358,65 @@ function nema17(){
   g.userData.cableExit=exit;
   return g;
 }
-const nema=nema17(); nema.position.set(0,TOP+0.0212,ZCLAMP); nema.rotation.y=Math.PI/2; stage23.add(nema);
-reg('D18a',nema,'NEMA-17 stepper — 42.3 mm, 1.8°/step','ok'); addLabel(nema,'NEMA-17','ok');
-const susan=cyl(0.075,0.008,M.alu,44); susan.position.set(0,TOP+0.056,ZCLAMP); stage23.add(susan);
+
+const turnG=new THREE.Group(); bench.add(turnG);      // the optional turntable
+const rotG=new THREE.Group(); bench.add(rotG);        // the frame; turns with it
+const nema=nema17(); nema.position.set(0,TOP+0.0212,ZCLAMP); nema.rotation.y=Math.PI/2; turnG.add(nema);
+reg('D18a',nema,'NEMA-17 stepper - 42.3 mm, 1.8 deg/step','ok'); addLabel(nema,'NEMA-17','ok');
+const susan=cyl(0.075,0.008,M.alu,44); susan.position.set(0,TOP+0.056,ZCLAMP); turnG.add(susan);
 susan.add(at(cyl(0.070,0.0035,M.aluDark,44),0,0,0));
 reg('D18b',susan,'lazy-susan bearing 150 mm','ok');
+const pedestal=box(0.17,0.010,0.11,M.aluDark); pedestal.position.set(0,TOP+0.005,ZCLAMP); bench.add(pedestal);
+reg('D17',pedestal,'fixed frame base (no turntable)');
 
-const rotG=new THREE.Group(); rotG.position.set(0,TOP+0.060,ZCLAMP); stage23.add(rotG);
-const plate=cyl(0.055,0.006,M.wood,40); plate.position.y=0.003; rotG.add(plate);
-const YH=HY-rotG.position.y, YOKE=YH-GH-0.010, mastH=YOKE-0.012;
-rotG.add(at(box(0.020,mastH,0.020,M.aluDark),0,0.006+mastH/2,0));
-// The yoke carries the horns; it widens for the three-horn azimuth build.
-const yoke=box(1.0,0.012,0.032,M.alu); yoke.position.set(0,YOKE,0); rotG.add(yoke);
-reg('D17',yoke,'horn yoke — carries the horns on the turntable');
-const YOKE_TOP=YH-GH;            // waveguide underside; the same whatever the roll
-const D_BASE=0.1931;             // interferometer baseline = the horn's b1 dimension
+// the frame: two uprights, a cross beam under each horn row, diagonal braces
+const plate=cyl(0.090,0.006,M.wood,40); plate.position.y=0.003; rotG.add(plate);
+[-1,1].forEach(s=>{
+  rotG.add(at(box(0.030,0.006,0.050,M.alu),s*UPX,0.003,0));
+  rotG.add(at(box(0.018,BEAM_TX+0.006,0.018,M.alu),s*UPX,(BEAM_TX+0.006)/2,0));
+  [[0.0091,0],[-0.0091,0],[0,0.0091],[0,-0.0091]].forEach(([gx,gz])=>
+    rotG.add(at(box(gx?0.0007:0.007,BEAM_TX-0.004,gz?0.0007:0.007,M.aluDark),
+              s*UPX+gx,(BEAM_TX+0.006)/2,gz)));
+  rotG.add(strut(new THREE.Vector3(s*UPX,BEAM_RX-0.02,0),
+                 new THREE.Vector3(s*(UPX-0.085),0.014,0),0.005,M.aluDark,6));
+});
+const beamRX=box(2*UPX+0.018,0.012,0.032,M.alu); beamRX.position.set(0,BEAM_RX,0); rotG.add(beamRX);
+const beamTX=box(2*UPX+0.018,0.012,0.032,M.alu); beamTX.position.set(0,BEAM_TX,0); rotG.add(beamTX);
+reg('D17',beamRX,'frame cross beam - carries RX A and RX B');
+reg('D17',beamTX,'frame cross beam - carries TX, 290 mm above the RX row');
 
-// Each horn hangs in a mount that can roll it 90° about its own axis. Stage 2 keeps the
-// pair upright and scans. Stage 3 rolls all three so the 193.1 mm side is horizontal,
-// which is what lets two receivers touch and still sit at a 193 mm baseline — 209 mm is
-// the ambiguity limit, and side by side unrolled they would be 263.8 mm (docs/azimuth.md).
-function hornMount(h){
-  const g=new THREE.Group();
-  const roll=new THREE.Group(); roll.add(h);
+// a horn in its mount: rolled 90 deg, gripped by a saddle standing on the beam
+function hornMount(h,x,y){
+  const g=new THREE.Group(); g.position.set(x,y,0);
+  const roll=new THREE.Group(); roll.rotation.z=Math.PI/2; roll.add(h);
   h.position.set(0,0,HZ-ZCLAMP); h.rotation.y=Math.PI;
   g.add(roll);
-  const sN=saddle(GW), sR=saddle(GH); sN.position.y=-GH; sR.position.y=-GW;
-  g.add(sN,sR);
-  reg('D17',sN,'saddle clamp — holds the waveguide'); reg('D17',sR,'saddle clamp — holds the rolled waveguide');
-  g.userData.roll=roll; g.userData.sN=sN; g.userData.sR=sR;
+  const s=saddle(GH); s.position.y=-GW; g.add(s);
+  reg('D17',s,'saddle clamp - holds the rolled waveguide');
   rotG.add(g); return g;
 }
-const h2tx=horn(M.dark), h2rx=horn(M.dark), h3=horn(M.dark);
-h2tx.children[3].material=h1tx.children[3].material;
-const mTX=hornMount(h2tx), mRXA=hornMount(h2rx), mRXB=hornMount(h3);
-reg('B8',h2tx,'TX horn (on the turntable)','rf');
-reg('B8',h2rx,'RX A — the reference receiver','dsp');
-reg('B8',h3,'RX B — second receiver, 193 mm baseline','ok');
-[h2tx,h2rx,h3].forEach(h=>{ reg('B9',h.userData.flange,'SMA 4-hole flange — the horn feed','rf');
+const hTX=horn(M.dark), hRXA=horn(M.dark), hRXB=horn(M.dark);
+hTX.children[3].material=mat({color:0xc2622a,metalness:.35,roughness:.5});
+const mTX=hornMount(hTX,0,TXY), mRXA=hornMount(hRXA,-D_BASE/2,RXY), mRXB=hornMount(hRXB,D_BASE/2,RXY);
+reg('B8',hTX,'TX horn - centred 290 mm above the RX row','rf');
+reg('B8',hRXA,'RX A - the reference receiver (stage 1)','dsp');
+reg('B8',hRXB,'RX B - second receiver, 193 mm baseline (stage 2)','ok');
+[hTX,hRXA,hRXB].forEach(h=>{ reg('B9',h.userData.flange,'SMA 4-hole flange - the horn feed','rf');
   reg('B10',h.userData.probe,'brass probe, 28 mm into the guide','rf'); });
-addLabel(h2tx,'TX horn','rf',new THREE.Vector3(0,AH+.03,0),true);
-addLabel(h2rx,'RX A','dsp',new THREE.Vector3(0,AH+.03,0),true);
-addLabel(h3,'RX B','ok',new THREE.Vector3(0,AH+.03,0),true);
-// stage 2: upright pair at 290 mm centres. stage 3: three rolled horns touching at 193.1 mm.
-function layoutHorns(s){
-  const three=(s===3), roll=three?Math.PI/2:0, yc=three?YOKE_TOP+GW:YH;
-  const xs=three?[-D_BASE,0,D_BASE]:[-HX,HX,0];
-  [mTX,mRXA,mRXB].forEach((m,i)=>{ m.position.set(xs[i],yc,0); m.userData.roll.rotation.z=roll;
-    m.userData.sN.visible=!three; m.userData.sR.visible=three; });
-  mRXB.visible=three;
-  yoke.scale.x=three?(2*D_BASE+0.115):(2*HX+0.10);
+addLabel(hTX,'TX horn','rf',new THREE.Vector3(0,AW+.03,0),true);
+addLabel(hRXA,'RX A','dsp',new THREE.Vector3(0,-AW-.03,0),true);
+addLabel(hRXB,'RX B','ok',new THREE.Vector3(0,-AW-.03,0),true);
+// foil-on-card screen behind the horns, never across the mouths
+const scrG=new THREE.Group(); scrG.position.set(0,0,0.050); rotG.add(scrG);
+scrG.add(at(box(D_BASE+0.10,0.130,0.0015,M.aluDark),0,RXY,0));
+reg('D17',scrG,'foil-on-card screen behind the horns');
+
+// stage 1 leaves the RX B position empty; the turntable is optional at any stage
+function layoutHorns(s){ mRXB.visible=(s>=2); }
+function setTurntable(on){
+  turnG.visible=on; pedestal.visible=!on;
+  rotG.position.set(0,TOP+(on?0.060:0.010),ZCLAMP);
+  if(!on) rotG.rotation.y=0;
 }
 
 // =====================================================================
@@ -769,13 +773,13 @@ putRF(mix2,0.038,ZRX2); bench.add(mix2); reg('F22',mix2,'2nd mixer ZX05-43MH-S+ 
 const spl2=mcCase(0.032,0.014,0.024,[{name:'s',side:'l'},{name:'o1',side:'f',off:-0.008},{name:'o2',side:'f',off:0.008}]);
 putRF(spl2,0.075,-0.112); bench.add(spl2); reg('F23',spl2,'2nd splitter — LO to both mixers (stage 3)','rf');
 addLabel(bpf2,'band-pass 2','rf'); addLabel(lna2,'LNA 2','rf'); addLabel(mix2,'mixer 2','rf'); addLabel(spl2,'splitter 2','rf');
-const stage3=[bpf2,lna2,mix2,spl2,umc];
+const stage2Only=[bpf2,lna2,mix2,spl2,umc];
 
 // =====================================================================
 // the harness — every wire runs between two real pins
 // =====================================================================
 const wireG=new THREE.Group(); world.add(wireG);
-const stepWireG=new THREE.Group(); stage23.add(stepWireG);
+const stepWireG=new THREE.Group(); turnG.add(stepWireG);
 function hookup(pA,pB,col,via,r){
   const pts=[pA.clone(),pA.clone().setY(pA.y+0.010)].concat((via||[]).map(v=>v.clone()),[pB.clone().setY(pB.y+0.010),pB.clone()]);
   return run(pts,r||R_WIRE,wireMat[col]);
@@ -878,66 +882,57 @@ function buildCoax(stage){
   while(rotCoax.children.length) rotCoax.remove(rotCoax.children[0]);
   const savedRot=rotG.rotation.y; rotG.rotation.y=0;
   bench.updateMatrixWorld(true);
-  const CY=TOP+0.080, CZ=ZCLAMP+0.030;
+  // Everything above the frame base turns with it when the turntable is fitted,
+  // so each horn run hands over at a collar close to the rotation axis.
+  const CY=TOP+0.090, CZ=ZCLAMP+0.034;
   const collar=(x,dy,dz)=>new THREE.Vector3(x,CY+(dy||0),CZ+(dz||0));
   const toRot=v=>new THREE.Vector3(v.x-rotG.position.x,v.y-rotG.position.y,v.z-rotG.position.z);
 
   const runs=[[adf,'out',att,'in',0.008],[att,'out',pa,'in',0.008],[pa,'out',spl,'s',0.009],
               [lna,'out',mix,'rf',0.011],[bpf,'out',lna,'in',0.010]];
-  if(stage!==3) runs.push([spl,'o2',mix,'lo',0.012]);
+  if(stage<2) runs.push([spl,'o2',mix,'lo',0.012]);
   runs.forEach(([ma,na,mb,nb,l])=>{
     const t=jumperCoax(ma,na,mb,nb,l); reg('A6',t,'SMA RG316 jumper','rf'); coaxG.add(t); });
 
-  if(stage===1){
-    const jTX=new THREE.Vector3(-0.158,0.290,-0.042), jRX=new THREE.Vector3(0.158,0.290,-0.042);
-    const t1=pathCoax(spl,'o1',[V(0.020,TOP+0.020,-0.112),V(-0.070,TOP+0.020,-0.100),
-      V(-0.150,TOP+0.030,-0.062),V(-0.158,0.140,-0.030),jTX],M.coax);
-    reg('A6',t1,'SMA RG316 jumper — splitter → TX horn','rf'); coaxG.add(t1);
-    const c1=feedCoax(h1tx,bench,[V(-0.150,HY+0.062,-0.058),jTX],M.coax);
-    reg('A6',c1,'SMA RG316 jumper — splitter → TX horn','rf'); coaxG.add(c1);
-    const t2=pathCoax(bpf,'in',[V(0.222,TOP+0.028,-0.070),V(0.170,0.120,-0.030),jRX],M.coaxRx);
-    reg('A6',t2,'SMA RG316 jumper — RX horn → band-pass','dsp'); coaxG.add(t2);
-    const c2=feedCoax(h1rx,bench,[V(0.150,HY+0.062,-0.058),jRX],M.coaxRx);
-    reg('A6',c2,'SMA RG316 jumper — RX horn → band-pass','dsp'); coaxG.add(c2);
-  } else {
-    const cTX=collar(-0.030), cRX=collar(0.030);
-    const t1=pathCoax(spl,'o1',[V(0.010,TOP+0.020,-0.112),V(-0.060,TOP+0.022,-0.086),
-      V(-0.070,TOP+0.050,-0.040),cTX],M.coax);
-    reg('A6',t1,'SMA RG316 jumper — splitter → TX horn','rf'); coaxG.add(t1);
-    const t2=pathCoax(bpf,'in',[V(0.215,TOP+0.026,-0.055),V(0.120,TOP+0.030,-0.020),
-      V(0.070,TOP+0.055,-0.010),cRX],M.coaxRx);
-    reg('A6',t2,'SMA RG316 jumper — RX horn → band-pass','dsp'); coaxG.add(t2);
-    [[mTX,h2tx,M.coax,cTX],[mRXA,h2rx,M.coaxRx,cRX]].forEach(([m,h,mm,c0])=>{
-      const x=m.position.x, y=m.position.y, sx=(x<0?-1:1);
-      const c=feedCoax(h,rotG,[V(x+sx*0.030,y+0.058,-0.032),V(x*0.45+sx*0.020,YOKE+0.028,0.010),toRot(c0)],mm);
-      reg('A6',c,'SMA RG316 jumper — up the turntable mast','rf'); rotCoax.add(c); });
-  }
-  // mixer IF → J1 pin 1 on the breadboard
+  const cTX=collar(-0.055), cRA=collar(0.000,0.016,0.012), cRB=collar(0.055,0.032,0.024);
+  // rolled 90 deg, every feed points the same way (-x): the two receive cables
+  // then take the same path, which is what keeps them phase-matched.
+  const up=(h,m,mm,c0,name,cls)=>{
+    const x=m.position.x, y=m.position.y;
+    const c=feedCoax(h,rotG,[V(x-0.055,y-0.022,-0.028),V(x*0.4-0.045,BEAM_RX*0.45,0.026),toRot(c0)],mm);
+    reg('A6',c,name,cls||'rf'); rotCoax.add(c);
+  };
+  const t1=pathCoax(spl,'o1',[V(0.020,TOP+0.020,-0.112),V(-0.080,TOP+0.024,-0.098),
+    V(-0.130,TOP+0.046,-0.056),cTX],M.coax);
+  reg('A6',t1,'SMA RG316 jumper - splitter to TX horn','rf'); coaxG.add(t1);
+  up(hTX,mTX,M.coax,cTX,'SMA RG316 jumper - splitter to TX horn');
+
+  const t2=pathCoax(bpf,'in',[V(0.222,TOP+0.028,-0.070),V(0.130,TOP+0.036,-0.030),cRA],M.coaxRx);
+  reg('A6',t2,'SMA RG316 jumper - RX A to band-pass','dsp'); coaxG.add(t2);
+  up(hRXA,mRXA,M.coaxRx,cRA,'SMA RG316 jumper - RX A to band-pass','dsp');
+
+  // mixer IF to J1 pin 1 on the breadboard
   const ifp=pathCoax(mix,'if',[V(0.030,TOP+0.026,-0.020),V(0.010,TOP+0.026,0.030),
     holeW('a2',0.014),holeW('a2',0.004)],M.rubber,R_WIRE);
-  reg('A7',ifp,'IF pigtail — mixer IF → J1 pin 1 (a2)'); coaxG.add(ifp);
+  reg('A7',ifp,'IF pigtail - mixer IF to J1 pin 1 (a2)'); coaxG.add(ifp);
 
-  if(stage===3){
+  if(stage>=2){
     [[spl,'o2',spl2,'s',0.010,'LO to the 2nd splitter'],[spl2,'o1',mix,'lo',0.010,'LO to mixer 1'],
-     [spl2,'o2',mix2,'lo',0.014,'LO to mixer 2'],[lna2,'out',mix2,'rf',0.011,'LNA 2 → mixer 2'],
-     [bpf2,'out',lna2,'in',0.010,'band-pass 2 → LNA 2']
+     [spl2,'o2',mix2,'lo',0.014,'LO to mixer 2'],[lna2,'out',mix2,'rf',0.011,'LNA 2 to mixer 2'],
+     [bpf2,'out',lna2,'in',0.010,'band-pass 2 to LNA 2']
     ].forEach(([ma,na,mb,nb,l,nm])=>{ const t=jumperCoax(ma,na,mb,nb,l);
-      reg('A6',t,'SMA RG316 jumper — '+nm,'rf'); coaxG.add(t); });
-    // RX B down to its own band-pass, through a third service loop at the axis. The two
-    // receive cables must match: 1 mm of extra coax is 3° of phase and 0.3° of bearing.
-    const cR2=collar(0.000,0.030,0.012);
-    const t3=pathCoax(bpf2,'in',[V(0.228,TOP+0.040,0.024),V(0.190,0.110,-0.006),V(0.090,0.140,-0.010),cR2],M.coaxRx);
-    reg('A6',t3,'SMA RG316 jumper — RX B → 2nd band-pass','ok'); coaxG.add(t3);
-    const c3=feedCoax(h3,rotG,[V(mRXB.position.x+0.032,mRXB.position.y+0.058,-0.032),
-      V(mRXB.position.x*0.45+0.020,YOKE+0.030,0.012),toRot(cR2)],M.coaxRx);
-    reg('A6',c3,'SMA RG316 jumper — RX B → 2nd band-pass','ok'); rotCoax.add(c3);
+      reg('A6',t,'SMA RG316 jumper - '+nm,'rf'); coaxG.add(t); });
+    // The two receive cables must match: 1 mm of extra coax is 4.3 deg of phase
+    // and about 0.3 deg of bearing, so RX B mirrors RX A's route exactly.
+    const t3=pathCoax(bpf2,'in',[V(0.228,TOP+0.044,0.024),V(0.140,TOP+0.052,-0.012),cRB],M.coaxRx);
+    reg('A6',t3,'SMA RG316 jumper - RX B to 2nd band-pass','ok'); coaxG.add(t3);
+    up(hRXB,mRXB,M.coaxRx,cRB,'SMA RG316 jumper - RX B to 2nd band-pass','ok');
     const if2=pathCoax(mix2,'if',[V(0.100,TOP+0.014,0.055),V(0.180,TOP+0.014,0.115),
       V(0.270,0.030,0.200),V(0.320,0.048,0.262)],M.rubber,R_WIRE);
-    reg('A7',if2,'IF 2 → UMC404HD (stage 3)'); coaxG.add(if2);
+    reg('A7',if2,'IF 2 to the UMC404HD (stage 2)'); coaxG.add(if2);
   }
   rotG.rotation.y=savedRot;
 }
-
 // =====================================================================
 // beam, drone, phone
 // =====================================================================
@@ -947,7 +942,7 @@ function beamCone(halfAz,halfEl,len){
   for(let i=0;i<4;i++){const j=(i+1)%4; pts.push(...t,...c[j],...c[i]);}
   const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pts,3)); g.computeVertexNormals();
   return new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:0xe59055,transparent:true,opacity:.11,side:THREE.DoubleSide,depthWrite:false})); }
-const beams=[h1tx,h2tx].map(h=>{ const b=beamCone(18,17,3.6); b.position.set(0,0,FL); h.add(b); b.visible=false; return b; });
+const beams=[hTX].map(h=>{ const b=beamCone(17,18,3.6); b.position.set(0,0,FL); h.add(b); b.visible=false; return b; });
 
 // ESP-FLY: XIAO ESP32-S3 on a small frame, four 615 coreless motors, 30 mm props, 1S pack
 const drone=new THREE.Group(); drone.position.set(0.3,1.1,-3.2); world.add(drone);
@@ -988,15 +983,15 @@ const BOM=[
   ['B8','Copper sheet 24 ga 12" × 24"','2','$45','= the horns'],['B9','SMA female 4-hole flange, solder cup','10','$12','the feed on each horn'],
   ['B10','Brass rod 1/16"','1','$5','the 28 mm probe'],['B11','60/40 solder + paste flux','1','$15','consumable'],['B12','Aviation snips','1','$18','tool']]],
  ['C · Baseband, control, power',[
-  ['C13','Behringer UCA202 USB sound card','1','$30'],['C13b','Laptop','1','—','you have it'],['C14','ESP32 devkit (WROOM-32)','1','$10','30-pin DOIT pinout'],
+  ['C13','Behringer UCA202 USB sound card','1','$30','staging only — buy the UMC404HD up front instead'],['C13b','Laptop','1','—','you have it'],['C14','ESP32 devkit (WROOM-32)','1','$10','30-pin DOIT pinout'],
   ['C15a','830-point breadboard','1','—','in the kit'],['C15b','TL072 ×2 + passives, headers, jumper wire','1','$25','every part and wire from WIRING.md'],
   ['C16a','12 V 3 A supply','1','$18'],['C16b','LM2596 buck ×2','1','—','one shown']]],
- ['D · Mechanical (stage 2)',[
+ ['D · Mechanical — frame, turntable optional',[
   ['D17','Plywood 18" × 15", masts, saddles, terminal block','1','$28'],['D18a','NEMA-17 stepper','1','$25','with the A4988'],
   ['D18b','Lazy-susan bearing 150 mm','1','—'],['D18c','A4988 driver','1','—','1/16 microstep']]],
  ['E · Drone',[
   ['E','Stock ESP-FLY kit, phone-flown — $0 added','1','$0','ESP-Drone on WiFi ch 1, 10 dBm']]],
- ['F · Stage 3 — azimuth interferometer',[
+ ['F · Stage 2 — azimuth interferometer',[
   ['F22','2nd ZX05-43MH-S+ mixer','1','$73','second receive channel — critical path'],
   ['F23','2nd 2-way splitter','1','$13','LO to both mixers'],
   ['F24','2nd 2400–2500 band-pass','1','$29','in front of the second LNA'],
@@ -1010,7 +1005,7 @@ const BOM=[
   ['G31','RTL-SDR v4 + 30 dB SMA pad','1','$0–40','optional; a borrowed power meter does the same job']]],
 ];
 const NOTMODELLED=new Set(['B11','B12','F27','F29','G30','G31']);
-registry.F25=[h3];
+registry.F25=[hRXB];
 const bomEl=document.getElementById('bom'); let selRow=null;
 BOM.forEach(([title,rows])=>{ const h=document.createElement('h2'); h.textContent=title; bomEl.appendChild(h);
   rows.forEach(([id,name,qty,price,note])=>{ const r=document.createElement('div');
@@ -1018,7 +1013,7 @@ BOM.forEach(([title,rows])=>{ const h=document.createElement('h2'); h.textConten
     r.innerHTML=`<span class="n">${id}</span><span>${name}${note?`<small>${note}</small>`:''}</span><span class="q">${qty} · ${price}</span>`;
     if(!NOTMODELLED.has(id)) r.onclick=()=>selectBom(id,r); bomEl.appendChild(r); }); });
 const tot=document.createElement('div'); tot.className='total';
-tot.innerHTML='Stage 1 ≈ $383 · + stage 2 ≈ $436 · + stage 3 ≈ $687<br><span class="legend"><span class="sw" style="background:#c2622a"></span>RF <span class="sw" style="background:#2f77b0"></span>baseband/ADC <span class="sw" style="background:#2c9c68"></span>control <span class="sw" style="background:#b8860b"></span>power <span class="sw" style="background:#6a4fbf"></span>drone</span>';
+tot.innerHTML='Stage 1 ≈ $453 · + stage 2 ≈ $604 · + turntable ≈ $657<br><span class="legend"><span class="sw" style="background:#c2622a"></span>RF <span class="sw" style="background:#2f77b0"></span>baseband/ADC <span class="sw" style="background:#2c9c68"></span>control <span class="sw" style="background:#b8860b"></span>power <span class="sw" style="background:#6a4fbf"></span>drone</span>';
 bomEl.appendChild(tot);
 
 let highlight=[], hlT=0;
@@ -1040,19 +1035,24 @@ function selectBom(id,rowEl){
 // stages, views, controls
 // =====================================================================
 let stage=1;
-function setStage(s){ stage=s; stage1.visible=(s===1); stage23.visible=(s!==1);
+function setStage(s){ stage=s;
   layoutHorns(s);
-  stage3.forEach(o=>o.visible=(s===3));
-  beams.forEach((b,i)=>b.visible=(viewKey==='room') && ((i===0)===(s===1)));
+  stage2Only.forEach(o=>o.visible=(s>=2));
+  beams.forEach(b=>b.visible=(viewKey==='room'));
   document.querySelectorAll('[data-stage]').forEach(b=>b.classList.toggle('on',+b.dataset.stage===s));
   buildCoax(s);
-  status.textContent=['','stage 1 · fixed horn pair on two masts','stage 2 · turntable → azimuth','stage 3 · two receivers at a 193 mm baseline → azimuth from phase'][s]; }
+  status.textContent=['',
+    'stage 1 · TX + RX A in the three-horn frame → range and radial velocity',
+    'stage 2 · RX B added → azimuth from phase, one 0.47 s dwell'][s]; }
 document.querySelectorAll('[data-stage]').forEach(b=>b.onclick=()=>setStage(+b.dataset.stage));
+let turntable=false;
+document.getElementById('b-turn').onclick=e=>{ turntable=!turntable;
+  e.target.classList.toggle('on',turntable); setTurntable(turntable); buildCoax(stage); };
 
-let az=-0.68, el=0.36, dist=1.20, tgt=new THREE.Vector3(0.01,0.17,-0.05), goal=null;
+let az=-0.68, el=0.28, dist=1.62, tgt=new THREE.Vector3(0.00,0.30,-0.06), goal=null;
 function place(){ camera.position.set(tgt.x+dist*Math.cos(el)*Math.sin(az),tgt.y+dist*Math.sin(el),tgt.z+dist*Math.cos(el)*Math.cos(az)); camera.lookAt(tgt); }
 function flyTo(t,d,a,e){ goal={t:t.clone(),d,a:(a!==undefined?a:az),e:(e!==undefined?e:el)}; }
-const views={ bench:{t:new THREE.Vector3(0.01,0.17,-0.05),d:1.20,a:-0.68,e:0.36},
+const views={ bench:{t:new THREE.Vector3(0.00,0.30,-0.06),d:1.62,a:-0.68,e:0.28},
               bb:{t:new THREE.Vector3(BBX,TOP+0.01,BBZ),d:0.20,a:-0.15,e:0.90},
               room:{t:new THREE.Vector3(0.08,0.62,-1.45),d:4.3,a:-0.42,e:0.20} };
 let viewKey='bench';
@@ -1092,7 +1092,7 @@ const v3=new THREE.Vector3(); const reduced=matchMedia('(prefers-reduced-motion:
 function frame(now){ const dt=Math.min((now-t0)/1000,0.05); t0=now;
   if(goal){ const k=1-Math.pow(0.001,dt); tgt.lerp(goal.t,k); dist+=(goal.d-dist)*k; az+=(goal.a-az)*k; el+=(goal.e-el)*k;
     if(Math.abs(dist-goal.d)<1e-3 && tgt.distanceTo(goal.t)<1e-3) goal=null; place(); }
-  if(!reduced && stage!==1) rotG.rotation.y=Math.sin(now/4000)*0.6;
+  if(!reduced && turntable) rotG.rotation.y=Math.sin(now/4000)*0.55;
   if(!reduced){ drone.rotation.y+=dt*0.4; drone.position.y=1.1+Math.sin(now/900)*0.03; }
   if(highlight.length){ M.glow.emissiveIntensity=0.5+0.5*Math.abs(Math.sin((now-hlT)/250));
     if(now-hlT>4000){ highlight.forEach(o=>o.material=o.userData.origMat); highlight=[]; } }
@@ -1106,6 +1106,6 @@ function frame(now){ const dt=Math.min((now-t0)/1000,0.05); t0=now;
     L.el.style.left=((v3.x*0.5+0.5)*w)+'px'; L.el.style.top=((-v3.y*0.5+0.5)*h)+'px'; L.el.style.opacity=1; });
   requestAnimationFrame(frame);
 }
-setStage(1); resize(); place(); requestAnimationFrame(frame);
+setTurntable(false); setStage(1); resize(); place(); requestAnimationFrame(frame);
 })();
 </script>
