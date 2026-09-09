@@ -1,5 +1,11 @@
 # What K-band or V-band would cost
 
+> **Read [`goal.md`](goal.md) first.** This project's point is a radar whose
+> antenna you designed. Every module priced below ships with its antenna
+> already designed and soldered shut, so none of them passes that test on its
+> own. The costs here are real and worth knowing; the recommendation at the
+> bottom has been corrected accordingly.
+
 Kevin's suggestion, in his words: *"consider other antenna designs that might be
 more conducive to drone platforms, especially when considering size and weight…
 I've seen other DIY drone radar applications in the higher frequency ranges.
@@ -126,27 +132,35 @@ meaningful raw access. They will not track a drone at 10 m.
 
 ---
 
-## What I would do
+## What I would do — corrected
 
-Kevin's own advice was to finish this one first, and there is a concrete reason
-beyond momentum: **option A costs $60 and reuses everything you have built.**
-The video amplifier, the reference, the power, the calibration, the
-interferometer, the tests — all of it survives a move to 24 GHz. That makes
-K-band a *band swap*, not a new project, and the right time to do it is after
-the 2.4 GHz radar works, exactly as he suggested.
+An earlier version of this page recommended option A, the $60 module, on the
+grounds that it reuses everything downstream of the mixer. That reasoning is
+sound and the conclusion is still wrong, because **the K-LC6's antenna is an
+integrated patch array with no external port**. Buying it hands the most
+interesting part of this project to RFbeam. Same objection, harder, for the TI
+boards: the IWR6843ISK's antenna is etched on its evaluation board and the
+AOPEVM's is inside the chip package.
 
-The order that makes sense:
+Against [`goal.md`](goal.md)'s first test — *is the antenna mine?* — every
+option on this page fails.
+
+What survives is Kevin's physics, which is worth having:
 
 1. **Finish the 2.4 GHz build.** Range, velocity, azimuth. Everything downstream
-   of the mixer is band-independent and you only get to write it once.
-2. **Then swap the front end for a K-LC6, $60.** Range cell goes from 3.75 m to
-   0.60 m, Doppler becomes signed, and the WiFi coexistence problem evaporates.
-   Sweep linearity becomes your problem instead.
-3. **Add the K-MC4 if azimuth at 24 GHz matters**, around $250, and change one
-   constant in `interferometer.py`.
+   of the mixer's IF is band-independent and you only get to write it once. It
+   is written and tested.
+2. **Then research a 24 GHz front end with an external antenna port.** That is
+   the missing piece, and it is the difference between a band swap and a real
+   second antenna project. The cheap modules do not have one.
+3. **If you find one, design the 24 GHz antenna yourself.** A 27 × 20 mm horn is
+   too small to fold from sheet, which is the point: a patch array on $5 FR-4 is
+   a deeper design exercise than the horn was, and λ/2 = 6.2 mm spacing gives a
+   fully unambiguous interferometer instead of the ±18.4° you have now.
 
 Buy the IWR6843 only if what you want is a drone tracker rather than a radar you
-built. It is better than anything on this list and it is a different project.
+built. It is better than anything on this list, it is available today, and it is
+a different project.
 
 ---
 

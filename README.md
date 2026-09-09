@@ -6,6 +6,11 @@ indoors by its **reflection** — the drone carries nothing and cooperates with
 nothing. The drone is flown from a phone over its own WiFi; the radar shares
 the band by sweeping above the WiFi channel.
 
+**[`docs/goal.md`](docs/goal.md) — what this project is for, and the three
+tests every change is judged against.** Read it first. It is why azimuth comes
+from two receivers rather than a scan, why elevation was dropped, and why the
+cheaper higher-band modules were rejected despite being better radars.
+
 ## How it works
 
 ```
@@ -46,7 +51,7 @@ Schematics: [`hardware/kicad/`](hardware/kicad/) — `radar_flow.kicad_sch` (**s
 
 ## Test
 
-**[`docs/higher-bands.md`](docs/higher-bands.md)** — what moving to 24 or 60 GHz would cost and buy: $60 for a band swap that reuses the whole baseband, $283 for a tracker that ends the project. Kevin's suggestion, costed.
+**[`docs/higher-bands.md`](docs/higher-bands.md)** — what moving to 24 or 60 GHz would cost and buy, and why every off-the-shelf module fails the antenna test despite being the better radar. Kevin's suggestion, costed and then re-judged.
 
 **[`docs/azimuth.md`](docs/azimuth.md)** — how bearing is actually measured: two receivers, one dwell, 0.09° rms. Scanning cannot do it on a moving target.
 
