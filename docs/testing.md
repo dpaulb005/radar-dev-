@@ -34,6 +34,20 @@ AC-coupled sync with droop, TX leakage, noise, the horn beam pattern — and
 runs it through the live code path. If it fails after you touch the DSP, the
 hardware is not the problem.
 
+Then check that the drawings still agree with the build sheet:
+
+```bash
+cd hardware/breadboard && python layout.py      # placement vs the schematic netlist
+cd ../3d && python verify_model.py --render     # the 3-D model vs WIRING.md, MODULES.md, BOM.md
+```
+
+PASS: `layout.py` rewrites without complaint, and `verify_model.py` prints
+`MODEL VERIFIED` (198 checks, exit 0). The second one re-derives the bench
+model's breadboard placement, all 48 jumper colours, the ESP32 / A4988 /
+ADF4351 pinouts and the BOM totals from the documents, so it fails if either
+the model *or* a document moves without the other. `--render` also loads the
+page in headless Chrome and fails on any JavaScript error.
+
 ## §2 · Breadboard circuits — simulate, then measure
 
 **Simulate first.** `hardware/spice/README.md` has one test card per block

@@ -575,10 +575,10 @@ const BBPARTS=[
 // what each connector pin carries, from the "Nets as built" table
 const JNETS={
  J1:['IF','GND'], J2:['AUDIO_L','GND'], J3:['VIN12','GND'], J4:['VPROT','GND'], J5:['V5','GND'],
- J6:['5V','GND'], J7:['5V','GND'], J8:['5V','GND'],
- J9:['GND','SCK','MOSI','LE','LD','SYNC','STEP','DIR','EN','3V3'],
- J10:['GND','SCK_O','MOSI_O','LE_O','LD','CE'], JP3:['CE','3V3'],
- J11:['GND','3V3','STEP','DIR','EN'], J12:['AUDIO_R','GND'],
+ J6:['V5_ADF','GND'], J7:['V5_PA','GND'], J8:['V5_LNA','GND'],
+ J9:['GND','SCK','MOSI','LE','LD','SYNC','STEP','DIR','EN','+3V3'],
+ J10:['GND','SCK_O','MOSI_O','LE_O','LD','CE'], JP3:['CE','+3V3'],
+ J11:['GND','+3V3','STEP','DIR','EN'], J12:['AUDIO_R','GND'],
 };
 const bbParts={};
 BBPARTS.forEach(([ref,kind,val,leads])=>{
@@ -1002,10 +1002,14 @@ const BOM=[
   ['F24','2nd 2400–2500 band-pass','1','$29','in front of the second LNA'],
   ['F25','3rd horn (materials in B)','1','$0','beside RX A at 193 mm centres, all three rolled 90°'],
   ['F26','Behringer UMC404HD 4-in interface','1','$100','beat A, beat B, sync on one sample clock'],
-  ['F27','2nd TL072 video channel','1','$0','parts already in section C'],
-  ['F28','2nd LNA (SPF5189Z 4-pack)','1','$0','from row A3b']]],
+  ['F27','3rd + 4th TL072, 2nd passives set, 2nd breadboard','1','$18','U1/U2 are fully used; a 2nd video amp needs three more channels'],
+  ['F28','2nd LNA (SPF5189Z 4-pack)','1','$0','from row A3b'],
+  ['F29','2 more SMA jumper 3-packs','2','$18','the two RX chains must be phase-matched — buy one batch']]],
+ ['G · Test gear — borrow it',[
+  ['G30','VNA reaching 2.5 GHz','1','$0–190','borrow. A NanoVNA-H4 stops at 1.5 GHz and cannot see this horn'],
+  ['G31','RTL-SDR v4 + 30 dB SMA pad','1','$0–40','optional; a borrowed power meter does the same job']]],
 ];
-const NOTMODELLED=new Set(['B11','B12','F27']);
+const NOTMODELLED=new Set(['B11','B12','F27','F29','G30','G31']);
 registry.F25=[h3];
 const bomEl=document.getElementById('bom'); let selRow=null;
 BOM.forEach(([title,rows])=>{ const h=document.createElement('h2'); h.textContent=title; bomEl.appendChild(h);
@@ -1014,7 +1018,7 @@ BOM.forEach(([title,rows])=>{ const h=document.createElement('h2'); h.textConten
     r.innerHTML=`<span class="n">${id}</span><span>${name}${note?`<small>${note}</small>`:''}</span><span class="q">${qty} · ${price}</span>`;
     if(!NOTMODELLED.has(id)) r.onclick=()=>selectBom(id,r); bomEl.appendChild(r); }); });
 const tot=document.createElement('div'); tot.className='total';
-tot.innerHTML='Stage 1 ≈ $374 · + stage 2 ≈ $424 · + stage 3 ≈ $770<br><span class="legend"><span class="sw" style="background:#c2622a"></span>RF <span class="sw" style="background:#2f77b0"></span>baseband/ADC <span class="sw" style="background:#2c9c68"></span>control <span class="sw" style="background:#b8860b"></span>power <span class="sw" style="background:#6a4fbf"></span>drone</span>';
+tot.innerHTML='Stage 1 ≈ $383 · + stage 2 ≈ $436 · + stage 3 ≈ $687<br><span class="legend"><span class="sw" style="background:#c2622a"></span>RF <span class="sw" style="background:#2f77b0"></span>baseband/ADC <span class="sw" style="background:#2c9c68"></span>control <span class="sw" style="background:#b8860b"></span>power <span class="sw" style="background:#6a4fbf"></span>drone</span>';
 bomEl.appendChild(tot);
 
 let highlight=[], hlT=0;

@@ -55,3 +55,24 @@ Screenshots: `radar-bench-bench.png`, `radar-bench-breadboard.png`,
 
 The electrical reference is `hardware/kicad/radar_breadboard.kicad_sch`; the
 printable build sheet, with the same holes, is `hardware/breadboard/`.
+
+## Verifying it
+
+The model hard-codes the breadboard placement, the module pinouts and the BOM
+totals, all of which live in markdown files that change on their own. Rather
+than trust that, re-derive it:
+
+```bash
+cd hardware/3d
+python verify_model.py            # data checks, about a second
+python verify_model.py --render   # also loads the page in headless Chrome
+                                  # and fails on any JavaScript error
+```
+
+198 checks: every part and all 48 jumpers against `WIRING.md` (same refs, same
+holes, same pin order, same wire colours), every connector pin's net against
+its "Nets as built" table, the ESP32 / A4988 / ADF4351 pinouts against
+`MODULES.md`, every `pinAt()` in the harness against the pins that actually
+exist, and the panel's stage totals against `BOM.md`. It exits non-zero and
+names the offending hole, pin or figure. Run it after editing the model **or**
+after editing any of those three documents — a change to either side fails it.
