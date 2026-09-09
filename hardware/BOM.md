@@ -12,7 +12,7 @@ table order — the mixer is the critical path.
 > (the mixer) and replaces the rest with parts that are in stock, for ~$200
 > of RF instead of ~$577.
 
-## A. RF chain — ~$196
+## A. RF chain — ~$205 (first receiver)
 
 | # | item | qty | ~$ | source | notes |
 |---|---|---|---|---|---|
@@ -23,7 +23,7 @@ table order — the mixer is the critical path.
 | 5 | SMA 3 dB attenuator, DC–6 GHz | 1 | 9 | Amazon | replaces VAT-3+ |
 | 6 | SMA M-M RG316 jumpers, 20 cm, 3-pack | 2 | 18 | Amazon | 6 runs in the chain |
 | 7 | SMA adapter assortment (M-M barrels, F-F) | 1 | 12 | Amazon | |
-| 7b | **2.4 GHz band-pass filter**, 2400–2500 MHz, SMA inline | 1 | 14–30 | GPIO Labs (2450 MHz ISM BPF, $29.10, >40 dB at 2.2/2.8 GHz, 2.7 dB loss) or Data Alliance (BandPass2450, $13.70, no rejection spec published). The same FBP-2400-style module is listed on Amazon (ASIN B0C3BL74VN, B0C8269CGF) and AliExpress (~$25); Amazon prices were not verifiable from here. Mini-Circuits VBF-2435+ is $57.50 at DigiKey; ZFBP-2400-S+ (50 dB rejection, 2.2 dB loss) is the lab-grade option | between RX horn and LNA — keeps out-of-band signals off the wideband SPF5189Z (it cannot reject WiFi ch 1; the drone's AP power is turned down for that) |
+| 7b | **2.4 GHz band-pass filter**, 2400–2500 MHz, SMA inline | 1 | 29 | GPIO Labs (2450 MHz ISM BPF, $29.10, >40 dB at 2.2/2.8 GHz, 2.7 dB loss) or Data Alliance (BandPass2450, $13.70, no rejection spec published). The same FBP-2400-style module is listed on Amazon (ASIN B0C3BL74VN, B0C8269CGF) and AliExpress (~$25); Amazon prices were not verifiable from here. Mini-Circuits VBF-2435+ is $57.50 at DigiKey; ZFBP-2400-S+ (50 dB rejection, 2.2 dB loss) is the lab-grade option | between RX horn and LNA — keeps out-of-band signals off the wideband SPF5189Z (it cannot reject WiFi ch 1; the drone's AP power is turned down for that) |
 
 ## B. Horns — ~$95 (materials for three)
 
@@ -39,7 +39,7 @@ Dimensions: aperture 263.8 × 193.1 mm, WR-340 throat 86.4 × 43.2 mm, flare
 91.5 mm, probe 43.7 mm from the back wall. Cut list in
 [`../docs/radar-hardware.md`](../docs/radar-hardware.md) §2.
 
-## C. Baseband, control, power — ~$83
+## C. Baseband, control, power — ~$83 (~$53 if you skip the UCA202, see Totals)
 
 | # | item | qty | ~$ | notes |
 |---|---|---|---|---|
@@ -48,7 +48,7 @@ Dimensions: aperture 263.8 × 193.1 mm, WR-340 throat 86.4 × 43.2 mm, flare
 | 15 | TL072 ×2, breadboard, resistors/capacitors kit | 1 | 25 | video amp (`radar-hardware.md` §5) |
 | 16 | 12 V 3 A supply + LM2596 buck ×2 | 1 | 18 | 12 V for the op-amp/stepper, 5 V for RF modules + ESP32 |
 
-## D. Mechanical — stage 2 — ~$50
+## D. Mechanical — turntable — ~$53
 
 | # | item | qty | ~$ | notes |
 |---|---|---|---|---|
@@ -71,7 +71,7 @@ fallback if the coexistence test in `docs/drone-software.md` §4 fails.
 | 20 | **RadioMaster Bandit Nano** 915 MHz ELRS TX module | 1 | 40 | FCC915 |
 | 21 | **BetaFPV ELRS Nano RX 915 MHz** (0.7 g) or HappyModel ES900RX (0.6 g) | 1 | 17 | same four CRSF pads as the RP1 V2 |
 
-## F. Stage 3 — azimuth interferometer — ~$215
+## F. Stage 3 — azimuth interferometer — ~$251
 
 Bearing from the phase difference between two receivers, in one 0.47 s dwell,
 which is the only way to get it on a *moving* drone. See
@@ -84,19 +84,79 @@ which is the only way to get it on a *moving* drone. See
 | 24 | second 2400–2500 band-pass filter | 1 | 29 | in front of the second LNA; same part as row 7b |
 | 25 | third horn — materials already in B | — | 0 | **beside** the first RX at 193 mm centres, all three horns rotated 90° |
 | 26 | **4-input USB audio interface** (Behringer UMC404HD) | 1 | 100 | beat A, beat B, sync on one sample clock. Two UCA202s cannot do phase — independent clocks |
-| 27 | second TL072 channel (parts in C) | — | 0 | |
+| 27 | third + fourth TL072, second passives set, second breadboard | 1 | 18 | row 15's two TL072 are fully used by U1A/U1B/U2B/U2A; a second video amp needs three more channels |
 | 28 | second LNA (SPF5189Z 4-pack, row 3) | — | 0 | |
+| 29 | 2 more SMA jumper 3-packs | 2 | 18 | the second receive chain adds four coax runs. Buy them together: the two RX chains must be phase-matched, and identical cables from one batch is the cheap way to do it |
+
+## G. Test gear the plan assumes — ~$105
+
+`docs/testing.md` requires these at checkpoints 2 and 3. Neither is a radar
+part, and you may already have or be able to borrow them.
+
+| # | item | qty | ~$ | notes |
+|---|---|---|---|---|
+| 30 | **NanoVNA-H4** | 1 | 65 | required: tuning the horn probe depth to a match is checkpoint 2, and there is no other way to see it |
+| 31 | RTL-SDR v4 + 30 dB SMA pad | 1 | 40 | optional: checks the PA output at checkpoint 3. A power meter substitutes |
 
 ## Totals
 
+Prices below use the **$29** band-pass (GPIO Labs, the only cheap one that
+publishes rejection figures). The `~$` column in every table is the line total.
+
+### If you are building the azimuth radar, which is the point of the project
+
+Buy the **UMC404HD from the start and skip the UCA202** — the 4-input interface
+does everything the 2-input one does, and a phase measurement needs both beat
+channels on one sample clock. That is the only change from buying in stages.
+
+| | | running |
+|---|---|---|
+| A. RF chain, first receiver | 205 | 205 |
+| B. Horns, materials for all three | 95 | 300 |
+| C. Baseband, control, power (**less the UCA202**) | 53 | 353 |
+| D. Turntable | 53 | 406 |
+| F. Second receiver and interferometer | 251 | **657** |
+| G. Test gear (NanoVNA required, SDR optional) | 105 | 762 |
+| shipping (Mini-Circuits direct) + 6 % tax | ~55 | **~815** |
+
+**Parts only: ~$657. Everything, delivered: ~$815.**
+
+Already owned, not counted: the laptop, the phone, and the ESP-FLY drone.
+
+### If you build it in stages instead
+
+| | | running |
+|---|---|---|
+| Stage 1 — range and velocity (A + B + C with the UCA202) | 383 | 383 |
+| + Stage 2 — turntable (D) | 53 | 436 |
+| + Stage 3 — azimuth (F) | 251 | 687 |
+| + test gear (G) | 105 | 792 |
+
+Staging costs **$30 more** (the UCA202 becomes a spare) and defers $251.
+
+### The cheaper azimuth path
+
+One RF switch in front of a single receive chain instead of a whole second
+chain. Section F's $251 becomes about $40, and the UCA202 is enough because
+there is still only one beat channel. See `../docs/azimuth.md` for the
+trade: the two antennas are then sampled 7.4 ms apart, so the target's motion
+phase has to be corrected from the measured velocity.
+
 | | |
 |---|---|
-| Stage 1 (A + B + C) | **~$374** |
-| + Stage 2 (D) | ~$424 |
-| + Drone fallback to 915 MHz (E-fallback) | ~$554 |
-| + Stage 3 (F) | ~$770 |
+| A + B + C (with UCA202) + D + SPDT SMA switch + jumpers | **~$475** |
+| + test gear and tax | ~$620 |
 
-Not needed: SDRs, external LNAs beyond the two, any 2.4 GHz sniffer boards,
+### Ways to spend less
+
+| | saves |
+|---|---|
+| 3D print the horns and line them with copper tape instead of cutting sheet | ~$40 |
+| Borrow a NanoVNA from the department | $65 |
+| Skip the RTL-SDR, use a borrowed power meter | $40 |
+| Data Alliance band-pass at $13.70 instead of GPIO Labs at $29, ×2 | $31 |
+
+Not needed: external LNAs beyond the two, any 2.4 GHz sniffer boards,
 a UWB kit. An RF switch is the cheaper single-chain alternative to section F;
 `docs/azimuth.md` explains why it is not the first choice.
 
