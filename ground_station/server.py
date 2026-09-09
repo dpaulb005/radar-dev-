@@ -248,8 +248,12 @@ class Station:
     # -- ingest ---------------------------------------------------------
     def ingest_radar(self, m, now):
         """A fix from the active FMCW radar (radar_acquire.py -> /api/radar).
-        Range comes from the beat frequency, azimuth from the beam centroid,
-        so the covariance is polar: tight in range, wide in cross-range."""
+
+        Range comes from the beat frequency and azimuth from the phase between
+        the two receivers (interferometer.py). The covariance is still polar,
+        but no longer for the old reason: range is quantised by the 3.75 m cell
+        while bearing is good to ~0.1 deg, which at 10 m is 2 cm of cross-range.
+        Cross-range is now the TIGHTER axis, not the wider one."""
         try:
             r = float(m["range"]); az = math.radians(float(m["az"]))
         except (KeyError, ValueError, TypeError):

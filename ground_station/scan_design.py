@@ -10,6 +10,15 @@ drone" you need angle from somewhere.
 
 This tool compares the three ways to get it and sizes each one.
 
+WHICH ONE THIS PROJECT BUILT, and why the other two are here for reference:
+the answer is the two-receiver interferometer. Mechanical scanning was the
+plan and was dropped after measurement -- it cannot give the bearing of a
+drone that is flying, because the scan takes seconds and the bearing moves
+while it runs (docs/signal-chain.md, "stage 10"). The interferometer reads
+bearing inside one 0.47 s dwell at 0.09 deg rms, against 1.5 deg and 4.3 s
+for the scan. See docs/azimuth.md and ground_station/interferometer.py.
+The sizing below is still correct for what each approach costs.
+
     python scan_design.py                 # compare the options
     python scan_design.py --interf        # interferometer ambiguity detail
     python scan_design.py --sector 90     # size a mechanical scan
@@ -168,16 +177,27 @@ def compare(rf: RadarFront, sector=90.0, ranges=(5.0, 10.0, 20.0)):
     print("\n" + "=" * 72)
     print("  RECOMMENDATION")
     print("=" * 72)
-    print("  Build in this order:")
-    print("   1. Range + Doppler only, antennas bolted down. Prove the RF chain")
-    print("      against a walking person and a car. (docs/mit-radar.md Phase 3)")
-    print("   2. Bolt the pair to a servo -> scanning PPI. This is the cheapest")
-    print("      path to real position and it makes the existing scope correct.")
-    print("   3. Once tracking a target, stop scanning the whole sector and")
-    print("      DITHER the beam +/- half a beamwidth around it (sequential")
-    print("      lobing). Same hardware, much faster revisit and better angle.")
-    print("   4. Only add a second RX channel if you need angle faster than a")
-    print("      servo can sweep -- and use small elements, not the horns.")
+    print("  What this project actually built, after measuring all three:")
+    print("   1. Range + Doppler only, three horns bolted into their final")
+    print("      frame with one receive chain populated. Prove the RF chain")
+    print("      against a walking person.")
+    print("   2. The SECOND RECEIVER. Bearing from the phase between the two,")
+    print("      inside one 0.47 s dwell: 0.09 deg rms. This is stage 2.")
+    print("   3. A turntable only if you want a sector wider than the 34 deg")
+    print("      beam. It points; it takes no part in the measurement.")
+    print("")
+    print("  Scanning was the plan and was DROPPED. It is not the cheap path to")
+    print("  position, it is a path to the position of a target that is not")
+    print("  moving: the scan takes seconds and the bearing moves while it runs,")
+    print("  so at 10 m a 4.3 s scan needs the drone under 0.10 m/s. Spending")
+    print("  the same seconds on a longer dwell beats more beams tenfold, and")
+    print("  neither survives a flying target. See docs/signal-chain.md and")
+    print("  docs/azimuth.md; the interferometer is ground_station/interferometer.py.")
+    print("")
+    print("  One correction to the sizing above: with all three horns ROTATED")
+    print("  90 deg the two receivers touch at a 193 mm baseline, which is")
+    print("  unambiguous to +/-18.4 deg and covers the 17 deg half-beam. The")
+    print("  grating-lobe warning applies to the UN-rotated 263.8 mm spacing.")
 
 
 def track_while_scan(rf: RadarFront, sector=90.0):

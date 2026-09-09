@@ -2,8 +2,7 @@
  * radar_ctl.ino — the radar's control ESP32 (NOT the drone).
  *
  * Replaces the MIT design's XR-2206 ramp generator + analog VCO with an
- * ADF4351 PLL board stepped over SPI, and adds the azimuth drive for the
- * scanning stages. Three jobs:
+ * ADF4351 PLL board stepped over SPI. Jobs:
  *
  *   1. SWEEP   step the ADF4351 from F_START to F_START+BW in N_STEPS, over
  *              and over. This is the FMCW chirp. Stepped, not analog: every

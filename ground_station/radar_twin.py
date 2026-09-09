@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 """
-radar_twin.py — digital twin of the SCANNING can radar.
-
-Chains the pieces together into the thing you are actually building:
+radar_twin.py — digital twin of the can radar.
 
     scan_design (beam positions)
         -> fmcw_sim (chirp -> echo -> range-Doppler map, per beam)
@@ -10,6 +8,18 @@ Chains the pieces together into the thing you are actually building:
                 -> beam centroiding (azimuth from amplitude across beams)
                     -> (x, y) detections
                         -> tracker.TrackKF (position + velocity + prediction)
+
+NOTE ON THE AZIMUTH STEP. `ScanningRadar.centroid` below takes azimuth from
+the amplitude across beam positions. That is NOT how the built radar measures
+bearing any more, and it cannot be: a scan takes seconds, and the centroid
+assumes every beam saw the target at one bearing, so at 10 m with a 2.5 deg
+budget a 4.3 s scan needs the drone slower than 0.10 m/s. Measured in
+docs/signal-chain.md section "stage 10".
+
+Bearing now comes from the phase between TWO receivers inside a single 0.47 s
+dwell: see interferometer.py, and radar_acquire.py --interferometer. The code
+here is kept because it still models a hovering target correctly, and because
+the beam-gain and CFAR pieces are shared.
 
 That is the whole signal chain of an active radar, in software, so you can
 write and debug the detection and tracking code before the RF parts arrive —

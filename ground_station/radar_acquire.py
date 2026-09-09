@@ -3,8 +3,8 @@
 radar_acquire.py — live FMCW radar processing for the horn-fed can radar.
 
 The real-hardware twin of radar_twin.py. Same DSP (range_doppler from
-fmcw_sim, cfar_detect + centroid from radar_twin), but the beat signal comes
-from the sound card instead of the simulator:
+fmcw_sim, cfar_detect from radar_twin, bearing from interferometer), but the
+beat signal comes from the sound card instead of the simulator:
 
     sound card L = beat signal (video amp out)
     sound card R = chirp SYNC from radar_ctl (HIGH during the up-chirp)
