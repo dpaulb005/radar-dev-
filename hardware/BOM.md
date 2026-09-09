@@ -88,22 +88,71 @@ which is the only way to get it on a *moving* drone. See
 | 28 | second LNA (SPF5189Z 4-pack, row 3) | — | 0 | |
 | 29 | 2 more SMA jumper 3-packs | 2 | 18 | the second receive chain adds four coax runs. Buy them together: the two RX chains must be phase-matched, and identical cables from one batch is the cheap way to do it |
 
-## G. Test gear the plan assumes — ~$105
-
-`docs/testing.md` requires these at checkpoints 2 and 3. Neither is a radar
-part, and you may already have or be able to borrow them.
+## G. Test gear — borrow it
 
 | # | item | qty | ~$ | notes |
 |---|---|---|---|---|
-| 30 | **NanoVNA-H4** | 1 | 65 | required: tuning the horn probe depth to a match is checkpoint 2, and there is no other way to see it |
-| 31 | RTL-SDR v4 + 30 dB SMA pad | 1 | 40 | optional: checks the PA output at checkpoint 3. A power meter substitutes |
+| 30 | VNA reaching 2.5 GHz | 1 | 0–190 | **borrow this.** Checkpoint 2 tunes the horn probe against it and there is no substitute |
+| 31 | RTL-SDR v4 + 30 dB SMA pad | 1 | 0–40 | optional, checkpoint 3. A borrowed power meter does the same job |
+
+**Do not buy a NanoVNA-H4.** It stops at 1.5 GHz and cannot see a 2.44 GHz
+horn at all. A VNA that reaches this band is a LiteVNA-64 at ~$165 or a
+NanoVNA V2 Plus4 at ~$150 — more than any single radar part in this build, and
+the one item most worth borrowing from a university lab.
 
 ## Totals
 
 Prices below use the **$29** band-pass (GPIO Labs, the only cheap one that
 publishes rejection figures). The `~$` column in every table is the line total.
 
-### If you are building the azimuth radar, which is the point of the project
+### Under $500
+
+Two builds that hit the budget. Both give azimuth; they differ in how the two
+receive antennas are read.
+
+**Build A — switched single chain, ~$346 delivered.** Cheapest that works.
+
+| item | $ |
+|---|---|
+| mixer, cheap 1.5–4.5 GHz SMA module (see note) | 25 |
+| ADF4351 PLL board | 27 |
+| SPF5189Z LNA 4-pack | 24 |
+| 2-way splitter, 3 dB pad, SMA jumpers ×3 packs, adapters | 61 |
+| band-pass filter (Data Alliance) | 14 |
+| SPDT 2.4 GHz RF switch, driven from a spare ESP32 pin | 25 |
+| three printed horns: filament, copper tape, SMA flanges, brass rod, solder | 62 |
+| ESP32, TL072 ×2 + breadboard + passives, 12 V supply + bucks | 53 |
+| UCA202 (2 channels is enough: one beat, one sync) | 30 |
+| **parts** | **321** |
+| shipping + 6 % tax | 25 |
+| **total** | **~346** |
+
+**Build B — simultaneous two channels, ~$468 delivered.** Same as A plus a
+second mixer, splitter, band-pass, video-amp channel and the 4-input
+interface, less the switch and the UCA202. Costs $122 more and removes the
+motion-phase correction, which is the only real software risk in A.
+
+Both assume: horns printed rather than cut from copper sheet, **no turntable**,
+and a borrowed VNA.
+
+**Why no turntable.** It was mandatory when azimuth came from scanning. With
+two receivers the interferometer covers the full ±17° beam from a fixed mount,
+so the turntable is now only for pointing at a wider sector. Add it later for
+$53 if you need the coverage.
+
+**About the cheap mixer.** Several 1.5–4.5 GHz double-balanced SMA modules sell
+for ~$25 with 8.5 dB conversion loss against the ZX05-43MH's 7 dB, which costs
+1.5 dB out of a 54 dB margin and does not matter. What the listings do *not*
+state is the LO drive level they need. This chain delivers +10 dBm, which suits
+a level-7 diode mixer; confirm that before ordering, and keep the $73
+Mini-Circuits part as the fallback if the leakage tone at checkpoint 3 comes out
+weak. That one substitution is $96 of the saving.
+
+---
+
+### The full-price build, for reference
+
+If none of the above compromises are acceptable.
 
 Buy the **UMC404HD from the start and skip the UCA202** — the 4-input interface
 does everything the 2-input one does, and a phase measurement needs both beat
@@ -116,10 +165,10 @@ channels on one sample clock. That is the only change from buying in stages.
 | C. Baseband, control, power (**less the UCA202**) | 53 | 353 |
 | D. Turntable | 53 | 406 |
 | F. Second receiver and interferometer | 251 | **657** |
-| G. Test gear (NanoVNA required, SDR optional) | 105 | 762 |
-| shipping (Mini-Circuits direct) + 6 % tax | ~55 | **~815** |
+| G. Test gear, if bought rather than borrowed | 205 | 862 |
+| shipping (Mini-Circuits direct) + 6 % tax | ~55 | **~917** |
 
-**Parts only: ~$657. Everything, delivered: ~$815.**
+**Parts only: ~$657. With bought test gear, delivered: ~$917.**
 
 Already owned, not counted: the laptop, the phone, and the ESP-FLY drone.
 
@@ -130,7 +179,7 @@ Already owned, not counted: the laptop, the phone, and the ESP-FLY drone.
 | Stage 1 — range and velocity (A + B + C with the UCA202) | 383 | 383 |
 | + Stage 2 — turntable (D) | 53 | 436 |
 | + Stage 3 — azimuth (F) | 251 | 687 |
-| + test gear (G) | 105 | 792 |
+| + test gear (G) | 205 | 892 |
 
 Staging costs **$30 more** (the UCA202 becomes a spare) and defers $251.
 
@@ -145,14 +194,14 @@ phase has to be corrected from the measured velocity.
 | | |
 |---|---|
 | A + B + C (with UCA202) + D + SPDT SMA switch + jumpers | **~$475** |
-| + test gear and tax | ~$620 |
+| + test gear and tax | ~$720 |
 
 ### Ways to spend less
 
 | | saves |
 |---|---|
 | 3D print the horns and line them with copper tape instead of cutting sheet | ~$40 |
-| Borrow a NanoVNA from the department | $65 |
+| Borrow a 2.5 GHz-capable VNA from the department | $165 |
 | Skip the RTL-SDR, use a borrowed power meter | $40 |
 | Data Alliance band-pass at $13.70 instead of GPIO Labs at $29, ×2 | $31 |
 

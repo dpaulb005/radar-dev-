@@ -10,7 +10,7 @@ the drone before the radar sweeps.
 |---|---|---|---|
 | 0 | the signal processing | `radar_acquire.py --selftest` | §1 |
 | 1 | the breadboard circuits | ngspice / Multisim, then a scope | §2 |
-| 2 | the horns | NanoVNA, turntable | §3 |
+| 2 | the horns | a VNA **reaching 2.5 GHz** | §3 |
 | 3 | the RF chain | power meter or SDR + pad, the leakage tone | §4 |
 | 4 | the radar end to end | walking-person test, tape measure | §5 |
 | 5 | drone ↔ radar coexistence | ping on the phone with the sweep on | §6 |
@@ -61,7 +61,11 @@ in → the same 107 mV out; sync square wave on the right audio channel.
 
 ## §3 · Horns (before mounting)
 
-NanoVNA at the SMA, horn pointed at open space:
+A VNA at the SMA, horn pointed at open space. **Note the band:** a plain
+NanoVNA-H4 stops at 1.5 GHz and cannot measure this antenna. You need a
+LiteVNA-64, a NanoVNA V2 Plus4 or a lab VNA. Borrow one if you can — it costs
+more than any single part in the radar.
+
 
 | test | PASS |
 |---|---|
