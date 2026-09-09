@@ -40,16 +40,18 @@ TARGET_R, TARGET_V, TARGET_RCS = 10.0, -1.8, 0.0026
 BASELINE = 0.1931                        # horn E-plane width: two horns touching
 
 
-def two_channel(true_az, d, seed, rcs=TARGET_RCS, n_chirps=N_CHIRPS):
+def two_channel(true_az, d, seed, rcs=TARGET_RCS, n_chirps=N_CHIRPS,
+                vel=TARGET_V):
     """Return the complex range-Doppler map for each of two receivers."""
     dr = d * math.sin(math.radians(true_az)) / 2.0     # half the extra path
     maps = []
     for ch, extra in enumerate((0.0, dr)):
         src = SynthSource(FS, T_UP, n_chirps,
-                          targets=[(TARGET_R + extra, true_az, TARGET_V, rcs)],
+                          targets=[(TARGET_R + extra, true_az, vel, rcs)],
                           retrace_s=RETRACE, beam_az=0.0, f0=F0, bw=BW,
                           seed=seed * 100 + ch * 7 + 1)
-        beat, sync = src.read()
+        beats, sync = src.read()      # one RX per SynthSource here, two sources
+        beat = beats[0]
         cube, timing = segment_chirps(beat, sync, FS, n_chirps)
         if cube is None:
             return None, None

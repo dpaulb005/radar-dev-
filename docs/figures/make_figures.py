@@ -119,7 +119,8 @@ def make_audio():
     src = SynthSource(FS, T_UP, N_CHIRPS,
                       targets=[(TARGET_R, 0.0, TARGET_V, TARGET_RCS)],
                       retrace_s=RETRACE, beam_az=0.0, f0=F0, bw=BW, seed=3)
-    return src.read()
+    beats, sync = src.read()          # read() is multi-channel; stage 1 has one
+    return beats[0], sync
 
 
 def fig_soundcard(beat, sync):

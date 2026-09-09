@@ -57,7 +57,8 @@ def scan(step, n_chirps, f0, bw, seed):
                               targets=[(TARGET_R, true_az, TARGET_V, TARGET_RCS)],
                               retrace_s=RETRACE, beam_az=b, f0=f0, bw=bw,
                               seed=seed * 1000 + i * 17 + int(true_az))
-            beat, sync = src.read()
+            beats, sync = src.read()      # multi-channel; this scan uses one RX
+            beat = beats[0]
             cube, timing = segment_chirps(beat, sync, FS, n_chirps)
             if cube is None:
                 continue
