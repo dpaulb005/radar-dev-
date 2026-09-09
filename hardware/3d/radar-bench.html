@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Radar Bench Model</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,7 +28,7 @@
   }
   *{box-sizing:border-box}
   body{background:var(--bg);color:var(--ink);margin:0;font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:14px;line-height:1.5}
-  #app{display:grid;grid-template-columns:1fr 330px;grid-template-rows:auto 1fr;height:100vh;min-height:640px}
+  #app{display:grid;grid-template-columns:1fr 340px;grid-template-rows:auto 1fr;height:100vh;min-height:640px}
   header{grid-column:1/3;padding:14px 20px 10px;border-bottom:1px solid var(--rule);background:var(--surface);display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
   header h1{font-family:"IBM Plex Serif",Georgia,serif;font-weight:600;font-size:22px;margin:0;letter-spacing:-.01em}
   header .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--rf)}
@@ -39,14 +40,16 @@
   button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
   button.grp{border-radius:0} button.grp:first-child{border-radius:3px 0 0 3px} button.grp:last-child{border-radius:0 3px 3px 0}
   .grpwrap{display:flex}
-  #tip{position:absolute;pointer-events:none;background:rgba(15,21,28,.92);color:#e6ecf2;font-family:"IBM Plex Mono",monospace;font-size:11.5px;padding:5px 8px;border-radius:3px;border:1px solid #3a4a5a;white-space:nowrap;opacity:0;transform:translate(-50%,-130%)}
+  #tip{position:absolute;pointer-events:none;background:rgba(15,21,28,.93);color:#e6ecf2;font-family:"IBM Plex Mono",monospace;font-size:11.5px;padding:5px 8px;border-radius:3px;border:1px solid #3a4a5a;white-space:nowrap;opacity:0;transform:translate(-50%,-130%)}
   .lbl{position:absolute;transform:translate(-50%,-50%);pointer-events:none;font-family:"IBM Plex Mono",monospace;font-size:10.5px;padding:1px 5px;border-radius:2px;background:rgba(15,21,28,.78);color:#dfe6ee;border:1px solid rgba(255,255,255,.14);white-space:nowrap;opacity:0;transition:opacity .15s}
-  .lbl.rf{color:#f0a878;border-color:rgba(240,168,120,.45)} .lbl.dsp{color:#89c2ea;border-color:rgba(137,194,234,.45)} .lbl.ok{color:#7ed6a6;border-color:rgba(126,214,166,.45)} .lbl.pow{color:#f2c86a;border-color:rgba(242,200,106,.45)}
-  #status{position:absolute;left:12px;bottom:10px;font-family:"IBM Plex Mono",monospace;font-size:11px;color:#8593a0}
+  .lbl.rf{color:#f0a878;border-color:rgba(240,168,120,.45)} .lbl.dsp{color:#89c2ea;border-color:rgba(137,194,234,.45)}
+  .lbl.ok{color:#7ed6a6;border-color:rgba(126,214,166,.45)} .lbl.pow{color:#f2c86a;border-color:rgba(242,200,106,.45)}
+  .lbl.link{color:#c0aef5;border-color:rgba(192,174,245,.45)}
+  #status{position:absolute;left:12px;bottom:10px;font-family:"IBM Plex Mono",monospace;font-size:11px;color:#8593a0;max-width:70%}
   aside{background:var(--surface);border-left:1px solid var(--rule);overflow-y:auto;padding:12px 14px 30px}
   aside h2{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px;font-weight:500}
   aside h2:first-child{margin-top:2px}
-  .row{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:baseline;padding:5px 6px;border-radius:3px;cursor:pointer;font-size:12.5px;border:1px solid transparent}
+  .row{display:grid;grid-template-columns:26px 1fr auto;gap:8px;align-items:baseline;padding:5px 6px;border-radius:3px;cursor:pointer;font-size:12.5px;border:1px solid transparent}
   .row:hover{background:var(--surface-2)} .row.sel{border-color:var(--rf);background:var(--surface-2)}
   .row .n{font-family:"IBM Plex Mono",monospace;color:var(--muted);font-size:11px}
   .row .q{font-family:"IBM Plex Mono",monospace;color:var(--muted);font-size:11px;white-space:nowrap}
@@ -60,14 +63,14 @@
 <div id="app">
   <header>
     <div><div class="eyebrow">horn-fed FMCW radar · every BOM row · the breadboard, hole by hole</div><h1>Radar Bench Model</h1></div>
-    <div class="sub">Drag to orbit · scroll to zoom · click a BOM row to fly to the part · hover anything for its name.</div>
+    <div class="sub">Drag to orbit · scroll to zoom · click a BOM row to fly to the part · hover anything for its name or pin.</div>
   </header>
   <section id="vp">
     <canvas id="cv"></canvas>
     <div id="hud">
-      <div class="grpwrap"><button class="grp on" data-stage="1">1 · fixed pair</button><button class="grp" data-stage="2">2 · turntable</button><button class="grp" data-stage="3">3 · stacked RX</button></div>
+      <div class="grpwrap"><button class="grp on" data-stage="1">1 · fixed pair</button><button class="grp" data-stage="2">2 · turntable</button><button class="grp" data-stage="3">3 · two RX · azimuth</button></div>
       <button id="b-bench" class="on">Bench</button><button id="b-bb">Breadboard</button><button id="b-room">Room + drone</button>
-      <button id="b-labels" class="on">Labels</button><button id="b-coax" class="on">Coax</button>
+      <button id="b-labels" class="on">Labels</button><button id="b-coax" class="on">Coax</button><button id="b-wires" class="on">Wiring</button>
     </div>
     <div id="tip"></div>
     <div id="status"></div>
@@ -83,337 +86,1022 @@
 const cv=document.getElementById('cv'), vp=document.getElementById('vp'), tip=document.getElementById('tip');
 const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-const scene=new THREE.Scene(); scene.background=new THREE.Color(0x0a0e13); scene.fog=new THREE.Fog(0x0a0e13,4,14);
-const camera=new THREE.PerspectiveCamera(40,1,0.01,60);
-scene.add(new THREE.HemisphereLight(0xa8bfd2,0x1a2129,0.9));
-const key=new THREE.DirectionalLight(0xffffff,0.9); key.position.set(1.5,2.6,1.8); scene.add(key);
-const rim=new THREE.DirectionalLight(0xe59055,0.3); rim.position.set(-2,1.2,-1.5); scene.add(rim);
+renderer.outputEncoding=THREE.sRGBEncoding;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=0.92;
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 
+const scene=new THREE.Scene();
+function gradientSky(){
+  const c=document.createElement('canvas'); c.width=4; c.height=256; const x=c.getContext('2d');
+  const g=x.createLinearGradient(0,0,0,256);
+  g.addColorStop(0,'#18232e'); g.addColorStop(0.5,'#0e161d'); g.addColorStop(1,'#070a0e');
+  x.fillStyle=g; x.fillRect(0,0,4,256); return new THREE.CanvasTexture(c);
+}
+scene.background=gradientSky();
+scene.fog=new THREE.Fog(0x0b1219,6.5,22);
+const camera=new THREE.PerspectiveCamera(38,1,0.008,60);
+
+scene.add(new THREE.HemisphereLight(0xaecbe0,0x141b21,0.55));
+const key=new THREE.DirectionalLight(0xfff2e2,1.05); key.position.set(0.9,1.9,1.1);
+key.castShadow=true; key.shadow.mapSize.set(2048,2048); key.shadow.bias=-0.0006; key.shadow.normalBias=0.004;
+const sc=key.shadow.camera; sc.left=-0.62; sc.right=0.62; sc.top=0.62; sc.bottom=-0.62; sc.near=0.4; sc.far=4.5; sc.updateProjectionMatrix();
+scene.add(key);
+const fill=new THREE.DirectionalLight(0xbcd4e8,0.30); fill.position.set(-1.6,1.0,1.4); scene.add(fill);
+const rim=new THREE.DirectionalLight(0xe59055,0.42); rim.position.set(-1.2,0.7,-2.0); scene.add(rim);
+
+const mat=(o)=>new THREE.MeshStandardMaterial(o);
 const M={
-  metal:new THREE.MeshStandardMaterial({color:0xb9c3cc,metalness:.72,roughness:.34,side:THREE.DoubleSide}),
-  metalIn:new THREE.MeshStandardMaterial({color:0x6a757f,metalness:.55,roughness:.42,side:THREE.BackSide}),
-  alu:new THREE.MeshStandardMaterial({color:0xaab3ba,metalness:.6,roughness:.45}),
-  wood:new THREE.MeshStandardMaterial({color:0x9a7c52,roughness:.85}),
-  pcb:new THREE.MeshStandardMaterial({color:0x1f5d3a,roughness:.75}),
-  pcbBlue:new THREE.MeshStandardMaterial({color:0x1b3f7a,roughness:.75}),
-  pcbRed:new THREE.MeshStandardMaterial({color:0x7a1f1f,roughness:.75}),
-  dark:new THREE.MeshStandardMaterial({color:0x27313a,metalness:.3,roughness:.6}),
-  black:new THREE.MeshStandardMaterial({color:0x111418,roughness:.6}),
-  rf:new THREE.MeshStandardMaterial({color:0xc2622a,metalness:.35,roughness:.5}),
-  dsp:new THREE.MeshStandardMaterial({color:0x2f77b0,metalness:.3,roughness:.5}),
-  ok:new THREE.MeshStandardMaterial({color:0x2c9c68,metalness:.3,roughness:.5}),
-  coax:new THREE.MeshStandardMaterial({color:0x30383f,metalness:.4,roughness:.5}),
-  coaxRx:new THREE.MeshStandardMaterial({color:0x2a4a6a,metalness:.4,roughness:.5}),
-  sma:new THREE.MeshStandardMaterial({color:0xd4b25a,metalness:.8,roughness:.3}),
-  bb:new THREE.MeshStandardMaterial({color:0xf2f0e6,roughness:.9}),
-  hole:new THREE.MeshStandardMaterial({color:0x3a3a3a,roughness:.9}),
-  res:new THREE.MeshStandardMaterial({color:0xd9c39a,roughness:.7}),
-  film:new THREE.MeshStandardMaterial({color:0xd8b53a,roughness:.7}),
-  cer:new THREE.MeshStandardMaterial({color:0xd08a3a,roughness:.7}),
-  elec:new THREE.MeshStandardMaterial({color:0x1d2330,roughness:.6}),
-  lead:new THREE.MeshStandardMaterial({color:0xc9ccd0,metalness:.7,roughness:.4}),
-  copper:new THREE.MeshStandardMaterial({color:0xb87333,metalness:.7,roughness:.4}),
-  screen:new THREE.MeshStandardMaterial({color:0x0b1a2a,emissive:0x0e2a44,roughness:.4}),
-  brick:new THREE.MeshStandardMaterial({color:0x2b2f34,roughness:.7}),
-  rubber:new THREE.MeshStandardMaterial({color:0x1a1a1a,roughness:.95}),
-  glow:new THREE.MeshStandardMaterial({color:0xffc06a,emissive:0xff9a2a,emissiveIntensity:.9,transparent:true,opacity:.85}),
+  metalIn:mat({color:0x5d6873,metalness:.6,roughness:.38,side:THREE.BackSide}),
+  alu:mat({color:0xa9b3bb,metalness:.65,roughness:.38}),
+  aluDark:mat({color:0x78838c,metalness:.6,roughness:.45}),
+  steel:mat({color:0x8d959c,metalness:.78,roughness:.30}),
+  wood:mat({color:0xa8875c,roughness:.82}),
+  pcb:mat({color:0x1f5d3a,roughness:.68}),
+  pcbBlue:mat({color:0x1b3f7a,roughness:.68}),
+  pcbRed:mat({color:0x8a2222,roughness:.68}),
+  pcbBlack:mat({color:0x15181c,roughness:.62}),
+  dark:mat({color:0x27313a,metalness:.3,roughness:.6}),
+  black:mat({color:0x14181c,roughness:.55}),
+  coax:mat({color:0x2b3239,metalness:.15,roughness:.62}),
+  coaxRx:mat({color:0x2b4a68,metalness:.15,roughness:.62}),
+  boot:mat({color:0x1a1f24,roughness:.85}),
+  sma:mat({color:0xd9bd6c,metalness:.85,roughness:.24}),
+  gold:mat({color:0xd4b25a,metalness:.8,roughness:.28}),
+  tin:mat({color:0xbfc6cc,metalness:.75,roughness:.32}),
+  bb:mat({color:0xf2f0e6,roughness:.85}),
+  hole:mat({color:0x33383d,roughness:.9}),
+  res:mat({color:0xd9c39a,roughness:.65}),
+  film:mat({color:0xd8b53a,roughness:.65}),
+  cer:mat({color:0xd08a3a,roughness:.65}),
+  elec:mat({color:0x1d2330,roughness:.55}),
+  lead:mat({color:0xc9ccd0,metalness:.7,roughness:.35}),
+  copper:mat({color:0xc07a3e,metalness:.78,roughness:.31,side:THREE.DoubleSide}),
+  copperSeam:mat({color:0x9aa3ac,metalness:.6,roughness:.42}),
+  screen:mat({color:0x0a1622,emissive:0x0d2740,emissiveIntensity:.45,roughness:.35}),
+  brick:mat({color:0x2b2f34,roughness:.65}),
+  rubber:mat({color:0x1c1f23,roughness:.9}),
+  ledRed:mat({color:0xd03028,emissive:0x8a1008,emissiveIntensity:.7,roughness:.4}),
+  ledBlue:mat({color:0x3070d0,emissive:0x0a3a8a,emissiveIntensity:.7,roughness:.4}),
+  glow:mat({color:0xffc06a,emissive:0xff9a2a,emissiveIntensity:.9,transparent:true,opacity:.9}),
 };
-const pickables=[], labels=[], registry={};      // registry: bomId -> [meshes]
-function reg(id,obj,name,cls){ obj.userData.bom=id; obj.userData.name=name||id; if(cls) obj.userData.cls=cls; (registry[id]=registry[id]||[]).push(obj); obj.traverse(o=>{ if(o.isMesh){ o.userData.bom=id; o.userData.name=obj.userData.name; pickables.push(o);} }); return obj; }
-function box(w,h,d,mat){ return new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat); }
-function cyl(r,h,mat,seg=16){ return new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,seg),mat); }
+// wire gauges: RG316 2.5 mm, 22 AWG hook-up 1.7 mm, breadboard jumper 0.9 mm
+const R_COAX=0.00125, R_WIRE=0.00085, R_JUMP=0.00045;
+// harness wire colours, as called out in WIRING.md
+const WC={black:0x1a1a1a,red:0xc0392b,orange:0xe07b20,green:0x2ecc71,violet:0x8e44ad,
+          blue:0x2e86de,yellow:0xd8c02a,white:0xe8e8e8,grey:0x8a949c,brown:0x7a4a24};
+const wireMat={}; for(const k in WC) wireMat[k]=mat({color:WC[k],roughness:.7});
+
+const pickables=[], labels=[], registry={};
+function reg(id,obj,name,cls){ obj.userData.bom=id; obj.userData.name=name||id; if(cls) obj.userData.cls=cls;
+  (registry[id]=registry[id]||[]).push(obj);
+  obj.traverse(o=>{ if(o.isMesh){ if(o.userData.pinName===undefined) o.userData.name=obj.userData.name;
+    o.userData.bom=id; if(!o.userData._pick){o.userData._pick=1; pickables.push(o);} } });
+  return obj; }
+function box(w,h,d,m){ return new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); }
+function cyl(r,h,m,seg=16){ return new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,seg),m); }
+function tube(r1,r2,h,m,seg=16){ return new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,seg),m); }
 function at(m,x,y,z){ m.position.set(x,y,z); return m; }
-function addLabel(obj,text,cls,off){ const el=document.createElement('div'); el.className='lbl '+(cls||''); el.textContent=text; vp.appendChild(el); labels.push({el,obj,off:off||new THREE.Vector3(0,.02,0)}); }
+function addLabel(obj,text,cls,off,major){ const el=document.createElement('div'); el.className='lbl '+(cls||''); el.textContent=text;
+  vp.appendChild(el); labels.push({el,obj,off:off||new THREE.Vector3(0,.02,0),major:!!major}); }
+function strut(a,b,r,m,seg=8){ const d=new THREE.Vector3().subVectors(b,a); const s=new THREE.Mesh(new THREE.CylinderGeometry(r,r,d.length(),seg),m);
+  s.position.copy(a).add(b).multiplyScalar(.5); s.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize()); return s; }
+function run(pts,r,m,seg){ const c=new THREE.CatmullRomCurve3(pts);
+  return new THREE.Mesh(new THREE.TubeGeometry(c,seg||Math.max(28,pts.length*12),r,9,false),m); }
+
+// --- named electrical pins -------------------------------------------
+// Every connector pin is a real object with a name; hovering one names the net.
+function addPin(parent,name,x,y,z,mesh){ mesh.position.set(x,y,z); mesh.userData.pinName=name; parent.add(mesh);
+  (parent.userData.pins=parent.userData.pins||{})[name]=mesh; return mesh; }
+function pinAt(comp,name){ const p=comp.userData.pins[name];
+  if(!p) throw new Error('no pin '+name+' on '+(comp.userData.name||'?'));
+  return p.localToWorld(new THREE.Vector3(0,p.userData.pinTop||0,0)); }
 
 // =====================================================================
-// the board and the room
+// bench and table
 // =====================================================================
 const BW=0.457, BD=0.381, BT=0.018, TOP=BT;
 const world=new THREE.Group(); scene.add(world);
-const grid=new THREE.GridHelper(4,20,0x2b3742,0x1a232b); scene.add(grid);
-const bench=new THREE.Group(); world.add(bench);
-reg('D17', at(box(BW,BT,BD,M.wood),0,BT/2,0), 'plywood board 18" x 15"');
-bench.add(registry.D17[0]);
+const table=new THREE.Mesh(new THREE.PlaneGeometry(8,8),mat({color:0x11171d,roughness:.95}));
+table.rotation.x=-Math.PI/2; table.position.y=-0.0015; table.receiveShadow=true; scene.add(table);
+const grid=new THREE.GridHelper(4,20,0x25333f,0x18222b); grid.material.opacity=.55; grid.material.transparent=true; scene.add(grid);
 
-// SMA port helper: small gold cylinder along +axis
-function sma(len=0.009){ const g=new THREE.Group(); const b=cyl(0.0032,len,M.sma,12); b.rotation.z=Math.PI/2; b.position.x=len/2; g.add(b); const n=cyl(0.0042,0.004,M.sma,6); n.rotation.z=Math.PI/2; n.position.x=len-0.002; g.add(n); return g; }
-function module(w,h,d,mat,ports){ // ports: [{side:'l'|'r'|'b'|'f', y, off}]
-  const g=new THREE.Group(); const body=box(w,h,d,mat); body.position.y=h/2; g.add(body); g.userData.ports={};
-  (ports||[]).forEach(p=>{ const s=sma(); const y=(p.y!==undefined?p.y:h/2); if(p.side==='r'){ s.position.set(w/2,y,p.off||0);} else if(p.side==='l'){ s.rotation.y=Math.PI; s.position.set(-w/2,y,p.off||0);} else if(p.side==='b'){ s.rotation.y=Math.PI/2; s.position.set(p.off||0,y,-d/2);} else { s.rotation.y=-Math.PI/2; s.position.set(p.off||0,y,d/2);} g.add(s); g.userData.ports[p.name]=s; });
+const bench=new THREE.Group(); world.add(bench);
+const ply=box(BW,BT,BD,M.wood); ply.position.y=BT/2; bench.add(ply);
+reg('D17',ply,'plywood board 18" × 15"');
+[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz])=>{ const f=cyl(0.008,0.004,M.rubber,12); f.position.set(sx*(BW/2-0.03),-0.002,sz*(BD/2-0.03)); bench.add(f); });
+
+// =====================================================================
+// RF modules — every SMA on one centre-line
+// =====================================================================
+const RFY=TOP+0.007, SMA_L=0.009;
+const ZTX=-0.150, ZRX=-0.082, ZRX2=0.020;
+
+function sma(){
+  const g=new THREE.Group();
+  const b=cyl(0.0031,SMA_L*0.5,M.sma,14); b.rotation.z=Math.PI/2; b.position.x=SMA_L*0.25; g.add(b);
+  const nut=new THREE.Mesh(new THREE.CylinderGeometry(0.0043,0.0043,SMA_L*0.5,6),M.sma);
+  nut.rotation.z=Math.PI/2; nut.rotation.x=Math.PI/12; nut.position.x=SMA_L*0.75; g.add(nut);
+  const pin=cyl(0.0006,0.0022,M.gold,8); pin.rotation.z=Math.PI/2; pin.position.x=SMA_L+0.0006; g.add(pin);
   return g;
 }
-function portWorld(mod,name){ const s=mod.userData.ports[name]; const v=new THREE.Vector3(0.009,0,0); s.localToWorld(v); return v; }
+function rfBody(bodyMesh,w,d,ports){
+  const g=new THREE.Group(); g.add(bodyMesh); g.userData.ports={}; g.userData.w=w; g.userData.d=d;
+  (ports||[]).forEach(p=>{ const s=sma(), o=p.off||0;
+    if(p.side==='r'){ s.position.set(w/2,0,o); }
+    else if(p.side==='l'){ s.rotation.y=Math.PI; s.position.set(-w/2,0,o); }
+    else if(p.side==='b'){ s.rotation.y=Math.PI/2; s.position.set(o,0,-d/2); }
+    else { s.rotation.y=-Math.PI/2; s.position.set(o,0,d/2); }
+    s.userData.pinName=p.name.toUpperCase(); g.add(s); g.userData.ports[p.name]=s; });
+  return g;
+}
+function rfBox(w,h,d,m,ports){ return rfBody(box(w,h,d,m),w,d,ports); }
+function rfBarrel(w,r,m,ports){
+  const b=cyl(r,w,m,20); b.rotation.z=Math.PI/2;
+  const g=rfBody(b,w,r*2,ports);
+  const clip=box(0.010,RFY-TOP-r,0.012,M.dark); clip.position.y=-(r+(RFY-TOP-r)/2); g.add(clip);
+  return g;
+}
+function putRF(g,x,z){ g.position.set(x,RFY,z); return g; }
+function portPos(m,n){ return m.userData.ports[n].localToWorld(new THREE.Vector3(SMA_L,0,0)); }
+function portDir(m,n){ const s=m.userData.ports[n];
+  const a=s.localToWorld(new THREE.Vector3(0,0,0)), b=s.localToWorld(new THREE.Vector3(1,0,0)); return b.sub(a).normalize(); }
 
-// --- RF chain, in MIT order, back row of the board (z = -0.04) ---
-const RZ=-0.045;
-const adf=module(0.055,0.012,0.036,M.pcb,[{name:'out',side:'r',y:0.006,off:0.008}]); at(adf,-0.19,TOP,RZ); bench.add(adf); reg('A2',adf,'ADF4351 board — the sweep source, +5 dBm','rf');
-adf.add(at(cyl(0.0035,0.003,M.sma,8),-0.012,0.0135,-0.008)); // TCXO can-ish
-const hdrA=box(0.020,0.008,0.0025,M.black); hdrA.position.set(-0.015,0.016,0.016); adf.add(hdrA);
-const att=module(0.028,0.010,0.010,M.dark,[{name:'in',side:'l'},{name:'out',side:'r'}]); at(att,-0.135,TOP+0.010,RZ+0.006); bench.add(att); reg('A5',att,'3 dB attenuator, SMA inline','rf');
-const pa=module(0.040,0.012,0.028,M.pcbBlue,[{name:'in',side:'l',y:0.006},{name:'out',side:'r',y:0.006}]); at(pa,-0.085,TOP,RZ); bench.add(pa); reg('A3a',pa,'PA — SPF5189Z module, +12 dB','rf');
-pa.add(at(box(0.018,0.004,0.014,M.alu),0,0.014,0)); // shield can
-const spl=module(0.032,0.014,0.022,M.alu,[{name:'s',side:'l'},{name:'o1',side:'r',off:-0.006},{name:'o2',side:'r',off:0.006}]); at(spl,-0.030,TOP,RZ); bench.add(spl); reg('A4',spl,'2-way splitter, 800–2500 MHz','rf');
-const mix=module(0.020,0.012,0.020,M.alu,[{name:'lo',side:'l'},{name:'rf',side:'r'},{name:'if',side:'f'}]); at(mix,0.040,TOP,RZ+0.004); bench.add(mix); reg('A1',mix,'mixer ZX05-43MH-S+ — LO · RF · IF','rf');
-const lna=module(0.040,0.012,0.028,M.pcbBlue,[{name:'out',side:'l',y:0.006},{name:'in',side:'r',y:0.006}]); at(lna,0.100,TOP,RZ); bench.add(lna); reg('A3b',lna,'LNA — SPF5189Z module, NF ~1 dB','rf');
-lna.add(at(box(0.018,0.004,0.014,M.alu),0,0.014,0));
-const bpf=module(0.050,0.012,0.012,M.alu,[{name:'out',side:'l'},{name:'in',side:'r'}]); at(bpf,0.160,TOP+0.006,RZ+0.006); bench.add(bpf); reg('A7b',bpf,'band-pass 2400–2500 MHz, SMA inline','rf');
-addLabel(adf,'ADF4351','rf'); addLabel(att,'3 dB pad','rf'); addLabel(pa,'PA','rf'); addLabel(spl,'splitter','rf'); addLabel(mix,'mixer','rf'); addLabel(lna,'LNA','rf'); addLabel(bpf,'band-pass','rf');
-
-// --- horns ---
-const GW=0.0864/2, GH=0.0432/2, AW=0.2638/2, AH=0.1931/2, FL=0.0915, GL=0.115;
-function flareGeom(){ const g=[[-GW,-GH,0],[GW,-GH,0],[GW,GH,0],[-GW,GH,0]], a=[[-AW,-AH,FL],[AW,-AH,FL],[AW,AH,FL],[-AW,AH,FL]]; const pos=[]; for(let i=0;i<4;i++){const j=(i+1)%4; pos.push(...g[i],...g[j],...a[j],...g[i],...a[j],...a[i]);} const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); geo.computeVertexNormals(); return geo; }
-const FLARE=flareGeom();
-function horn(tintMat){ const g=new THREE.Group();
-  g.add(new THREE.Mesh(FLARE,M.copper)); const inner=new THREE.Mesh(FLARE,M.metalIn); inner.scale.set(.985,.985,1); g.add(inner);
-  const guide=box(GW*2,GH*2,GL,M.copper); guide.position.z=-GL/2; g.add(guide);
-  const RB=0.008; [[0,AH+RB/2],[0,-AH-RB/2]].forEach(([x,y])=>{const m=box(AW*2+RB*2,RB,0.004,tintMat); m.position.set(x,y,FL); g.add(m);});
-  [[AW+RB/2,0],[-AW-RB/2,0]].forEach(([x,y])=>{const m=box(RB,AH*2,0.004,tintMat); m.position.set(x,y,FL); g.add(m);});
-  // SMA flange + probe at 43.7 mm from the back wall, on the broad (top) wall
-  const fl=box(0.0127,0.0016,0.0127,M.sma); fl.position.set(0,GH+0.0008,-GL+0.0437); g.add(fl);
-  const p=sma(0.009); p.rotation.z=Math.PI/2; p.position.set(0,GH+0.0016,-GL+0.0437); g.add(p);
-  const probe=cyl(0.0008,0.028,M.copper,6); probe.position.set(0,GH-0.014,-GL+0.0437); g.add(probe); g.userData.feed=p;
-  return g; }
-const HY=0.30, HZ=-0.135;
-const stage1=new THREE.Group(), stage23=new THREE.Group(); bench.add(stage1,stage23);
-const h1tx=horn(M.rf), h1rx=horn(M.dsp); h1tx.position.set(-0.145,HY,HZ); h1rx.position.set(0.145,HY,HZ); h1tx.rotation.y=Math.PI; h1rx.rotation.y=Math.PI; stage1.add(h1tx,h1rx);
-[-0.145,0.145].forEach(x=>{ const post=box(0.016,HY-0.02,0.016,M.dark); post.position.set(x,TOP+(HY-0.02)/2,HZ-0.10); stage1.add(post); const br=box(0.03,0.002,0.03,M.alu); br.position.set(x,TOP+0.001,HZ-0.10); stage1.add(br); });
-reg('B8',h1tx,'TX horn — 0.021" copper, 264 × 193 mm mouth','rf'); reg('B8',h1rx,'RX horn — same, E-plane vertical','dsp');
-addLabel(h1tx,'TX horn','rf',new THREE.Vector3(0,AH+.03,0)); addLabel(h1rx,'RX horn','dsp',new THREE.Vector3(0,AH+.03,0));
-// turntable (stage 2/3): NEMA-17 + lazy susan + mast + plate
-const nema=box(0.042,0.042,0.042,M.black); nema.position.set(0,TOP+0.021,HZ-0.10); stage23.add(nema); reg('D18a',nema,'NEMA-17 stepper','ok');
-const shaft=cyl(0.0025,0.02,M.lead,8); shaft.position.set(0,TOP+0.052,HZ-0.10); stage23.add(shaft);
-const susan=cyl(0.075,0.008,M.alu,32); susan.position.set(0,TOP+0.046,HZ-0.10); stage23.add(susan); reg('D18b',susan,'lazy-susan bearing 150 mm','ok');
-const rotG=new THREE.Group(); rotG.position.set(0,TOP+0.050,HZ-0.10); stage23.add(rotG);
-const plate=cyl(0.09,0.006,M.wood,32); plate.position.y=0.003; rotG.add(plate);
-const mast=cyl(0.011,HY-0.06,M.dark,12); mast.position.y=(HY-0.06)/2; rotG.add(mast);
-const yoke=box(0.34,0.012,0.03,M.dark); yoke.position.set(0,HY-TOP-0.05,0.0); rotG.add(yoke);
-const h2tx=horn(M.rf), h2rx=horn(M.dsp); h2tx.position.set(-0.145,HY-TOP-0.05,-0.02); h2rx.position.set(0.145,HY-TOP-0.05,-0.02); h2tx.rotation.y=Math.PI; h2rx.rotation.y=Math.PI; rotG.add(h2tx,h2rx);
-reg('B8',h2tx,'TX horn (on the turntable)','rf'); reg('B8',h2rx,'RX horn (on the turntable)','dsp');
-addLabel(h2tx,'TX horn','rf',new THREE.Vector3(0,AH+.03,0)); addLabel(h2rx,'RX horn','dsp',new THREE.Vector3(0,AH+.03,0));
-const h3=horn(M.ok); h3.position.set(0.145,HY-TOP-0.05-0.1931,-0.02); h3.rotation.y=Math.PI; rotG.add(h3); reg('F24',h3,'3rd horn — RX 2, 193 mm below RX 1','ok'); addLabel(h3,'RX 2','ok',new THREE.Vector3(0,-AH-.03,0));
-const a4988=box(0.020,0.004,0.015,M.pcbRed); a4988.position.set(0.19,TOP+0.002,0.15); bench.add(a4988); reg('D18c',a4988,'A4988 stepper driver','ok'); addLabel(a4988,'A4988','ok');
-const susanCable=[]; // stepper wire
-const stepWire=tube([new THREE.Vector3(0.19,TOP+0.006,0.15),new THREE.Vector3(0.21,TOP+0.03,0.05),new THREE.Vector3(0.06,TOP+0.03,-0.20),new THREE.Vector3(0.021,TOP+0.03,HZ-0.10)],0.0015,M.rubber); stage23.add(stepWire);
-
-// --- breadboard ---
-const BBW=0.165, BBD=0.055, BBH=0.009, PITCH=0.00254;
-const bbG=new THREE.Group(); bbG.position.set(-0.075,TOP,0.085); bench.add(bbG);
-const bbBody=box(BBW,BBH,BBD,M.bb); bbBody.position.y=BBH/2; bbG.add(bbBody); reg('C15a',bbBody,'830-point breadboard','dsp');
-// hole grid: columns 1..63 along x, rows a-e (z from -0.01 to -0.0002) and f-j; rails top/bottom
-const COL0=-BBW/2+0.006; const rowZ={};
-'abcde'.split('').forEach((r,i)=>rowZ[r]=-0.0127+i*PITCH+0.0025); 'fghij'.split('').forEach((r,i)=>rowZ[r]=0.0025+i*PITCH+0.0005);
-rowZ['R1']=-0.0235; rowZ['R2']=-0.0235+PITCH; rowZ['R3']=0.0235-PITCH; rowZ['R4']=0.0235;
-function hx(col){ return COL0+(col-1)*PITCH; }
-const holeGeo=new THREE.BoxGeometry(0.0009,0.0006,0.0009); const holes=new THREE.InstancedMesh(holeGeo,M.hole,63*10+4*60); let hi=0; const hm=new THREE.Matrix4();
-for(let c=1;c<=63;c++) for(const r of 'abcdefghij'){ hm.makeTranslation(hx(c),BBH+0.0002,rowZ[r]); holes.setMatrixAt(hi++,hm); }
-for(let c=1;c<=60;c++) for(const r of ['R1','R2','R3','R4']){ hm.makeTranslation(hx(c+1.5),BBH+0.0002,rowZ[r]); holes.setMatrixAt(hi++,hm); }
-holes.count=hi; bbG.add(holes);
-const chan=box(BBW,0.0008,0.004,M.hole); chan.position.set(0,BBH-0.0003,-0.0002+0.0025-0.0025); bbG.add(chan);
-// rail stripes
-[['R1',0xc84b3a],['R2',0x3a5fc8],['R3',0xc84b3a],['R4',0x3a5fc8]].forEach(([r,c])=>{ const s=box(BBW-0.01,0.0003,0.0008,new THREE.MeshStandardMaterial({color:c})); s.position.set(0,BBH+0.0001,rowZ[r]+(r==='R1'||r==='R3'?-0.0018:0.0018)); bbG.add(s); });
-
-// component builders (positions in hole coordinates)
-const BANDS={0:0x000000,1:0x8b4513,2:0xd22,3:0xf80,4:0xee0,5:0x2a2,6:0x22d,7:0x82a,8:0x888,9:0xfff};
-function bandColors(val){ // '49.9'|'10k'|'100k'|'1k'|'47'|'100'|'10'
-  let v=parseFloat(val); if(/k/.test(val)) v*=1e3; if(/M/.test(val)) v*=1e6; const e=Math.floor(Math.log10(v))-1; const s=Math.round(v/Math.pow(10,e)); return [Math.floor(s/10)%10, s%10, Math.max(e,0)]; }
-function resistor(val,vertical){ const g=new THREE.Group(); const body=cyl(0.0012,0.0064,M.res,10); body.rotation.z=Math.PI/2; g.add(body);
-  bandColors(val).concat([null]).forEach((d,i)=>{ const b=cyl(0.00125,0.0006,new THREE.MeshStandardMaterial({color:d===null?0xd4a017:BANDS[d]}),10); b.rotation.z=Math.PI/2; b.position.x=-0.0022+i*0.0011; g.add(b); });
-  const l1=cyl(0.0003,0.0075,M.lead,5); l1.rotation.z=Math.PI/2; l1.position.x=-0.006; g.add(l1); const l2=l1.clone(); l2.position.x=0.006; g.add(l2);
-  return g; }
-function filmCap(){ const g=new THREE.Group(); const b=box(0.0045,0.006,0.0025,M.film); b.position.y=0.004; g.add(b); [-0.00127,0.00127].forEach(x=>{const l=cyl(0.0003,0.004,M.lead,5); l.position.set(x,0.001,0); g.add(l);}); return g; }
-function cerCap(){ const g=new THREE.Group(); const d=cyl(0.002,0.0015,M.cer,14); d.rotation.x=Math.PI/2; d.position.y=0.0045; g.add(d); [-0.00127,0.00127].forEach(x=>{const l=cyl(0.0003,0.004,M.lead,5); l.position.set(x,0.0015,0); g.add(l);}); return g; }
-function elecCap(big){ const g=new THREE.Group(); const r=big?0.004:0.0025, h=big?0.011:0.007; const b=cyl(r,h,M.elec,16); b.position.y=h/2+0.002; g.add(b); const stripe=box(0.0012,h*0.8,0.0002,new THREE.MeshStandardMaterial({color:0xdddddd})); stripe.position.set(-r*0.75,h/2+0.002,r*0.55); g.add(stripe); [-0.00127,0.00127].forEach(x=>{const l=cyl(0.0003,0.003,M.lead,5); l.position.set(x,0.0008,0); g.add(l);}); return g; }
-function diode(){ const g=new THREE.Group(); const b=cyl(0.0026,0.0085,M.black,10); b.rotation.z=Math.PI/2; g.add(b); const band=cyl(0.0027,0.0008,new THREE.MeshStandardMaterial({color:0xdddddd}),10); band.rotation.z=Math.PI/2; band.position.x=-0.003; g.add(band); const l1=cyl(0.0004,0.008,M.lead,5); l1.rotation.z=Math.PI/2; l1.position.x=-0.008; g.add(l1); const l2=l1.clone(); l2.position.x=0.008; g.add(l2); return g; }
-function bead(){ const g=new THREE.Group(); const b=cyl(0.0018,0.006,new THREE.MeshStandardMaterial({color:0x55595e,roughness:.8}),10); b.rotation.z=Math.PI/2; g.add(b); const l1=cyl(0.0003,0.007,M.lead,5); l1.rotation.z=Math.PI/2; l1.position.x=-0.006; g.add(l1); const l2=l1.clone(); l2.position.x=0.006; g.add(l2); return g; }
-function dip8(){ const g=new THREE.Group(); const b=box(0.0096,0.0035,0.0064,M.black); b.position.y=0.0035; g.add(b); const notch=cyl(0.0008,0.001,M.dark,8); notch.rotation.x=Math.PI/2; notch.position.set(-0.0048,0.0053,0); g.add(notch); for(let i=0;i<4;i++){ [-0.0038,0.0038].forEach(z=>{ const p=box(0.0005,0.003,0.0003,M.lead); p.position.set(-0.00381+i*PITCH,0.0015,z); g.add(p);}); } return g; }
-function header(n){ const g=new THREE.Group(); const b=box(n*PITCH,0.0025,0.0025,M.black); b.position.set((n-1)*PITCH/2,0.00125,0); g.add(b); for(let i=0;i<n;i++){ const p=box(0.0006,0.008,0.0006,M.sma); p.position.set(i*PITCH,0.003,0); g.add(p);} return g; }
-function jumper(c1,r1,c2,r2,color){ const a=new THREE.Vector3(hx(c1),BBH,rowZ[r1]), b=new THREE.Vector3(hx(c2),BBH,rowZ[r2]); const mid=a.clone().add(b).multiplyScalar(.5); mid.y+=0.004+a.distanceTo(b)*0.25; const curve=new THREE.CatmullRomCurve3([a,a.clone().setY(BBH+0.003),mid,b.clone().setY(BBH+0.003),b]); return new THREE.Mesh(new THREE.TubeGeometry(curve,12,0.0005,6,false),new THREE.MeshStandardMaterial({color,roughness:.7})); }
-
-// component placement: ref, kind, value, col, row, orientation
-const BB=[
- // signal chain, top bank
- ['J1','hdr2','MIXER IF',1,'a'],['R1','res','49.9',2,'b','v'],['C20','cer','1n',3,'b','v'],['C1','film','100n',5,'c','h'],['R2','res','10k',9,'b','v'],
- ['U1','dip','TL072 A/B',11,'e'],['C3','cer','100n',10,'a','v'],['R3','res','100k',15,'a','h'],['R4','res','1k',19,'b','v'],
- ['C2','film','100n',20,'c','h'],['R6','res','10k',24,'b','v'],['R7','res','10k',25,'a','h'],['R8','res','1k',29,'b','v'],
- ['R12','res','1k',30,'c','h'],['C9','cer','10n',34,'b','v'],['U2','dip','TL072 A/B',36,'e'],['C7','cer','100n',35,'a','v'],
- ['R13','res','100',40,'c','h'],['C10','elec','10u',44,'b','v'],['R14','res','100k',45,'b','v'],['J2','hdr2','AUDIO L',46,'a'],
- // bias + power, bottom bank
- ['R9','res','10k',1,'g','h'],['R10','res','10k',5,'g','h'],['C5','elec','10u',9,'g','v'],['R11','res','47',10,'i','h'],['C6','elecB','47u',14,'g','v'],
- ['J3','hdr2','12V IN',16,'j'],['D1','diode','1N5822',18,'h','h'],['C11','elecB','100u',21,'g','v'],['R15','res','10',22,'i','h'],['C13','elecB','100u',26,'g','v'],['J4','hdr2','TO BUCK',27,'j'],
- ['J5','hdr2','5V IN',29,'j'],['C12','elecB','100u',31,'g','v'],['FB1','bead','',32,'h','h'],['C14','elec','10u',35,'g','v'],['C15','cer','100n',36,'g','v'],['J6','hdr2','ADF 5V',37,'j'],
- ['FB2','bead','',39,'h','h'],['C16','elec','10u',42,'g','v'],['C17','cer','100n',43,'g','v'],['J7','hdr2','PA 5V',44,'j'],
- ['FB3','bead','',46,'h','h'],['C18','elec','10u',49,'g','v'],['C19','cer','100n',50,'g','v'],['J8','hdr2','LNA 5V',51,'j'],
- // digital, right side
- ['J9','hdr10','ESP32',40,'j'],['R16','res','33',41,'f','v'],['R17','res','33',42,'f','v'],['R18','res','33',43,'f','v'],['J10','hdr6','ADF LOGIC',44,'a'],
- ['JP3','hdr2','CE EN',50,'h'],['R19','res','10k',52,'f','v'],['J11','hdr5','A4988',53,'j'],['R20','res','10k',57,'f','v'],['R21','res','10k',54,'f','v'],['R22','res','10k',55,'f','v'],
- ['R23','res','10k',57,'g','h'],['R24','res','1k',61,'f','v'],['J12','hdr2','AUDIO R',62,'j'],
-];
-const bbParts={};
-BB.forEach(([ref,kind,val,col,row,or])=>{
-  let m; if(kind==='res') m=resistor(val); else if(kind==='film') m=filmCap(); else if(kind==='cer') m=cerCap(); else if(kind==='elec') m=elecCap(false); else if(kind==='elecB') m=elecCap(true);
-  else if(kind==='diode') m=diode(); else if(kind==='bead') m=bead(); else if(kind==='dip') m=dip8(); else if(kind.startsWith('hdr')) m=header(parseInt(kind.slice(3)));
-  const x=hx(col), z=rowZ[row];
-  if(kind==='dip'){ m.position.set(x+PITCH*1.5,BBH,rowZ['e']+PITCH*0.5+0.0006); }
-  else if(kind.startsWith('hdr')){ m.position.set(x,BBH,z); }
-  else if(or==='h'){ m.position.set(x+PITCH*1.5,BBH+0.0018,z); }
-  else { m.rotation.y=Math.PI/2; m.position.set(x,BBH+0.0018,z+PITCH*1.5); if(kind==='film'||kind==='cer'||kind.startsWith('elec')){ m.rotation.y=Math.PI/2; m.position.set(x,BBH,z+PITCH*0.5);} }
-  bbG.add(m); bbParts[ref]=m;
-  const cls = ref.startsWith('J')?'pow':(ref.startsWith('U')?'dsp':(ref.startsWith('R')||ref.startsWith('C')?'dsp':'ok'));
-  const bomId = kind==='dip'?'C15b':(kind==='diode'?'C15b':(kind==='bead'?'C15b':'C15b'));
-  reg('C15b',m,`${ref} ${val}`.trim(),cls); m.userData.ref=ref; addLabel(m,ref+(val?' '+val:''),cls,new THREE.Vector3(0,0.010,0));
-});
-// a handful of jumpers to make it read as wired: rails and inter-bank hops
-[[2,'e',2,'R3',0x111111],[3,'e',3,'R3',0x111111],[9,'e',9,'R4',0xe0a020],[19,'e',19,'R4',0xe0a020],[24,'e',24,'R4',0xe0a020],[29,'e',29,'R4',0xe0a020],[34,'e',34,'R4',0xe0a020],
- [45,'e',45,'R3',0x111111],[1,'j',1,'R1',0xc0392b],[6,'j',6,'R2',0x111111],[16,'i',16,'R1',0xc0392b],[30,'i',30,'R1',0xc0392b],[13,'f',10,'R2',0x111111],[38,'f',35,'R2',0x111111],
- [41,'i',44,'b',0x2e86de],[42,'i',45,'b',0x2e86de],[43,'i',46,'b',0x2e86de],[4,'a',5,'c',0x2ecc71],[8,'c',9,'a',0x2ecc71],[15,'e',11,'d',0x2ecc71],[19,'a',20,'c',0x2ecc71]].forEach(([c1,r1,c2,r2,col])=>bbG.add(jumper(c1,r1,c2,r2,col)));
-addLabel(bbBody,'breadboard · video amp · bias · power · harness','dsp',new THREE.Vector3(0,0.03,0.03));
-
-// --- ESP32 devkit, LM2596, terminal block ---
-const esp=box(0.055,0.0016,0.028,M.black); esp.position.set(0.10,TOP+0.0008,0.085); bench.add(esp); reg('C14',esp,'ESP32 devkit — radar_ctl','ok');
-const espMod=box(0.018,0.003,0.026,M.alu); espMod.position.set(-0.016,0.0023,0); esp.add(espMod); const usbc=box(0.008,0.003,0.007,M.alu); usbc.position.set(0.024,0.002,0); esp.add(usbc);
-for(let i=0;i<19;i++){ [-0.012,0.012].forEach(z=>{ const p=box(0.0006,0.006,0.0006,M.sma); p.position.set(-0.023+i*PITCH,-0.002,z); esp.add(p);}); }
-addLabel(esp,'ESP32 devkit','ok');
-const buck=box(0.043,0.012,0.021,M.pcbBlue); buck.position.set(-0.17,TOP+0.006,0.16); bench.add(buck); reg('C16b',buck,'LM2596 buck → 5.00 V','pow');
-const ind=cyl(0.005,0.006,M.black,12); ind.position.set(-0.008,0.009,0); buck.add(ind); const pot=box(0.007,0.006,0.005,M.dsp); pot.position.set(0.013,0.009,0.005); buck.add(pot);
-addLabel(buck,'LM2596','pow');
-const term=box(0.05,0.010,0.012,M.ok); term.position.set(-0.05,TOP+0.005,0.17); bench.add(term); reg('D17',term,'terminal block — star ground');
-addLabel(term,'terminal block · star ground','pow');
-// 12 V supply brick off the board
-const psu=box(0.11,0.032,0.05,M.brick); psu.position.set(0.34,0.016,0.12); world.add(psu); reg('C16a',psu,'12 V 3 A supply','pow'); addLabel(psu,'12 V 3 A supply','pow',new THREE.Vector3(0,0.03,0));
-world.add(tube([new THREE.Vector3(0.285,0.016,0.12),new THREE.Vector3(0.24,0.02,0.15),new THREE.Vector3(-0.02,TOP+0.012,0.17)],0.002,M.rubber));
-// UCA202 sound card + RCA leads
-const uca=box(0.088,0.020,0.060,new THREE.MeshStandardMaterial({color:0x3c4148,roughness:.6})); uca.position.set(-0.36,0.010,0.15); world.add(uca); reg('C13',uca,'Behringer UCA202 — the ADC','dsp');
-[[-0.03,0xdd3333],[-0.015,0xeeeeee]].forEach(([x,c])=>{ const r=cyl(0.004,0.006,new THREE.MeshStandardMaterial({color:c}),12); r.rotation.x=Math.PI/2; r.position.set(x,0.006,0.032); uca.add(r); });
-addLabel(uca,'UCA202 sound card','dsp',new THREE.Vector3(0,0.03,0));
-world.add(tube([new THREE.Vector3(-0.39,0.016,0.18),new THREE.Vector3(-0.26,0.03,0.03),new THREE.Vector3(-0.02,TOP+0.03,0.035),new THREE.Vector3(-0.075+hx(47),TOP+BBH+0.01,0.085+rowZ['a'])],0.0015,M.rubber));
-world.add(tube([new THREE.Vector3(-0.375,0.016,0.18),new THREE.Vector3(-0.20,0.03,0.15),new THREE.Vector3(0.06,TOP+0.03,0.14),new THREE.Vector3(-0.075+hx(62),TOP+BBH+0.01,0.085+rowZ['j'])],0.0015,M.rubber));
-// laptop
-const lap=new THREE.Group(); lap.position.set(-0.55,0,0.05); world.add(lap);
-const base=box(0.32,0.012,0.22,M.brick); base.position.y=0.006; lap.add(base); const lid=box(0.32,0.21,0.008,M.brick); lid.position.set(0,0.115,-0.105); lid.rotation.x=-0.25; lap.add(lid);
-const scr=box(0.29,0.18,0.002,M.screen); scr.position.set(0,0.115,-0.10); scr.rotation.x=-0.25; lap.add(scr); reg('C13b',lap,'laptop — radar_acquire.py + console','dsp'); addLabel(lap,'laptop · console','dsp',new THREE.Vector3(0,0.24,0));
-world.add(tube([new THREE.Vector3(-0.40,0.01,0.12),new THREE.Vector3(-0.42,0.012,0.15),new THREE.Vector3(-0.395,0.02,0.15)],0.0015,M.rubber));
-// UMC404HD (stage 3)
-const umc=box(0.20,0.045,0.12,new THREE.MeshStandardMaterial({color:0x2a2d31,roughness:.5})); umc.position.set(-0.36,0.0225,0.28); world.add(umc); reg('F25',umc,'Behringer UMC404HD — 4 inputs, one clock (stage 3)','dsp'); addLabel(umc,'UMC404HD (stage 3)','dsp',new THREE.Vector3(0,0.04,0));
-// stage-3 second receive chain
-const lna2=module(0.040,0.012,0.028,M.pcbBlue,[{name:'out',side:'l',y:0.006},{name:'in',side:'r',y:0.006}]); at(lna2,0.100,TOP,RZ+0.06); bench.add(lna2); reg('F22',lna2,'2nd LNA (stage 3)','rf');
-const mix2=module(0.020,0.012,0.020,M.alu,[{name:'lo',side:'l'},{name:'rf',side:'r'},{name:'if',side:'f'}]); at(mix2,0.040,TOP,RZ+0.064); bench.add(mix2); reg('F22',mix2,'2nd mixer ZX05-43MH-S+ (stage 3)','rf');
-const spl2=module(0.032,0.014,0.022,M.alu,[{name:'s',side:'l'},{name:'o1',side:'r',off:-0.006},{name:'o2',side:'r',off:0.006}]); at(spl2,-0.030,TOP,RZ+0.06); bench.add(spl2); reg('F23',spl2,'2nd splitter — LO to both mixers (stage 3)','rf');
-const stage3=[h3,lna2,mix2,spl2,umc];
-
-// --- coax runs (stage-aware) ---
-function tube(pts,r,mat){ const c=new THREE.CatmullRomCurve3(pts); return new THREE.Mesh(new THREE.TubeGeometry(c,24,r,8,false),mat); }
-function coaxBetween(a,b,lift,mat){ const m=a.clone().add(b).multiplyScalar(.5); m.y+=lift; return tube([a,m,b],0.0022,mat||M.coax); }
-const coaxG=new THREE.Group(); bench.add(coaxG);
-function buildCoax(stage){
-  while(coaxG.children.length) coaxG.remove(coaxG.children[0]);
-  bench.updateMatrixWorld(true);
-  const P=(mod,n)=>bench.worldToLocal(portWorld(mod,n));
-  const runs=[[P(adf,'out'),P(att,'in'),0.01],[P(att,'out'),P(pa,'in'),0.01],[P(pa,'out'),P(spl,'s'),0.012],[P(spl,'o2'),P(mix,'lo'),0.02],[P(lna,'out'),P(mix,'rf'),0.02],[P(bpf,'out'),P(lna,'in'),0.012]];
-  runs.forEach(([a,b,l])=>{ const t=coaxBetween(a,b,l); reg('A6',t,'SMA RG316 jumper','rf'); coaxG.add(t); });
-  const tx = stage===1? h1tx : h2tx, rx = stage===1? h1rx : h2rx;
-  const feed=(h)=>{ const v=new THREE.Vector3(0,0.009,0); h.userData.feed.localToWorld(v); return bench.worldToLocal(v); };
-  const t1=tube([P(spl,'o1'),new THREE.Vector3(-0.10,TOP+0.05,-0.08),new THREE.Vector3(-0.145,HY+0.06,HZ+0.10),feed(tx)],0.0022,M.coax); reg('A6',t1,'SMA RG316 jumper — to TX horn','rf'); coaxG.add(t1);
-  const t2=tube([P(bpf,'in'),new THREE.Vector3(0.19,TOP+0.05,-0.08),new THREE.Vector3(0.145,HY+0.06,HZ+0.10),feed(rx)],0.0022,M.coaxRx); reg('A6',t2,'SMA RG316 jumper — from RX horn','dsp'); coaxG.add(t2);
-  // IF pigtail to J1
-  const ifp=tube([P(mix,'if'),new THREE.Vector3(0.04,TOP+0.03,0.03),new THREE.Vector3(-0.075+hx(1),TOP+BBH+0.012,0.085+rowZ['a'])],0.0015,M.rubber); reg('A7',ifp,'IF pigtail — mixer IF → J1'); coaxG.add(ifp);
-  if(stage===3){ const t3=tube([feed(h3),new THREE.Vector3(0.20,HY-0.2,HZ+0.08),new THREE.Vector3(0.16,TOP+0.05,-0.02),P(lna2,'in')],0.0022,M.coaxRx); coaxG.add(t3);
-    coaxG.add(coaxBetween(P(lna2,'out'),P(mix2,'rf'),0.02)); coaxG.add(coaxBetween(P(spl2,'o2'),P(mix2,'lo'),0.02)); }
+// A Mini-Circuits coax case: machined aluminium body, flanged base, part number on top
+function mcCase(w,h,d,ports){
+  const g=rfBox(w,h,d,M.alu,ports);
+  g.add(at(box(w+0.006,0.0018,d+0.006,M.aluDark),0,-h/2+0.0009,0));   // mounting flange
+  [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz])=>
+    g.add(at(cyl(0.0011,0.0022,M.steel,6),sx*(w/2+0.0018),-h/2+0.0019,sz*(d/2+0.0018))));
+  g.add(at(box(w*0.7,0.0004,d*0.5,M.aluDark),0,h/2+0.0002,0));        // label panel
+  return g;
+}
+// SPF5189Z evaluation module: blue PCB, SMA both ends, SMD amplifier and bias parts
+function ampModule(){
+  const g=rfBox(0.040,0.0016,0.028,M.pcbBlue,[{name:'in',side:'l'},{name:'out',side:'r'}]);
+  g.add(at(box(0.0038,0.0011,0.0038,M.black),0,0.0014,0));            // SPF5189Z SOT-89
+  [[-0.010,0],[0.010,0],[-0.006,0.007],[0.006,-0.007]].forEach(([x,z])=>
+    g.add(at(box(0.0020,0.0009,0.0012,M.tin),x,0.0013,z)));           // 0805 blocking caps
+  g.add(at(cyl(0.0012,0.0020,M.black,10),0.000,0.0018,-0.009));       // bias choke
+  g.add(at(box(0.0060,0.0008,0.0025,M.gold),-0.014,0.0012,0.011));    // 5 V / GND pads
+  const p5=box(0.0016,0.0006,0.0016,M.gold); addPin(g,'5V',-0.0155,0.0016,0.011,p5);
+  const pg=box(0.0016,0.0006,0.0016,M.gold); addPin(g,'GND',-0.0125,0.0016,0.011,pg);
+  return g;
 }
 
-// beam: 34 x 36 deg from the TX horn, toward the drone
-function beamCone(halfAz,halfEl,len){ const w=Math.tan(halfAz*Math.PI/180)*len, h=Math.tan(halfEl*Math.PI/180)*len; const t=[0,0,0], c=[[-w,-h,-len],[w,-h,-len],[w,h,-len],[-w,h,-len]]; const pts=[]; for(let i=0;i<4;i++){const j=(i+1)%4; pts.push(...t,...c[i],...c[j]);} const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pts,3)); g.computeVertexNormals(); return new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:0xe59055,transparent:true,opacity:.10,side:THREE.DoubleSide,depthWrite:false})); }
-const beam=beamCone(18,17,3.6); beam.position.set(-0.145,HY,HZ-FL); beam.visible=false; bench.add(beam);
-// --- the drone and the phone (room view) ---
-const drone=new THREE.Group(); const dbody=box(0.03,0.012,0.03,M.black); drone.add(dbody);
-[[-.03,-.03],[.03,-.03],[-.03,.03],[.03,.03]].forEach(([x,z])=>{ const arm=box(0.035,0.004,0.006,M.black); arm.position.set(x/2,0,z/2); arm.rotation.y=Math.atan2(-z,x); drone.add(arm); const rot=cyl(0.015,0.001,new THREE.MeshStandardMaterial({color:0x8aa0b2,transparent:true,opacity:.55}),16); rot.position.set(x,0.008,z); drone.add(rot); });
-drone.position.set(0.3,1.1,-3.2); world.add(drone); reg('E',drone,'ESP-FLY — stock kit, ESP-Drone on ch 1 at 10 dBm','link'); addLabel(drone,'ESP-FLY · 3 m out','link',new THREE.Vector3(0,0.06,0));
-const phone=box(0.07,0.15,0.008,M.black); phone.position.set(0.5,1.2,0.9); world.add(phone); reg('E',phone,'your phone — ESP-Drone app, behind the horns','link'); addLabel(phone,'phone (operator, behind the horns)','link',new THREE.Vector3(0,0.1,0));
+const adf=rfBox(0.055,0.0016,0.036,M.pcb,[{name:'out',side:'r'}]); putRF(adf,-0.180,ZTX); bench.add(adf);
+reg('A2',adf,'ADF4351 board — the sweep source, +5 dBm','rf');
+adf.add(at(box(0.0165,0.0028,0.0165,M.aluDark),0.006,0.0022,-0.002));      // synthesiser shield can
+adf.add(at(box(0.0072,0.0032,0.0050,M.black),-0.016,0.0024,-0.010));       // 25 MHz TCXO
+adf.add(at(cyl(0.0022,0.0022,M.alu,12),-0.020,0.0019,0.008));              // 3V3 regulator + bulk cap
+adf.add(at(box(0.0030,0.0010,0.0016,M.ledRed),0.022,0.0013,-0.013));       // lock-detect LED
+// the ADF4351's 8-pin logic/power header, along the front edge
+const ADFPINS=['VCC','GND','CLK','DATA','LE','CE','LD','MUX'];
+adf.add(at(box(ADFPINS.length*0.00254,0.0022,0.0025,M.black),(ADFPINS.length-1)*0.00127-0.014,0.0019,0.0155));
+ADFPINS.forEach((n,i)=>{ const p=box(0.0006,0.006,0.0006,M.gold);
+  p.userData.pinTop=0.003; addPin(adf,n,-0.014+i*0.00254,0.0035,0.0155,p); });
+
+const att=rfBarrel(0.026,0.0055,M.aluDark,[{name:'in',side:'l'},{name:'out',side:'r'}]); putRF(att,-0.1015,ZTX); bench.add(att);
+reg('A5',att,'3 dB attenuator, SMA inline','rf');
+const pa=ampModule(); putRF(pa,-0.0305,ZTX); bench.add(pa); reg('A3a',pa,'PA — SPF5189Z module, +12 dB','rf');
+const spl=mcCase(0.032,0.014,0.024,[{name:'s',side:'l'},{name:'o1',side:'f',off:-0.008},{name:'o2',side:'f',off:0.008}]);
+putRF(spl,0.0435,ZTX); bench.add(spl); reg('A4',spl,'2-way splitter, 800–2500 MHz','rf');
+
+const bpf=rfBarrel(0.042,0.0065,M.alu,[{name:'out',side:'l'},{name:'in',side:'r'}]); putRF(bpf,0.180,ZRX); bench.add(bpf);
+reg('A7b',bpf,'band-pass 2400–2500 MHz, SMA inline','rf');
+const lna=ampModule(); putRF(lna,0.101,ZRX); bench.add(lna); reg('A3b',lna,'LNA — SPF5189Z module, NF ~1 dB','rf');
+lna.rotation.y=Math.PI;                                     // input faces the horn, output faces the mixer
+const mix=mcCase(0.022,0.014,0.020,[{name:'lo',side:'b'},{name:'rf',side:'r'},{name:'if',side:'f'}]);
+putRF(mix,0.032,ZRX); bench.add(mix); reg('A1',mix,'mixer ZX05-43MH-S+ — LO · RF · IF','rf');
+
+addLabel(adf,'ADF4351','rf'); addLabel(att,'3 dB pad','rf'); addLabel(pa,'PA','rf'); addLabel(spl,'splitter','rf');
+addLabel(mix,'mixer','rf'); addLabel(lna,'LNA','rf'); addLabel(bpf,'band-pass','rf');
+
+// =====================================================================
+// horns
+// =====================================================================
+const GW=0.0864/2, GH=0.0432/2, AW=0.2638/2, AH=0.1931/2, FL=0.0915, GL=0.115;
+function flareGeom(){ const g=[[-GW,-GH,0],[GW,-GH,0],[GW,GH,0],[-GW,GH,0]], a=[[-AW,-AH,FL],[AW,-AH,FL],[AW,AH,FL],[-AW,AH,FL]];
+  const pos=[]; for(let i=0;i<4;i++){const j=(i+1)%4; pos.push(...g[i],...g[j],...a[j],...g[i],...a[j],...a[i]);}
+  const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); geo.computeVertexNormals(); return geo; }
+const FLARE=flareGeom();
+function horn(tintMat){
+  const g=new THREE.Group();
+  g.add(new THREE.Mesh(FLARE,M.copper));
+  const inner=new THREE.Mesh(FLARE,M.metalIn); inner.scale.set(.988,.988,1); g.add(inner);
+  g.add(at(box(GW*2,GH*2,GL,M.copper),0,0,-GL/2));
+  [[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([sx,sy])=>
+    g.add(strut(new THREE.Vector3(sx*GW,sy*GH,0),new THREE.Vector3(sx*AW,sy*AH,FL),0.0011,M.copperSeam,6)));
+  const RB=0.006;
+  [[0,AH+RB/2],[0,-AH-RB/2]].forEach(([x,y])=>g.add(at(box(AW*2+RB*2,RB,0.0035,tintMat),x,y,FL)));
+  [[AW+RB/2,0],[-AW-RB/2,0]].forEach(([x,y])=>g.add(at(box(RB,AH*2,0.0035,tintMat),x,y,FL)));
+  const fz=-GL+0.0437;
+  const fl=box(0.0127,0.0018,0.0127,M.sma); fl.position.set(0,GH+0.0009,fz); g.add(fl);
+  [[-0.0048,-0.0048],[0.0048,-0.0048],[-0.0048,0.0048],[0.0048,0.0048]].forEach(([bx,bz])=>
+    g.add(at(cyl(0.0012,0.0022,M.aluDark,6),bx,GH+0.0025,fz+bz)));
+  const p=sma(); p.rotation.z=Math.PI/2; p.position.set(0,GH+0.0018,fz); g.add(p);
+  const probe=cyl(0.0008,0.028,M.copper,8); probe.position.set(0,GH-0.014,fz); g.add(probe);
+  g.userData.feed=p; g.userData.flange=fl; g.userData.probe=probe;
+  return g;
+}
+const HY=0.30, HX=0.145, HZ=-0.135, ZCLAMP=-0.045, GUIDE_BOT=HY-GH;
+
+function saddle(hw){
+  const g=new THREE.Group();
+  g.add(at(box(hw*2+0.013,0.004,0.034,M.alu),0,-0.002,0));
+  [-1,1].forEach(s=>{
+    g.add(at(box(0.004,0.030,0.034,M.alu),s*(hw+0.0045),0.013,0));
+    [-0.010,0.010].forEach(dz=>{ const b=cyl(0.0022,0.005,M.sma,6); b.rotation.z=Math.PI/2; b.position.set(s*(hw+0.008),0.021,dz); g.add(b); });
+  });
+  return g;
+}
+function mast(topY,baseY){
+  const g=new THREE.Group(), h=topY-baseY;
+  g.add(at(box(0.046,0.004,0.046,M.alu),0,baseY+0.002,0));
+  [[-0.016,-0.016],[0.016,-0.016],[-0.016,0.016],[0.016,0.016]].forEach(([bx,bz])=>
+    g.add(at(cyl(0.0018,0.0024,M.sma,6),bx,baseY+0.0048,bz)));
+  g.add(at(box(0.018,h,0.018,M.alu),0,baseY+h/2,0));
+  [[0.0091,0],[-0.0091,0],[0,0.0091],[0,-0.0091]].forEach(([gx,gz])=>
+    g.add(at(box(gx?0.0007:0.007,h-0.006,gz?0.0007:0.007,M.aluDark),gx,baseY+h/2,gz)));
+  return g;
+}
+
+const stage1=new THREE.Group(), stage23=new THREE.Group(); bench.add(stage1,stage23);
+const h1tx=horn(M.dark), h1rx=horn(M.dark);
+h1tx.children[3].material=mat({color:0xc2622a,metalness:.35,roughness:.5});
+[[h1tx,-HX],[h1rx,HX]].forEach(([h,x])=>{ h.position.set(x,HY,HZ); h.rotation.y=Math.PI; stage1.add(h); });
+[-HX,HX].forEach(x=>{
+  const m=mast(GUIDE_BOT,TOP); m.position.set(x,0,ZCLAMP); stage1.add(m); reg('D17',m,'horn mast — M3 hardware, L-brackets');
+  const s=saddle(GW); s.position.set(x,GUIDE_BOT,ZCLAMP); stage1.add(s); reg('D17',s,'saddle clamp — holds the waveguide');
+});
+reg('B8',h1tx,'TX horn — 0.021" copper, 264 × 193 mm mouth','rf'); reg('B8',h1rx,'RX horn — same, E-plane vertical','dsp');
+[h1tx,h1rx].forEach(h=>{ reg('B9',h.userData.flange,'SMA 4-hole flange — the horn feed','rf'); reg('B10',h.userData.probe,'brass probe, 28 mm into the guide','rf'); });
+addLabel(h1tx,'TX horn','rf',new THREE.Vector3(0,AH+.03,0),true); addLabel(h1rx,'RX horn','dsp',new THREE.Vector3(0,AH+.03,0),true);
+const scrG=new THREE.Group(); scrG.position.set(0,0,ZCLAMP+0.012); stage1.add(scrG);
+scrG.add(at(box(0.002,0.115,0.088,M.aluDark),0,HY,0));
+scrG.add(at(box(0.006,HY-GH-TOP,0.006,M.dark),0,TOP+(HY-GH-TOP)/2,0));
+scrG.add(at(box(0.030,0.003,0.030,M.alu),0,TOP+0.0015,0));
+reg('D17',scrG,'foil-on-card isolation screen between the horns');
+
+// --- NEMA-17: 42.3 mm chamfered stack, end caps, tie bolts, boss and D-shaft
+function nema17(){
+  const g=new THREE.Group(); const S=0.0423, CH=0.005, LEN=0.040;
+  const stack=new THREE.Mesh(new THREE.CylinderGeometry(S*0.72,S*0.72,LEN-0.016,8),M.steel);
+  stack.rotation.x=Math.PI/2; stack.rotation.z=Math.PI/8; g.add(stack);   // laminations read as a chamfered square
+  [-1,1].forEach(s=>{
+    const cap=box(S,S,0.008,M.aluDark); cap.position.z=s*(LEN/2-0.004); g.add(cap);
+    [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>{                       // chamfer the cap corners
+      const c=box(CH*1.6,CH*1.6,0.0082,M.dark); c.rotation.z=Math.PI/4;
+      c.position.set(a*S/2,b*S/2,s*(LEN/2-0.004)); g.add(c); });
+  });
+  [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>{                         // four M3 tie bolts, 31 mm square
+    const r=cyl(0.0015,LEN+0.001,M.steel,8); r.rotation.x=Math.PI/2; r.position.set(a*0.0155,b*0.0155,0); g.add(r); });
+  g.add(at(cyl(0.011,0.002,M.alu,24),0,0,LEN/2+0.001));                    // 22 mm pilot boss
+  const shaft=cyl(0.0025,0.024,M.steel,16); shaft.rotation.x=Math.PI/2; shaft.position.z=LEN/2+0.014; g.add(shaft);
+  g.add(at(box(0.005,0.0012,0.016,M.steel),0,0.0019,LEN/2+0.016));         // the flat on the D-shaft
+  const exit=box(0.010,0.006,0.004,M.rubber); exit.position.set(S/2-0.006,0,-LEN/2-0.001); g.add(exit);
+  g.userData.cableExit=exit;
+  return g;
+}
+const nema=nema17(); nema.position.set(0,TOP+0.0212,ZCLAMP); nema.rotation.y=Math.PI/2; stage23.add(nema);
+reg('D18a',nema,'NEMA-17 stepper — 42.3 mm, 1.8°/step','ok'); addLabel(nema,'NEMA-17','ok');
+const susan=cyl(0.075,0.008,M.alu,44); susan.position.set(0,TOP+0.056,ZCLAMP); stage23.add(susan);
+susan.add(at(cyl(0.070,0.0035,M.aluDark,44),0,0,0));
+reg('D18b',susan,'lazy-susan bearing 150 mm','ok');
+
+const rotG=new THREE.Group(); rotG.position.set(0,TOP+0.060,ZCLAMP); stage23.add(rotG);
+const plate=cyl(0.055,0.006,M.wood,40); plate.position.y=0.003; rotG.add(plate);
+const YH=HY-rotG.position.y, YOKE=YH-GH-0.010, mastH=YOKE-0.012;
+rotG.add(at(box(0.020,mastH,0.020,M.aluDark),0,0.006+mastH/2,0));
+// The yoke carries the horns; it widens for the three-horn azimuth build.
+const yoke=box(1.0,0.012,0.032,M.alu); yoke.position.set(0,YOKE,0); rotG.add(yoke);
+reg('D17',yoke,'horn yoke — carries the horns on the turntable');
+const YOKE_TOP=YH-GH;            // waveguide underside; the same whatever the roll
+const D_BASE=0.1931;             // interferometer baseline = the horn's b1 dimension
+
+// Each horn hangs in a mount that can roll it 90° about its own axis. Stage 2 keeps the
+// pair upright and scans. Stage 3 rolls all three so the 193.1 mm side is horizontal,
+// which is what lets two receivers touch and still sit at a 193 mm baseline — 209 mm is
+// the ambiguity limit, and side by side unrolled they would be 263.8 mm (docs/azimuth.md).
+function hornMount(h){
+  const g=new THREE.Group();
+  const roll=new THREE.Group(); roll.add(h);
+  h.position.set(0,0,HZ-ZCLAMP); h.rotation.y=Math.PI;
+  g.add(roll);
+  const sN=saddle(GW), sR=saddle(GH); sN.position.y=-GH; sR.position.y=-GW;
+  g.add(sN,sR);
+  reg('D17',sN,'saddle clamp — holds the waveguide'); reg('D17',sR,'saddle clamp — holds the rolled waveguide');
+  g.userData.roll=roll; g.userData.sN=sN; g.userData.sR=sR;
+  rotG.add(g); return g;
+}
+const h2tx=horn(M.dark), h2rx=horn(M.dark), h3=horn(M.dark);
+h2tx.children[3].material=h1tx.children[3].material;
+const mTX=hornMount(h2tx), mRXA=hornMount(h2rx), mRXB=hornMount(h3);
+reg('B8',h2tx,'TX horn (on the turntable)','rf');
+reg('B8',h2rx,'RX A — the reference receiver','dsp');
+reg('B8',h3,'RX B — second receiver, 193 mm baseline','ok');
+[h2tx,h2rx,h3].forEach(h=>{ reg('B9',h.userData.flange,'SMA 4-hole flange — the horn feed','rf');
+  reg('B10',h.userData.probe,'brass probe, 28 mm into the guide','rf'); });
+addLabel(h2tx,'TX horn','rf',new THREE.Vector3(0,AH+.03,0),true);
+addLabel(h2rx,'RX A','dsp',new THREE.Vector3(0,AH+.03,0),true);
+addLabel(h3,'RX B','ok',new THREE.Vector3(0,AH+.03,0),true);
+// stage 2: upright pair at 290 mm centres. stage 3: three rolled horns touching at 193.1 mm.
+function layoutHorns(s){
+  const three=(s===3), roll=three?Math.PI/2:0, yc=three?YOKE_TOP+GW:YH;
+  const xs=three?[-D_BASE,0,D_BASE]:[-HX,HX,0];
+  [mTX,mRXA,mRXB].forEach((m,i)=>{ m.position.set(xs[i],yc,0); m.userData.roll.rotation.z=roll;
+    m.userData.sN.visible=!three; m.userData.sR.visible=three; });
+  mRXB.visible=three;
+  yoke.scale.x=three?(2*D_BASE+0.115):(2*HX+0.10);
+}
+
+// =====================================================================
+// breadboard — built from hardware/breadboard/WIRING.md, hole for hole
+// =====================================================================
+const BBW=0.165, BBD=0.055, BBH=0.009, PITCH=0.00254;
+const BBX=0.055, BBZ=0.075;
+const bbG=new THREE.Group(); bbG.position.set(BBX,TOP,BBZ); bench.add(bbG);
+const bbBody=box(BBW,BBH,BBD,M.bb); bbBody.position.y=BBH/2; bbG.add(bbBody);
+reg('C15a',bbBody,'830-point breadboard','dsp');
+const COL0=-BBW/2+0.006, rowZ={};
+'abcde'.split('').forEach((r,i)=>rowZ[r]=-0.00381-(4-i)*PITCH);
+'fghij'.split('').forEach((r,i)=>rowZ[r]= 0.00381+i*PITCH);
+// rails: TR+ top red = V5, TR- top blue = GND, BR+ bottom red = VANA, BR- bottom blue = GND
+rowZ['TR+']=-0.02096; rowZ['TR-']=-0.0235; rowZ['BR+']=0.02096; rowZ['BR-']=0.0235;
+function hx(col){ return COL0+(col-1)*PITCH; }
+function parseHole(s){
+  let m=/^([a-j])(\d+)$/.exec(s);
+  if(m) return {x:hx(+m[2]),z:rowZ[m[1]]};
+  m=/^(TR|BR)([+-])@(\d+)$/.exec(s);
+  if(m) return {x:hx(+m[3]),z:rowZ[m[1]+m[2]]};
+  throw new Error('bad hole ref: '+s);
+}
+const holeV=s=>{ const p=parseHole(s); return new THREE.Vector3(p.x,BBH,p.z); };          // bbG-local
+const holeW=(s,dy)=>{ const p=parseHole(s); return new THREE.Vector3(BBX+p.x,TOP+BBH+(dy||0),BBZ+p.z); };  // world
+
+const holeGeo=new THREE.BoxGeometry(0.0011,0.0006,0.0011);
+const holes=new THREE.InstancedMesh(holeGeo,M.hole,63*10+4*63); let hi=0; const hm=new THREE.Matrix4();
+for(let c=1;c<=63;c++) for(const r of 'abcdefghij'){ hm.makeTranslation(hx(c),BBH+0.0002,rowZ[r]); holes.setMatrixAt(hi++,hm); }
+for(let c=1;c<=63;c++) for(const r of ['TR+','TR-','BR+','BR-']){ hm.makeTranslation(hx(c),BBH+0.0002,rowZ[r]); holes.setMatrixAt(hi++,hm); }
+holes.count=hi; bbG.add(holes);
+bbG.add(at(box(BBW,0.0009,0.005,M.hole),0,BBH-0.0004,0));
+[['TR+',0xc84b3a,-1],['TR-',0x3a5fc8,1],['BR+',0xc84b3a,-1],['BR-',0x3a5fc8,1]].forEach(([r,c,s])=>
+  bbG.add(at(box(BBW-0.010,0.0003,0.0008,mat({color:c,roughness:.8})),0,BBH+0.0001,rowZ[r]+s*0.0018)));
+
+// --- part bodies, each built lying along local +z between its two leads ---
+const BANDS={0:0x1a1a1a,1:0x8b4513,2:0xdd2222,3:0xff8800,4:0xeeee00,5:0x22aa22,6:0x2222dd,7:0x882aa0,8:0x888888,9:0xffffff};
+function bandColors(v){ let n=parseFloat(v); if(/k/.test(v)) n*=1e3; if(/M/.test(v)) n*=1e6;
+  const e=Math.floor(Math.log10(n))-1, s=Math.round(n/Math.pow(10,e)); return [Math.floor(s/10)%10,s%10,Math.max(e,0)]; }
+function bodyRes(val){ const g=new THREE.Group(); const b=cyl(0.0012,0.0064,M.res,12); g.add(b);
+  bandColors(val).concat([null]).forEach((d,i)=>{ const r=cyl(0.00126,0.0006,mat({color:d===null?0xd4a017:BANDS[d],roughness:.6}),12);
+    r.position.z=-0.0022+i*0.0011; r.rotation.x=Math.PI/2; g.add(r); });
+  b.rotation.x=Math.PI/2; return g; }
+function bodyDiode(){ const g=new THREE.Group(); const b=cyl(0.0026,0.0085,M.black,12); b.rotation.x=Math.PI/2; g.add(b);
+  const k=cyl(0.0027,0.0008,mat({color:0xcfd6dd,roughness:.7}),12); k.rotation.x=Math.PI/2; k.position.z=0.0030; g.add(k); return g; }
+function bodyBead(){ const b=cyl(0.0018,0.006,mat({color:0x55595e,roughness:.8}),12); b.rotation.x=Math.PI/2; return b; }
+function bodyFilm(){ const g=new THREE.Group(); g.add(at(box(0.0045,0.006,0.0026,M.film),0,0.003,0)); return g; }
+function bodyCer(){ const g=new THREE.Group(); const d=cyl(0.0021,0.0016,M.cer,16); d.rotation.x=Math.PI/2; d.position.y=0.0038; g.add(d); return g; }
+function bodyElec(big){ const g=new THREE.Group(); const r=big?0.004:0.0026, h=big?0.011:0.007;
+  g.add(at(cyl(r,h,M.elec,18),0,h/2+0.001,0));
+  g.add(at(box(0.0012,h*0.8,0.0002,mat({color:0xcfd6dd,roughness:.7})),-r*0.72,h/2+0.001,r*0.55));
+  g.add(at(cyl(r*0.92,0.0006,mat({color:0x2b3140,roughness:.6}),18),0,h+0.001,0)); return g; }
+
+const AXIAL={res:1,diode:1,bead:1};
+function placePart(kind,val,hA,hB){
+  const a=holeV(hA), b=holeV(hB), g=new THREE.Group();
+  const dx=b.x-a.x, dz=b.z-a.z, len=Math.hypot(dx,dz);
+  const lift = AXIAL[kind] ? 0.0019 : 0.0006;
+  g.position.set((a.x+b.x)/2, BBH+lift, (a.z+b.z)/2);
+  g.rotation.y=Math.atan2(dx,dz);
+  let body;
+  if(kind==='res') body=bodyRes(val); else if(kind==='diode') body=bodyDiode(); else if(kind==='bead') body=bodyBead();
+  else if(kind==='film') body=bodyFilm(); else if(kind==='cer') body=bodyCer();
+  else if(kind==='elec') body=bodyElec(false); else if(kind==='elecB') body=bodyElec(true);
+  g.add(body);
+  // leads: out to each hole, then straight down into the board
+  const half=AXIAL[kind]? Math.min(len/2,0.0045) : 0.0;
+  [-1,1].forEach(s=>{
+    const from=new THREE.Vector3(0,0,s*half), to=new THREE.Vector3(0,0,s*len/2);
+    if(half>0.0001) g.add(strut(from,to,0.00032,M.lead,6));
+    g.add(strut(to,new THREE.Vector3(0,-lift-0.0022,s*len/2),0.00032,M.lead,6));
+  });
+  return g;
+}
+function placeDip(colLo,colHi){                       // DIP-8 straddling the channel, notch toward colHi
+  const g=new THREE.Group();
+  g.position.set((hx(colLo)+hx(colHi))/2,BBH,0);
+  g.add(at(box((colHi-colLo)*PITCH+0.0024,0.0035,0.0064,M.black),0,0.0035,0));
+  g.add(at(cyl(0.0008,0.0011,M.dark,10),(colHi-colLo)*PITCH/2-0.0002,0.0053,0));
+  for(let i=0;i<4;i++) [-1,1].forEach(s=>{
+    const x=(-1.5+i)*PITCH;
+    g.add(at(box(0.0006,0.0034,0.00035,M.lead),x,0.0015,s*0.00381));
+  });
+  return g;
+}
+function placeHeader(n,hFirst,ascending){
+  const p=parseHole(hFirst), g=new THREE.Group();
+  const step=(ascending===false?-1:1)*PITCH;
+  g.position.set(p.x,BBH,p.z);
+  g.add(at(box(Math.abs(n*step),0.0025,0.0025,M.black),(n-1)*step/2,0.00125,0));
+  const pins=[];
+  for(let i=0;i<n;i++){ const pin=box(0.0007,0.009,0.0007,M.gold); pin.userData.pinTop=0.0045; pins.push(pin); }
+  g.userData.headerPins=pins; g.userData.step=step;
+  return g;
+}
+
+// ref, kind, value, leads (hole per lead, in pin order) — verbatim from WIRING.md
+const BBPARTS=[
+ ['J1','hdr','MIXER IF',['a2','a3']],
+ ['R1','res','49.9',['b2','TR-@2']],
+ ['C20','cer','1n',['c2','TR-@3']],
+ ['C1','film','100n',['d2','d4']],
+ ['R2','res','10k',['c4','c1']],
+ ['U1','dip','TL072CP',[5,8]],
+ ['R3','res','100k',['b14','b10']],
+ ['C2','film','100n',['c10','c12']],
+ ['R4','res','1k',['c14','c17']],
+ ['R6','res','10k',['b12','b16']],
+ ['R7','res','10k',['b23','b19']],
+ ['R8','res','1k',['c23','c26']],
+ ['R12','res','1k',['c19','c22']],
+ ['C9','cer','10n',['d22','d24']],
+ ['U2','dip','TL072CP',[30,33]],
+ ['R13','res','100',['i32','i35']],
+ ['C10','elec','10u',['h35','h36']],
+ ['R14','res','100k',['g36','BR-@36']],
+ ['J2','hdr','AUDIO L',['f36','f37']],
+ ['R9','res','10k',['a36','a31']],
+ ['R10','res','10k',['b31','TR-@33']],
+ ['C5','elec','10u',['c31','TR-@35']],
+ ['R11','res','47',['c33','c29']],
+ ['C6','elecB','47u',['d26','TR-@26']],
+ ['J3','hdr','12V IN',['j10','j11']],
+ ['D1','diode','1N5822',['i10','i13']],
+ ['C11','elecB','100u',['h13','BR-@13']],
+ ['J4','hdr','TO BUCK',['j13','j14']],
+ ['R15','res','10',['g13','g16']],
+ ['C13','elecB','100u',['h16','BR-@16']],
+ ['J5','hdr','5V IN',['j18','j19']],
+ ['C12','elecB','100u',['h18','BR-@18']],
+ ['C3','cer','100n',['g8','BR-@8']],
+ ['C7','cer','100n',['g33','BR-@33']],
+ ['FB1','bead','',['TR+@38','a38']],
+ ['C14','elec','10u',['b38','TR-@39']],
+ ['C15','cer','100n',['c38','TR-@40']],
+ ['J6','hdr','ADF 5V',['d38','d39']],
+ ['FB2','bead','',['TR+@41','a41']],
+ ['C16','elec','10u',['b41','TR-@42']],
+ ['C17','cer','100n',['c41','TR-@43']],
+ ['J7','hdr','PA 5V',['d41','d42']],
+ ['FB3','bead','',['TR+@44','a44']],
+ ['C18','elec','10u',['b44','TR-@45']],
+ ['C19','cer','100n',['c44','TR-@46']],
+ ['J8','hdr','LNA 5V',['d44','d45']],
+ ['J9','hdr','ESP32',['j44','j45','j46','j47','j48','j49','j50','j51','j52','j53']],
+ ['R16','res','33',['f45','e46']],
+ ['R17','res','33',['f46','e47']],
+ ['R18','res','33',['f47','e48']],
+ ['J10','hdr','ADF LOGIC',['a52','a53','a54','a55','a56','a57']],
+ ['R19','res','10k',['b57','TR-@57']],
+ ['JP3','hdr','CE EN',['d57','d58']],
+ ['J11','hdr','A4988',['j58','j59','j60','j61','j62']],
+ ['R20','res','10k',['i59','i62']],
+ ['R21','res','10k',['h60','BR-@60']],
+ ['R22','res','10k',['h61','BR-@61']],
+ ['R23','res','10k',['b60','b63']],
+ ['R24','res','1k',['c63','TR-@63']],
+ ['J12','hdr','AUDIO R',['d63','d62']],
+];
+// what each connector pin carries, from the "Nets as built" table
+const JNETS={
+ J1:['IF','GND'], J2:['AUDIO_L','GND'], J3:['VIN12','GND'], J4:['VPROT','GND'], J5:['V5','GND'],
+ J6:['5V','GND'], J7:['5V','GND'], J8:['5V','GND'],
+ J9:['GND','SCK','MOSI','LE','LD','SYNC','STEP','DIR','EN','3V3'],
+ J10:['GND','SCK_O','MOSI_O','LE_O','LD','CE'], JP3:['CE','3V3'],
+ J11:['GND','3V3','STEP','DIR','EN'], J12:['AUDIO_R','GND'],
+};
+const bbParts={};
+BBPARTS.forEach(([ref,kind,val,leads])=>{
+  let m;
+  if(kind==='dip'){ m=placeDip(leads[0],leads[1]); }
+  else if(kind==='hdr'){
+    const asc = parseHole(leads[leads.length-1]).x >= parseHole(leads[0]).x;
+    m=placeHeader(leads.length,leads[0],asc);
+    const names=JNETS[ref]||[];
+    m.userData.headerPins.forEach((pin,i)=>{
+      addPin(m,String(i+1),i*m.userData.step,0.003,0,pin);
+      pin.userData.name=`${ref} pin ${i+1}${names[i]?' — '+names[i]:''} (${leads[i]})`;
+    });
+  }
+  else m=placePart(kind,val,leads[0],leads[1]);
+  bbG.add(m); bbParts[ref]=m;
+  const cls = /^(J|FB)/.test(ref)?'pow':(/^U/.test(ref)?'ok':'dsp');
+  reg('C15b',m,`${ref}${val?' '+val:''} — ${leads.filter(l=>typeof l==='string').join(', ')}`,cls);
+  m.userData.ref=ref;
+  addLabel(m,ref+(val&&kind!=='hdr'?' '+val:(kind==='hdr'?' '+val:'')),cls,new THREE.Vector3(0,0.010,0));
+});
+// all 48 jumper wires, by hole and colour
+const BBJUMPERS=[
+ ['e3','TR-@4','black'],['j37','BR-@37','black'],['f11','BR-@11','black'],['f14','BR-@14','black'],
+ ['f19','BR-@19','black'],['e39','TR-@41','black'],['e42','TR-@44','black'],['e45','TR-@47','black'],
+ ['f44','BR-@44','black'],['e52','TR-@52','black'],['f58','BR-@58','black'],['e62','TR-@62','black'],
+ ['a5','TR-@5','black'],['a30','TR-@30','black'],
+ ['h8','BR+@8','red'],['h33','BR+@33','red'],['f16','BR+@16','red'],['e36','BR+@36','red'],
+ ['g18','TR+@18','orange'],['TR-@1','BR-@1','black'],
+ ['TR+@31','TR+@32','orange'],['TR-@31','TR-@32','black'],['BR+@31','BR+@32','red'],['BR-@31','BR-@32','black'],
+ ['a4','a6','green'],['a8','a10','green'],['a14','a7','green'],['d12','g5','green'],['g7','a19','green'],
+ ['a23','i6','green'],['e22','h30','green'],['j32','j31','green'],['a33','a32','green'],
+ ['b29','b26','violet'],['a26','a24','violet'],['b24','c16','violet'],['d16','d17','violet'],['a1','a16','violet'],
+ ['a46','b53','blue'],['a47','b54','blue'],['a48','b55','blue'],['f48','b56','blue'],
+ ['f53','e58','yellow'],['g53','g59','yellow'],
+ ['g50','g60','white'],['g51','g61','white'],['g52','g62','white'],
+ ['h49','a60','grey'],
+];
+const bbWireG=new THREE.Group(); bbG.add(bbWireG);
+BBJUMPERS.forEach(([a,b,col])=>{
+  const p=holeV(a), q=holeV(b);
+  const mid=p.clone().add(q).multiplyScalar(.5); mid.y+=0.0032+p.distanceTo(q)*0.20;
+  const w=run([p,p.clone().setY(BBH+0.0024),mid,q.clone().setY(BBH+0.0024),q],R_JUMP,wireMat[col]);
+  w.userData.name=`jumper ${a} → ${b} (${col})`;
+  reg('C15b',w,w.userData.name,'dsp'); bbWireG.add(w);
+});
+addLabel(bbBody,'breadboard · video amp · bias · power · harness','dsp',new THREE.Vector3(0,0.03,0.03));
+
+// =====================================================================
+// modules with real pinouts
+// =====================================================================
+// ESP32 DevKit V1 (DOIT, 30-pin) — pin order straight out of MODULES.md
+const ESP_L=['EN','VP','VN','D34','D35','D32','D33','D25','D26','D27','D14','D12','D13','GND','VIN'];
+const ESP_R=['D23','D22','TX0','RX0','D21','D19','D18','D5','TX2','RX2','D4','D2','D15','GND2','3V3'];
+function esp32Devkit(){
+  const g=new THREE.Group(), L=0.0483, W=0.0254, ROW=0.02286;
+  g.add(at(box(W,0.0016,L,M.pcbBlack),0,0.0008,0));
+  // ESP-WROOM-32 module with its shield can and the PCB antenna keep-out at the top
+  g.add(at(box(0.0180,0.0031,0.0257,mat({color:0xbfc7cd,metalness:.72,roughness:.3})),0,0.0031,-0.0080));
+  g.add(at(box(0.0180,0.0018,0.0060,M.pcbBlack),0,0.0025,-0.0238));
+  for(let i=0;i<6;i++) g.add(at(box(0.0022,0.0004,0.0022,M.tin),-0.0070+i*0.0028,0.0035,-0.0238));
+  g.add(at(box(0.0090,0.0032,0.0072,mat({color:0xb8bfc6,metalness:.7,roughness:.35})),0,0.0032,0.0198));  // micro-USB
+  [[-0.0082,0.0128],[0.0082,0.0128]].forEach(([x,z])=>g.add(at(box(0.0060,0.0035,0.0060,M.black),x,0.0026,z)));  // EN / BOOT
+  g.add(at(box(0.0050,0.0022,0.0035,M.black),0.0060,0.0027,0.0060));                                     // AMS1117
+  g.add(at(box(0.0020,0.0010,0.0012,M.ledRed),-0.0060,0.0021,0.0075));
+  g.add(at(box(0.0020,0.0010,0.0012,M.ledBlue),-0.0060,0.0021,0.0098));
+  [[ESP_L,-ROW/2],[ESP_R,ROW/2]].forEach(([names,x])=>{
+    g.add(at(box(0.0025,0.0025,names.length*PITCH,M.black),x,0.0029,0));
+    names.forEach((n,i)=>{ const p=box(0.0007,0.009,0.0007,M.gold); p.userData.pinTop=-0.0045;
+      addPin(g,n,x,0.0018,-((names.length-1)/2)*PITCH+i*PITCH,p);
+      p.userData.name=`ESP32 ${n.replace('GND2','GND')}`; });
+  });
+  return g;
+}
+const esp=esp32Devkit(); esp.position.set(0.100,TOP,0.152); bench.add(esp);
+reg('C14',esp,'ESP32 devkit — radar_ctl','ok'); addLabel(esp,'ESP32 devkit','ok');
+
+// A4988 (Pololu pinout) — 16 pins, two 8-pin rows 0.5 in apart
+const A49_L=['ENABLE','MS1','MS2','MS3','RESET','SLEEP','STEP','DIR'];
+const A49_R=['VMOT','GND_M','2B','2A','1A','1B','VDD','GND_L'];
+function a4988(){
+  const g=new THREE.Group(), L=0.0205, W=0.0155, ROW=0.0127;
+  g.add(at(box(W,0.0016,L,M.pcbRed),0,0.0008,0));
+  g.add(at(box(0.0050,0.0010,0.0050,mat({color:0x1a1a1a,roughness:.5})),0,0.0021,0.0010));   // A4988 QFN
+  g.add(at(box(0.0062,0.0006,0.0062,M.alu),0,0.0029,0.0010));                                // stick-on heatsink
+  g.add(at(cyl(0.0022,0.0016,mat({color:0x2a55b0,roughness:.5}),14),0,0.0024,-0.0072));       // current trimpot
+  g.add(at(cyl(0.0022,0.0040,M.elec,14),0.0042,0.0036,-0.0060));                             // 100 µF VMOT cap
+  [[ A49_L,-ROW/2],[A49_R,ROW/2]].forEach(([names,x])=>{
+    g.add(at(box(0.0025,0.0025,names.length*PITCH,M.black),x,0.0029,0));
+    names.forEach((n,i)=>{ const p=box(0.0007,0.009,0.0007,M.gold); p.userData.pinTop=-0.0045;
+      addPin(g,n,x,0.0018,-((names.length-1)/2)*PITCH+i*PITCH,p);
+      p.userData.name=`A4988 ${n}`; });
+  });
+  return g;
+}
+const a49=a4988(); a49.position.set(0.162,TOP,0.135); bench.add(a49);
+reg('D18c',a49,'A4988 stepper driver — 1/16 microstep','ok'); addLabel(a49,'A4988','ok');
+
+// LM2596 buck module
+function lm2596(){
+  const g=new THREE.Group();
+  g.add(at(box(0.043,0.0016,0.021,M.pcbBlue),0,0.0008,0));
+  g.add(at(cyl(0.0052,0.0060,mat({color:0x22262b,roughness:.7}),18),-0.0060,0.0046,0.0010));   // 33 µH inductor
+  g.add(at(box(0.0068,0.0042,0.0028,M.black),0.0040,0.0037,-0.0058));                          // LM2596 TO-263
+  g.add(at(cyl(0.0035,0.0090,M.elec,18),0.0125,0.0061,0.0035));
+  g.add(at(cyl(0.0035,0.0090,M.elec,18),-0.0160,0.0061,-0.0038));
+  g.add(at(box(0.0060,0.0050,0.0050,mat({color:0x1f4fa0,roughness:.5})),0.0120,0.0041,-0.0055)); // multiturn pot
+  const names=[['IN+',-0.0195,-0.0055],['IN-',-0.0195,0.0055],['OUT+',0.0195,-0.0055],['OUT-',0.0195,0.0055]];
+  names.forEach(([n,x,z])=>{ const p=cyl(0.0009,0.0022,M.tin,10); p.userData.pinTop=0.0011;
+    addPin(g,n,x,0.0019,z,p); p.userData.name='LM2596 '+n; });
+  return g;
+}
+const buck=lm2596(); buck.position.set(0.010,TOP,0.152); bench.add(buck);
+reg('C16b',buck,'LM2596 buck → 5.00 V','pow'); addLabel(buck,'LM2596','pow');
+
+// screw terminal block — the star ground and 12 V distribution
+function terminalBlock(n){
+  const g=new THREE.Group(), W=n*0.0085;
+  g.add(at(box(W,0.0110,0.0130,mat({color:0x2f7f57,roughness:.6})),0,0.0055,0));
+  for(let i=0;i<n;i++){ const x=-W/2+0.00425+i*0.0085;
+    g.add(at(cyl(0.0022,0.0016,M.tin,10),x,0.0113,-0.0028));                       // screw head
+    g.add(at(box(0.0060,0.0022,0.0030,M.dark),x,0.0104,-0.0028));
+    const p=box(0.0012,0.0060,0.0012,M.tin); p.userData.pinTop=0.0;
+    addPin(g,'T'+(i+1),x,0.0030,0.0064,p); p.userData.name='terminal '+(i+1); }
+  return g;
+}
+const term=terminalBlock(6); term.position.set(-0.090,TOP,0.152); bench.add(term);
+reg('D17',term,'terminal block — star ground'); addLabel(term,'terminal block · star ground','pow');
+
+// 12 V supply brick with a barrel-jack lead
+const psu=new THREE.Group(); psu.position.set(-0.36,0,0.13); world.add(psu);
+psu.add(at(box(0.11,0.032,0.05,M.brick),0,0.016,0));
+psu.add(at(box(0.030,0.012,0.020,M.black),0.056,0.016,0));
+const psuOut=box(0.002,0.002,0.002,M.black); addPin(psu,'OUT',0.072,0.016,0,psuOut);
+psu.add(at(box(0.040,0.0008,0.028,mat({color:0xcfd6dd,roughness:.8})),0,0.0325,0));
+reg('C16a',psu,'12 V 3 A supply','pow'); addLabel(psu,'12 V 3 A supply','pow',new THREE.Vector3(0,0.03,0));
+
+// Behringer UCA202 — 4 RCA on the rear, headphone + level on the front, captive USB
+function uca202(){
+  const g=new THREE.Group(), W=0.096, H=0.021, D=0.070;
+  g.add(at(box(W,H,D,mat({color:0x33383e,roughness:.55})),0,H/2,0));
+  g.add(at(box(W-0.004,0.0012,D-0.004,mat({color:0x22262b,roughness:.6})),0,H,0));
+  const rca=(x,c,name,label)=>{ const j=new THREE.Group(); j.position.set(x,H*0.55,-D/2);
+    j.add(at(cyl(0.0055,0.0060,mat({color:c,roughness:.55}),16),0,0,-0.0030));
+    const b=j.children[0]; b.rotation.x=Math.PI/2;
+    j.add(at(cyl(0.0011,0.0070,M.gold,10),0,0,-0.0035)); j.children[1].rotation.x=Math.PI/2;
+    const p=box(0.001,0.001,0.001,M.gold); addPin(g,name,x,H*0.55,-D/2-0.006,p);
+    p.userData.name='UCA202 '+label; g.add(j); };
+  rca(-0.034,0xe8e8e8,'IN_L','INPUT L (white) ← J2 AUDIO_L');
+  rca(-0.020,0xd03028,'IN_R','INPUT R (red) ← J12 AUDIO_R');
+  rca( 0.020,0xe8e8e8,'OUT_L','OUTPUT L (white)');
+  rca( 0.034,0xd03028,'OUT_R','OUTPUT R (red)');
+  g.add(at(cyl(0.0055,0.0090,M.black,16),0.030,H*0.55,D/2)); g.children[g.children.length-1].rotation.x=Math.PI/2;
+  g.add(at(cyl(0.0060,0.0055,mat({color:0x1a1d21,roughness:.6}),18),-0.028,H*0.6,D/2-0.002));
+  g.children[g.children.length-1].rotation.x=Math.PI/2;
+  g.add(at(box(0.0080,0.0040,0.0030,M.black),0.002,H*0.6,D/2));                       // MONITOR switch
+  const usb=box(0.002,0.002,0.002,M.black); addPin(g,'USB',0.048,H*0.5,0.010,usb);
+  return g;
+}
+const uca=uca202(); uca.position.set(0.335,0,0.150); world.add(uca);
+reg('C13',uca,'Behringer UCA202 — the ADC','dsp'); addLabel(uca,'UCA202 sound card','dsp',new THREE.Vector3(0,0.03,0));
+
+// laptop, with a keyboard field and trackpad
+const lap=new THREE.Group(); lap.position.set(0.66,0,0.21); lap.rotation.y=-0.62; world.add(lap);
+lap.add(at(box(0.32,0.012,0.22,M.brick),0,0.006,0));
+lap.add(at(box(0.276,0.0012,0.104,mat({color:0x16191d,roughness:.7})),0,0.0122,-0.028));
+for(let r=0;r<5;r++) for(let c=0;c<15;c++)
+  lap.add(at(box(0.0150,0.0012,0.0150,mat({color:0x24282d,roughness:.65})),-0.132+c*0.0189,0.0129,-0.070+r*0.0195));
+lap.add(at(box(0.090,0.0010,0.058,mat({color:0x3a4046,roughness:.5})),0,0.0125,0.062));
+const lid=box(0.32,0.21,0.008,M.brick); lid.position.set(0,0.115,-0.105); lid.rotation.x=-0.25; lap.add(lid);
+const scr=box(0.292,0.181,0.002,M.screen); scr.position.set(0,0.115,-0.0985); scr.rotation.x=-0.25; lap.add(scr);
+reg('C13b',lap,'laptop — radar_acquire.py + console','dsp'); addLabel(lap,'laptop · console','dsp',new THREE.Vector3(0,0.24,0),true);
+
+const umc=new THREE.Group(); umc.position.set(0.36,0,0.31); world.add(umc);
+umc.add(at(box(0.20,0.045,0.12,mat({color:0x2a2d31,roughness:.5})),0,0.0225,0));
+for(let i=0;i<4;i++){ umc.add(at(cyl(0.0090,0.0140,M.black,18),-0.070+i*0.030,0.026,-0.058));
+  umc.children[umc.children.length-1].rotation.x=Math.PI/2;
+  umc.add(at(cyl(0.0055,0.0060,mat({color:0xd8d8d8,roughness:.5}),14),-0.070+i*0.030,0.045,-0.020)); }
+reg('F26',umc,'Behringer UMC404HD — 4 inputs, one clock (stage 3)','dsp'); addLabel(umc,'UMC404HD (stage 3)','dsp',new THREE.Vector3(0,0.04,0));
+
+// stage-3 second receive chain: RX B → band-pass → LNA → mixer, mirroring the first
+const bpf2=rfBarrel(0.042,0.0065,M.alu,[{name:'out',side:'l'},{name:'in',side:'r'}]);
+putRF(bpf2,0.186,ZRX2); bench.add(bpf2); reg('F24',bpf2,'2nd band-pass 2400–2500 MHz (stage 3)','rf');
+const lna2=ampModule(); putRF(lna2,0.107,ZRX2); lna2.rotation.y=Math.PI; bench.add(lna2);
+reg('F28',lna2,'2nd LNA — from the SPF5189Z 4-pack (stage 3)','rf');
+const mix2=mcCase(0.022,0.014,0.020,[{name:'lo',side:'b'},{name:'rf',side:'r'},{name:'if',side:'f'}]);
+putRF(mix2,0.038,ZRX2); bench.add(mix2); reg('F22',mix2,'2nd mixer ZX05-43MH-S+ (stage 3)','rf');
+const spl2=mcCase(0.032,0.014,0.024,[{name:'s',side:'l'},{name:'o1',side:'f',off:-0.008},{name:'o2',side:'f',off:0.008}]);
+putRF(spl2,0.075,-0.112); bench.add(spl2); reg('F23',spl2,'2nd splitter — LO to both mixers (stage 3)','rf');
+addLabel(bpf2,'band-pass 2','rf'); addLabel(lna2,'LNA 2','rf'); addLabel(mix2,'mixer 2','rf'); addLabel(spl2,'splitter 2','rf');
+const stage3=[bpf2,lna2,mix2,spl2,umc];
+
+// =====================================================================
+// the harness — every wire runs between two real pins
+// =====================================================================
+const wireG=new THREE.Group(); world.add(wireG);
+const stepWireG=new THREE.Group(); stage23.add(stepWireG);
+function hookup(pA,pB,col,via,r){
+  const pts=[pA.clone(),pA.clone().setY(pA.y+0.010)].concat((via||[]).map(v=>v.clone()),[pB.clone().setY(pB.y+0.010),pB.clone()]);
+  return run(pts,r||R_WIRE,wireMat[col]);
+}
+function link(name,a,b,col,via,into,r){
+  const w=hookup(a,b,col,via,r); w.userData.name=name;
+  reg('C15b',w,name,'pow'); (into||wireG).add(w); return w;
+}
+const V=(x,y,z)=>new THREE.Vector3(x,y,z);
+
+// ESP32 ↔ J9. GPIO18 SCK, 23 MOSI, 5 LE, 19 LD, 25 SYNC, 26 STEP, 27 DIR, 14 EN.
+[['GND','1','black'],['D18','2','blue'],['D23','3','blue'],['D5','4','blue'],['D19','5','blue'],
+ ['D25','6','grey'],['D26','7','white'],['D27','8','white'],['D14','9','white'],['3V3','10','yellow']
+].forEach(([gpio,jp,col],i)=>{
+  const a=pinAt(esp,gpio), b=pinAt(bbParts.J9,jp);
+  link(`ESP32 ${gpio} → J9 pin ${jp} (${JNETS.J9[+jp-1]})`,a,b,col,[V(a.x,TOP+0.030+i*0.0012,(a.z+b.z)/2)]);
+});
+// A4988 ↔ J11
+[['GND_L','1','black'],['VDD','2','yellow'],['STEP','3','white'],['DIR','4','white'],['ENABLE','5','white']
+].forEach(([pin,jp,col],i)=>{
+  const a=pinAt(a49,pin), b=pinAt(bbParts.J11,jp);
+  link(`A4988 ${pin} → J11 pin ${jp} (${JNETS.J11[+jp-1]})`,a,b,col,[V((a.x+b.x)/2,TOP+0.026+i*0.0012,(a.z+b.z)/2)]);
+});
+// A4988 motor supply, straight off the terminal block (never through the breadboard)
+link('A4988 VMOT ← 12 V (terminal block)',pinAt(a49,'VMOT'),pinAt(term,'T1'),'red',
+  [V(0.190,TOP+0.030,0.170),V(0.000,TOP+0.034,0.178),V(-0.070,TOP+0.030,0.170)]);
+link('A4988 GND (motor) ← supply −',pinAt(a49,'GND_M'),pinAt(term,'T2'),'black',
+  [V(0.186,TOP+0.026,0.176),V(0.000,TOP+0.030,0.184),V(-0.074,TOP+0.026,0.174)]);
+// A4988 → NEMA-17, coil A (1A/1B) and coil B (2A/2B)
+const motorIn=nema.localToWorld(new THREE.Vector3(0,0,0)).add(V(0.021,0,0));
+[['1A','red',0.000],['1B','blue',0.0018],['2A','green',0.0036],['2B','black',0.0054]].forEach(([pin,col,dy])=>{
+  link(`A4988 ${pin} → NEMA-17 coil ${pin[0]==='1'?'A':'B'}`,pinAt(a49,pin),motorIn.clone().add(V(0,dy,0)),col,
+    [V(0.205,TOP+0.028+dy,0.110),V(0.212,TOP+0.030+dy,0.010),V(0.150,TOP+0.032+dy,-0.006),V(0.060,TOP+0.030+dy,-0.014)],
+    stepWireG,0.0007);
+});
+// ADF4351 logic ← J10, power ← J6
+[['CLK','2','blue'],['DATA','3','blue'],['LE','4','blue'],['LD','5','blue'],['CE','6','violet']
+].forEach(([pin,jp,col],i)=>{
+  const a=pinAt(adf,pin), b=pinAt(bbParts.J10,jp);
+  link(`ADF4351 ${pin} → J10 pin ${jp} (${JNETS.J10[+jp-1]})`,a,b,col,
+    [V(-0.170,TOP+0.032+i*0.0012,-0.100),V(-0.060,TOP+0.036+i*0.0012,-0.040),V(0.060,TOP+0.034+i*0.0012,0.030)]);
+});
+[['VCC','1','red'],['GND','2','black']].forEach(([pin,jp,col],i)=>{
+  const a=pinAt(adf,pin), b=pinAt(bbParts.J6,jp);
+  link(`ADF4351 ${pin} → J6 pin ${jp}`,a,b,col,
+    [V(-0.168,TOP+0.026+i*0.0012,-0.104),V(-0.055,TOP+0.030+i*0.0012,-0.030),V(0.050,TOP+0.028+i*0.0012,0.040)]);
+});
+// 5 V to the two amplifier modules
+[[pa,'J7','PA'],[lna,'J8','LNA']].forEach(([m,j,nm])=>{
+  [['5V','1','red'],['GND','2','black']].forEach(([pin,jp,col],i)=>{
+    const a=pinAt(m,pin), b=pinAt(bbParts[j],jp);
+    link(`${nm} ${pin} → ${j} pin ${jp}`,a,b,col,[V((a.x+b.x)/2,TOP+0.024+i*0.0012,(a.z+b.z)/2-0.010)]);
+  });
+});
+// power in: brick → terminal block → J3, J4 → buck, buck → J5
+link('12 V supply → terminal block',pinAt(psu,'OUT'),pinAt(term,'T3'),'brown',
+  [V(-0.280,0.020,0.150),V(-0.170,TOP+0.020,0.160)],wireG,0.0012);
+link('terminal block → J3 pin 1 (VIN12)',pinAt(term,'T3'),pinAt(bbParts.J3,'1'),'red',[V(-0.045,TOP+0.026,0.140)]);
+link('terminal block → J3 pin 2 (GND)',pinAt(term,'T2'),pinAt(bbParts.J3,'2'),'black',[V(-0.042,TOP+0.023,0.146)]);
+link('J4 pin 1 (VPROT) → LM2596 IN+',pinAt(bbParts.J4,'1'),pinAt(buck,'IN+'),'red',[V(0.006,TOP+0.024,0.126)]);
+link('J4 pin 2 (GND) → LM2596 IN−',pinAt(bbParts.J4,'2'),pinAt(buck,'IN-'),'black',[V(0.012,TOP+0.022,0.128)]);
+link('LM2596 OUT+ → J5 pin 1 (V5)',pinAt(buck,'OUT+'),pinAt(bbParts.J5,'1'),'red',[V(0.028,TOP+0.024,0.126)]);
+link('LM2596 OUT− → J5 pin 2 (GND)',pinAt(buck,'OUT-'),pinAt(bbParts.J5,'2'),'black',[V(0.032,TOP+0.022,0.130)]);
+// audio out: J2 → UCA202 INPUT L (beat), J12 → INPUT R (sync)
+link('J2 pin 1 AUDIO_L → UCA202 INPUT L',pinAt(bbParts.J2,'1'),pinAt(uca,'IN_L'),'white',
+  [V(0.150,TOP+0.030,0.055),V(0.240,0.030,0.070),V(0.300,0.024,0.075)],wireG,0.0011);
+link('J12 pin 1 AUDIO_R → UCA202 INPUT R',pinAt(bbParts.J12,'1'),pinAt(uca,'IN_R'),'red',
+  [V(0.170,TOP+0.026,0.050),V(0.250,0.028,0.062),V(0.305,0.024,0.070)],wireG,0.0011);
+link('UCA202 → laptop (USB)',pinAt(uca,'USB'),V(0.560,0.014,0.170),'black',
+  [V(0.430,0.014,0.168),V(0.500,0.012,0.176)],wireG,0.0013);
+
+// =====================================================================
+// coax
+// =====================================================================
+const coaxG=new THREE.Group(); bench.add(coaxG);
+const rotCoax=new THREE.Group(); rotG.add(rotCoax);
+function boot(p,d,m){ return strut(p.clone().addScaledVector(d,-0.001),p.clone().addScaledVector(d,0.0075),0.0021,m||M.boot,10); }
+function jumperCoax(ma,na,mb,nb,lift,m){
+  const pa=portPos(ma,na), da=portDir(ma,na), pb=portPos(mb,nb), db=portDir(mb,nb);
+  const a2=pa.clone().addScaledVector(da,0.014), b2=pb.clone().addScaledVector(db,0.014);
+  const mid=a2.clone().add(b2).multiplyScalar(.5); mid.y+=lift;
+  const g=new THREE.Group(); g.add(run([pa,a2,mid,b2,pb],R_COAX,m||M.coax)); g.add(boot(pa,da)); g.add(boot(pb,db)); return g;
+}
+function pathCoax(m,n,pts,mm,r){
+  const p=portPos(m,n), d=portDir(m,n);
+  const g=new THREE.Group(); g.add(run([p,p.clone().addScaledVector(d,0.014)].concat(pts),r||R_COAX,mm||M.coax)); g.add(boot(p,d)); return g;
+}
+function feedPoint(h,parent){
+  const tip=h.userData.feed.localToWorld(new THREE.Vector3(SMA_L,0,0));
+  const base=h.userData.feed.localToWorld(new THREE.Vector3(0,0,0));
+  return {p:parent.worldToLocal(tip.clone()), d:tip.clone().sub(base).normalize()};
+}
+function feedCoax(h,parent,pts,m){
+  const f=feedPoint(h,parent), g=new THREE.Group();
+  g.add(run([f.p,f.p.clone().addScaledVector(f.d,0.016)].concat(pts),R_COAX,m));
+  g.add(boot(f.p,f.d)); return g;
+}
+function buildCoax(stage){
+  while(coaxG.children.length) coaxG.remove(coaxG.children[0]);
+  while(rotCoax.children.length) rotCoax.remove(rotCoax.children[0]);
+  const savedRot=rotG.rotation.y; rotG.rotation.y=0;
+  bench.updateMatrixWorld(true);
+  const CY=TOP+0.080, CZ=ZCLAMP+0.030;
+  const collar=(x,dy,dz)=>new THREE.Vector3(x,CY+(dy||0),CZ+(dz||0));
+  const toRot=v=>new THREE.Vector3(v.x-rotG.position.x,v.y-rotG.position.y,v.z-rotG.position.z);
+
+  const runs=[[adf,'out',att,'in',0.008],[att,'out',pa,'in',0.008],[pa,'out',spl,'s',0.009],
+              [lna,'out',mix,'rf',0.011],[bpf,'out',lna,'in',0.010]];
+  if(stage!==3) runs.push([spl,'o2',mix,'lo',0.012]);
+  runs.forEach(([ma,na,mb,nb,l])=>{
+    const t=jumperCoax(ma,na,mb,nb,l); reg('A6',t,'SMA RG316 jumper','rf'); coaxG.add(t); });
+
+  if(stage===1){
+    const jTX=new THREE.Vector3(-0.158,0.290,-0.042), jRX=new THREE.Vector3(0.158,0.290,-0.042);
+    const t1=pathCoax(spl,'o1',[V(0.020,TOP+0.020,-0.112),V(-0.070,TOP+0.020,-0.100),
+      V(-0.150,TOP+0.030,-0.062),V(-0.158,0.140,-0.030),jTX],M.coax);
+    reg('A6',t1,'SMA RG316 jumper — splitter → TX horn','rf'); coaxG.add(t1);
+    const c1=feedCoax(h1tx,bench,[V(-0.150,HY+0.062,-0.058),jTX],M.coax);
+    reg('A6',c1,'SMA RG316 jumper — splitter → TX horn','rf'); coaxG.add(c1);
+    const t2=pathCoax(bpf,'in',[V(0.222,TOP+0.028,-0.070),V(0.170,0.120,-0.030),jRX],M.coaxRx);
+    reg('A6',t2,'SMA RG316 jumper — RX horn → band-pass','dsp'); coaxG.add(t2);
+    const c2=feedCoax(h1rx,bench,[V(0.150,HY+0.062,-0.058),jRX],M.coaxRx);
+    reg('A6',c2,'SMA RG316 jumper — RX horn → band-pass','dsp'); coaxG.add(c2);
+  } else {
+    const cTX=collar(-0.030), cRX=collar(0.030);
+    const t1=pathCoax(spl,'o1',[V(0.010,TOP+0.020,-0.112),V(-0.060,TOP+0.022,-0.086),
+      V(-0.070,TOP+0.050,-0.040),cTX],M.coax);
+    reg('A6',t1,'SMA RG316 jumper — splitter → TX horn','rf'); coaxG.add(t1);
+    const t2=pathCoax(bpf,'in',[V(0.215,TOP+0.026,-0.055),V(0.120,TOP+0.030,-0.020),
+      V(0.070,TOP+0.055,-0.010),cRX],M.coaxRx);
+    reg('A6',t2,'SMA RG316 jumper — RX horn → band-pass','dsp'); coaxG.add(t2);
+    [[mTX,h2tx,M.coax,cTX],[mRXA,h2rx,M.coaxRx,cRX]].forEach(([m,h,mm,c0])=>{
+      const x=m.position.x, y=m.position.y, sx=(x<0?-1:1);
+      const c=feedCoax(h,rotG,[V(x+sx*0.030,y+0.058,-0.032),V(x*0.45+sx*0.020,YOKE+0.028,0.010),toRot(c0)],mm);
+      reg('A6',c,'SMA RG316 jumper — up the turntable mast','rf'); rotCoax.add(c); });
+  }
+  // mixer IF → J1 pin 1 on the breadboard
+  const ifp=pathCoax(mix,'if',[V(0.030,TOP+0.026,-0.020),V(0.010,TOP+0.026,0.030),
+    holeW('a2',0.014),holeW('a2',0.004)],M.rubber,R_WIRE);
+  reg('A7',ifp,'IF pigtail — mixer IF → J1 pin 1 (a2)'); coaxG.add(ifp);
+
+  if(stage===3){
+    [[spl,'o2',spl2,'s',0.010,'LO to the 2nd splitter'],[spl2,'o1',mix,'lo',0.010,'LO to mixer 1'],
+     [spl2,'o2',mix2,'lo',0.014,'LO to mixer 2'],[lna2,'out',mix2,'rf',0.011,'LNA 2 → mixer 2'],
+     [bpf2,'out',lna2,'in',0.010,'band-pass 2 → LNA 2']
+    ].forEach(([ma,na,mb,nb,l,nm])=>{ const t=jumperCoax(ma,na,mb,nb,l);
+      reg('A6',t,'SMA RG316 jumper — '+nm,'rf'); coaxG.add(t); });
+    // RX B down to its own band-pass, through a third service loop at the axis. The two
+    // receive cables must match: 1 mm of extra coax is 3° of phase and 0.3° of bearing.
+    const cR2=collar(0.000,0.030,0.012);
+    const t3=pathCoax(bpf2,'in',[V(0.228,TOP+0.040,0.024),V(0.190,0.110,-0.006),V(0.090,0.140,-0.010),cR2],M.coaxRx);
+    reg('A6',t3,'SMA RG316 jumper — RX B → 2nd band-pass','ok'); coaxG.add(t3);
+    const c3=feedCoax(h3,rotG,[V(mRXB.position.x+0.032,mRXB.position.y+0.058,-0.032),
+      V(mRXB.position.x*0.45+0.020,YOKE+0.030,0.012),toRot(cR2)],M.coaxRx);
+    reg('A6',c3,'SMA RG316 jumper — RX B → 2nd band-pass','ok'); rotCoax.add(c3);
+    const if2=pathCoax(mix2,'if',[V(0.100,TOP+0.014,0.055),V(0.180,TOP+0.014,0.115),
+      V(0.270,0.030,0.200),V(0.320,0.048,0.262)],M.rubber,R_WIRE);
+    reg('A7',if2,'IF 2 → UMC404HD (stage 3)'); coaxG.add(if2);
+  }
+  rotG.rotation.y=savedRot;
+}
+
+// =====================================================================
+// beam, drone, phone
+// =====================================================================
+function beamCone(halfAz,halfEl,len){
+  const w=Math.tan(halfAz*Math.PI/180)*len, h=Math.tan(halfEl*Math.PI/180)*len;
+  const t=[0,0,0], c=[[-w,-h,len],[w,-h,len],[w,h,len],[-w,h,len]], pts=[];
+  for(let i=0;i<4;i++){const j=(i+1)%4; pts.push(...t,...c[j],...c[i]);}
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pts,3)); g.computeVertexNormals();
+  return new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:0xe59055,transparent:true,opacity:.11,side:THREE.DoubleSide,depthWrite:false})); }
+const beams=[h1tx,h2tx].map(h=>{ const b=beamCone(18,17,3.6); b.position.set(0,0,FL); h.add(b); b.visible=false; return b; });
+
+// ESP-FLY: XIAO ESP32-S3 on a small frame, four 615 coreless motors, 30 mm props, 1S pack
+const drone=new THREE.Group(); drone.position.set(0.3,1.1,-3.2); world.add(drone);
+drone.add(at(box(0.048,0.0012,0.048,M.pcbBlack),0,0,0));
+drone.add(at(box(0.0175,0.0035,0.0210,mat({color:0x2a2f35,roughness:.5})),0,0.0024,-0.004));   // XIAO ESP32-S3
+drone.add(at(box(0.0100,0.0010,0.0060,M.tin),0,0.0044,-0.012));                                // its antenna
+drone.add(at(box(0.030,0.0075,0.019,mat({color:0x23252b,roughness:.6})),0,-0.0044,0.002));     // 1S LiPo
+[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz])=>{
+  const x=sx*0.030, z=sz*0.030;
+  drone.add(strut(V(sx*0.012,0,sz*0.012),V(x,0,z),0.0022,M.pcbBlack,6));
+  drone.add(at(cyl(0.0035,0.0150,mat({color:0x1a1a1a,roughness:.55}),14),x,0.0035,z));         // 615 coreless motor
+  drone.add(at(cyl(0.0038,0.0030,mat({color:0xd8a020,roughness:.5}),12),x,0.0120,z));
+  const p=cyl(0.0150,0.0006,mat({color:0x8aa0b2,transparent:true,opacity:.45,roughness:.4}),20);
+  p.position.set(x,0.0140,z); drone.add(p);
+});
+reg('E',drone,'ESP-FLY — stock kit, ESP-Drone on ch 1 at 10 dBm','link');
+addLabel(drone,'ESP-FLY · 3 m out','link',new THREE.Vector3(0,0.06,0),true);
+const phone=new THREE.Group(); phone.position.set(0.5,1.2,0.9); phone.rotation.x=-0.30; world.add(phone);
+phone.add(at(box(0.072,0.150,0.008,M.black),0,0,0));
+phone.add(at(box(0.066,0.140,0.001,M.screen),0,0,0.0045));
+reg('E',phone,'your phone — ESP-Drone app, behind the horns','link');
+addLabel(phone,'phone (operator, behind the horns)','link',new THREE.Vector3(0,0.1,0),true);
+
+world.traverse(o=>{ if(o.isMesh && o!==table){ o.castShadow=true; o.receiveShadow=true; } });
+beams.forEach(b=>{ b.castShadow=false; b.receiveShadow=false; });
+holes.castShadow=false;
 
 // =====================================================================
 // BOM panel
 // =====================================================================
 const BOM=[
  ['A · RF chain',[
-  ['A1','ZX05-43MH-S+ mixer','1','$73','Mini-Circuits — order first'],['A2','ADF4351 PLL board','1','$27'],['A3a','SPF5189Z module — PA role','1','—','from the 4-pack'],['A3b','SPF5189Z module — LNA role','1','$24','4-pack; chip is EOL, buy spares'],
-  ['A4','2-way SMA splitter 800–2500 MHz','1','$13'],['A5','SMA 3 dB attenuator','1','$9'],['A6','SMA M-M RG316 jumpers','6','$18'],['A7','SMA adapter assortment · IF pigtail','1','$12'],['A7b','2.4 GHz band-pass filter, SMA inline','1','$20']]],
+  ['A1','ZX05-43MH-S+ mixer','1','$73','Mini-Circuits — order first'],['A2','ADF4351 PLL board','1','$27'],
+  ['A3a','SPF5189Z module — PA role','1','—','from the 4-pack'],['A3b','SPF5189Z module — LNA role','1','$24','4-pack; chip is EOL, buy spares'],
+  ['A4','2-way SMA splitter 800–2500 MHz','1','$13'],['A5','SMA 3 dB attenuator','1','$9'],['A6','SMA M-M RG316 jumpers','6','$18'],
+  ['A7','SMA adapter assortment · IF pigtail','1','$12'],['A7b','2.4 GHz band-pass filter, SMA inline','1','$20']]],
  ['B · Horns',[
-  ['B8','Copper sheet 24 ga 12" × 24"','2','$45','= the horns'],['B9','SMA female 4-hole flange, solder cup','10','$12','the feed on each horn'],['B10','Brass rod 1/16"','1','$5','the 28 mm probe'],
-  ['B11','60/40 solder + paste flux','1','$15','consumable'],['B12','Aviation snips','1','$18','tool']]],
+  ['B8','Copper sheet 24 ga 12" × 24"','2','$45','= the horns'],['B9','SMA female 4-hole flange, solder cup','10','$12','the feed on each horn'],
+  ['B10','Brass rod 1/16"','1','$5','the 28 mm probe'],['B11','60/40 solder + paste flux','1','$15','consumable'],['B12','Aviation snips','1','$18','tool']]],
  ['C · Baseband, control, power',[
-  ['C13','Behringer UCA202 USB sound card','1','$30'],['C13b','Laptop','1','—','you have it'],['C14','ESP32 devkit (WROOM-32)','1','$10'],['C15a','830-point breadboard','1','—','in the kit'],['C15b','TL072 ×2 + resistors, capacitors, diode, ferrites, headers','1','$25','every part shown on the breadboard'],
+  ['C13','Behringer UCA202 USB sound card','1','$30'],['C13b','Laptop','1','—','you have it'],['C14','ESP32 devkit (WROOM-32)','1','$10','30-pin DOIT pinout'],
+  ['C15a','830-point breadboard','1','—','in the kit'],['C15b','TL072 ×2 + passives, headers, jumper wire','1','$25','every part and wire from WIRING.md'],
   ['C16a','12 V 3 A supply','1','$18'],['C16b','LM2596 buck ×2','1','—','one shown']]],
  ['D · Mechanical (stage 2)',[
-  ['D17','Plywood 18" × 15", L-brackets, M3 hardware, terminal block','1','$28'],['D18a','NEMA-17 stepper','1','$25','with the A4988'],['D18b','Lazy-susan bearing 150 mm','1','—'],['D18c','A4988 driver','1','—']]],
+  ['D17','Plywood 18" × 15", masts, saddles, terminal block','1','$28'],['D18a','NEMA-17 stepper','1','$25','with the A4988'],
+  ['D18b','Lazy-susan bearing 150 mm','1','—'],['D18c','A4988 driver','1','—','1/16 microstep']]],
  ['E · Drone',[
   ['E','Stock ESP-FLY kit, phone-flown — $0 added','1','$0','ESP-Drone on WiFi ch 1, 10 dBm']]],
- ['F · Stage 3 (later)',[
-  ['F22','2nd ZX05-43MH-S+ mixer + 2nd LNA','1','$73'],['F23','2nd 2-way splitter','1','$13'],['F24','3rd horn (materials in B)','1','$0'],['F25','Behringer UMC404HD 4-in interface','1','$100']]],
+ ['F · Stage 3 — azimuth interferometer',[
+  ['F22','2nd ZX05-43MH-S+ mixer','1','$73','second receive channel — critical path'],
+  ['F23','2nd 2-way splitter','1','$13','LO to both mixers'],
+  ['F24','2nd 2400–2500 band-pass','1','$29','in front of the second LNA'],
+  ['F25','3rd horn (materials in B)','1','$0','beside RX A at 193 mm centres, all three rolled 90°'],
+  ['F26','Behringer UMC404HD 4-in interface','1','$100','beat A, beat B, sync on one sample clock'],
+  ['F27','2nd TL072 video channel','1','$0','parts already in section C'],
+  ['F28','2nd LNA (SPF5189Z 4-pack)','1','$0','from row A3b']]],
 ];
-const NOTMODELLED=new Set(['B11','B12']);
+const NOTMODELLED=new Set(['B11','B12','F27']);
+registry.F25=[h3];
 const bomEl=document.getElementById('bom'); let selRow=null;
 BOM.forEach(([title,rows])=>{ const h=document.createElement('h2'); h.textContent=title; bomEl.appendChild(h);
-  rows.forEach(([id,name,qty,price,note])=>{ const r=document.createElement('div'); r.className='row'+(NOTMODELLED.has(id)?' na':''); r.dataset.id=id;
+  rows.forEach(([id,name,qty,price,note])=>{ const r=document.createElement('div');
+    r.className='row'+(NOTMODELLED.has(id)?' na':''); r.dataset.id=id;
     r.innerHTML=`<span class="n">${id}</span><span>${name}${note?`<small>${note}</small>`:''}</span><span class="q">${qty} · ${price}</span>`;
-    if(!NOTMODELLED.has(id)) r.onclick=()=>{ selectBom(id,r); }; bomEl.appendChild(r); }); });
-const tot=document.createElement('div'); tot.className='total'; tot.innerHTML='Stage 1 ≈ $374 · + stage 2 ≈ $424 · + stage 3 ≈ $650<br><span class="legend"><span class="sw" style="background:#c2622a"></span>RF <span class="sw" style="background:#2f77b0"></span>baseband/ADC <span class="sw" style="background:#2c9c68"></span>control <span class="sw" style="background:#b8860b"></span>power <span class="sw" style="background:#6a4fbf"></span>drone</span>'; bomEl.appendChild(tot);
+    if(!NOTMODELLED.has(id)) r.onclick=()=>selectBom(id,r); bomEl.appendChild(r); }); });
+const tot=document.createElement('div'); tot.className='total';
+tot.innerHTML='Stage 1 ≈ $374 · + stage 2 ≈ $424 · + stage 3 ≈ $770<br><span class="legend"><span class="sw" style="background:#c2622a"></span>RF <span class="sw" style="background:#2f77b0"></span>baseband/ADC <span class="sw" style="background:#2c9c68"></span>control <span class="sw" style="background:#b8860b"></span>power <span class="sw" style="background:#6a4fbf"></span>drone</span>';
+bomEl.appendChild(tot);
 
-let highlight=[]; let hlT=0;
+let highlight=[], hlT=0;
+function isShown(o){ let p=o; while(p){ if(!p.visible) return false; p=p.parent; } return true; }
 function selectBom(id,rowEl){
-  if(selRow) selRow.classList.remove('sel'); selRow=rowEl; if(rowEl) rowEl.classList.add('sel');
+  if(selRow) selRow.classList.remove('sel'); selRow=rowEl||null; if(rowEl) rowEl.classList.add('sel');
   highlight.forEach(o=>{ o.material=o.userData.origMat; }); highlight=[];
-  const objs=(registry[id]||[]).filter(o=>isShown(o));
-  if(!objs.length) return;
+  const objs=(registry[id]||[]).filter(isShown);
+  if(!objs.length){ status.textContent=id+' — not visible in this stage'; return; }
   objs.forEach(o=>o.traverse(m=>{ if(m.isMesh){ if(!m.userData.origMat) m.userData.origMat=m.material; m.material=M.glow; highlight.push(m);} }));
   hlT=performance.now();
-  // frame the first object
-  const bb=new THREE.Box3(); objs.forEach(o=>bb.expandByObject(o)); const c=bb.getCenter(new THREE.Vector3()); const size=bb.getSize(new THREE.Vector3()).length();
-  flyTo(c, Math.max(0.12, size*1.6), id.startsWith('E')?-0.3:az, id.startsWith('E')?0.15:0.45);
+  const bb=new THREE.Box3(); objs.forEach(o=>bb.expandByObject(o));
+  const c=bb.getCenter(new THREE.Vector3()), size=bb.getSize(new THREE.Vector3()).length();
+  flyTo(c,Math.max(0.10,size*1.6), id==='E'?-0.3:az, id==='E'?0.15:0.45);
   status.textContent=objs[0].userData.name||id;
 }
-function isShown(o){ let p=o; while(p){ if(!p.visible) return false; p=p.parent; } return true; }
 
 // =====================================================================
 // stages, views, controls
 // =====================================================================
 let stage=1;
-function setStage(s){ stage=s; stage1.visible=(s===1); stage23.visible=(s!==1); stage3.forEach(o=>o.visible=(s===3)); document.querySelectorAll('[data-stage]').forEach(b=>b.classList.toggle('on',+b.dataset.stage===s)); buildCoax(s); }
+function setStage(s){ stage=s; stage1.visible=(s===1); stage23.visible=(s!==1);
+  layoutHorns(s);
+  stage3.forEach(o=>o.visible=(s===3));
+  beams.forEach((b,i)=>b.visible=(viewKey==='room') && ((i===0)===(s===1)));
+  document.querySelectorAll('[data-stage]').forEach(b=>b.classList.toggle('on',+b.dataset.stage===s));
+  buildCoax(s);
+  status.textContent=['','stage 1 · fixed horn pair on two masts','stage 2 · turntable → azimuth','stage 3 · two receivers at a 193 mm baseline → azimuth from phase'][s]; }
 document.querySelectorAll('[data-stage]').forEach(b=>b.onclick=()=>setStage(+b.dataset.stage));
-let az=-0.62, el=0.42, dist=1.0, tgt=new THREE.Vector3(0,0.16,0.02);
-let goal=null;
-function place(){ camera.position.set(tgt.x+dist*Math.cos(el)*Math.sin(az), tgt.y+dist*Math.sin(el), tgt.z+dist*Math.cos(el)*Math.cos(az)); camera.lookAt(tgt); }
+
+let az=-0.68, el=0.36, dist=1.20, tgt=new THREE.Vector3(0.01,0.17,-0.05), goal=null;
+function place(){ camera.position.set(tgt.x+dist*Math.cos(el)*Math.sin(az),tgt.y+dist*Math.sin(el),tgt.z+dist*Math.cos(el)*Math.cos(az)); camera.lookAt(tgt); }
 function flyTo(t,d,a,e){ goal={t:t.clone(),d,a:(a!==undefined?a:az),e:(e!==undefined?e:el)}; }
-const views={ bench:{t:new THREE.Vector3(0,0.16,0.02),d:1.0,a:-0.62,e:0.42}, bb:{t:new THREE.Vector3(-0.075,TOP+0.01,0.085),d:0.22,a:-0.15,e:0.9}, room:{t:new THREE.Vector3(0.15,0.6,-1.3),d:3.0,a:-0.38,e:0.16} };
-function setView(k){ ['bench','bb','room'].forEach(v=>document.getElementById('b-'+v).classList.toggle('on',v===k)); const v=views[k]; flyTo(v.t,v.d,v.a,v.e); beam.visible=(k==='room'); }
+const views={ bench:{t:new THREE.Vector3(0.01,0.17,-0.05),d:1.20,a:-0.68,e:0.36},
+              bb:{t:new THREE.Vector3(BBX,TOP+0.01,BBZ),d:0.20,a:-0.15,e:0.90},
+              room:{t:new THREE.Vector3(0.08,0.62,-1.45),d:4.3,a:-0.42,e:0.20} };
+let viewKey='bench';
+function setView(k){ viewKey=k; ['bench','bb','room'].forEach(v=>document.getElementById('b-'+v).classList.toggle('on',v===k));
+  const v=views[k]; flyTo(v.t,v.d,v.a,v.e); beams.forEach((b,i)=>b.visible=(k==='room') && ((i===0)===(stage===1))); }
 ['bench','bb','room'].forEach(k=>document.getElementById('b-'+k).onclick=()=>setView(k));
-let showLabels=true, showCoax=true;
+
+let showLabels=true;
 document.getElementById('b-labels').onclick=e=>{showLabels=!showLabels;e.target.classList.toggle('on',showLabels);};
-document.getElementById('b-coax').onclick=e=>{showCoax=!showCoax;e.target.classList.toggle('on',showCoax);coaxG.visible=showCoax;};
+document.getElementById('b-coax').onclick=e=>{const v=!coaxG.visible;e.target.classList.toggle('on',v);
+  coaxG.visible=v; rotCoax.visible=v;};
+document.getElementById('b-wires').onclick=e=>{const v=!wireG.visible;e.target.classList.toggle('on',v);
+  wireG.visible=v; stepWireG.visible=v; bbWireG.visible=v;};
+
 let drag=false,px=0,py=0,moved=false;
 cv.addEventListener('pointerdown',e=>{drag=true;moved=false;px=e.clientX;py=e.clientY;cv.setPointerCapture(e.pointerId);});
 cv.addEventListener('pointerup',e=>{drag=false; if(!moved) pick(e,true);});
-cv.addEventListener('pointermove',e=>{ if(drag){ const dx=e.clientX-px, dy=e.clientY-py; if(Math.abs(dx)+Math.abs(dy)>2) moved=true; az-=dx*0.008; el=Math.max(-0.2,Math.min(1.45,el+dy*0.006)); px=e.clientX;py=e.clientY; goal=null; place(); } else pick(e,false); });
-cv.addEventListener('wheel',e=>{e.preventDefault(); dist=Math.max(0.08,Math.min(8,dist*(e.deltaY>0?1.12:0.89))); goal=null; place();},{passive:false});
+cv.addEventListener('pointermove',e=>{ if(drag){ const dx=e.clientX-px, dy=e.clientY-py;
+    if(Math.abs(dx)+Math.abs(dy)>2) moved=true; az-=dx*0.008; el=Math.max(-0.15,Math.min(1.45,el+dy*0.006));
+    px=e.clientX;py=e.clientY; goal=null; place(); } else pick(e,false); });
+cv.addEventListener('wheel',e=>{e.preventDefault(); dist=Math.max(0.05,Math.min(8,dist*(e.deltaY>0?1.12:0.89))); goal=null; place();},{passive:false});
+
 const ray=new THREE.Raycaster(), mouse=new THREE.Vector2();
-function pick(e,click){ const r=cv.getBoundingClientRect(); mouse.x=((e.clientX-r.left)/r.width)*2-1; mouse.y=-((e.clientY-r.top)/r.height)*2+1; ray.setFromCamera(mouse,camera);
-  const hits=ray.intersectObjects(pickables.filter(isShown),false); if(hits.length){ const o=hits[0].object; tip.textContent=o.userData.name||''; tip.style.left=(e.clientX-r.left)+'px'; tip.style.top=(e.clientY-r.top)+'px'; tip.style.opacity=1; cv.style.cursor='pointer';
-    if(click){ const id=o.userData.bom; const row=document.querySelector(`.row[data-id="${id}"]`); if(row){ row.scrollIntoView({block:'nearest'}); } selectBom(id,row); } }
+function pick(e,click){ const r=cv.getBoundingClientRect();
+  mouse.x=((e.clientX-r.left)/r.width)*2-1; mouse.y=-((e.clientY-r.top)/r.height)*2+1; ray.setFromCamera(mouse,camera);
+  const hits=ray.intersectObjects(pickables.filter(isShown),false);
+  if(hits.length){ const o=hits[0].object; tip.textContent=o.userData.name||'';
+    tip.style.left=(e.clientX-r.left)+'px'; tip.style.top=(e.clientY-r.top)+'px'; tip.style.opacity=1; cv.style.cursor='pointer';
+    if(click){ const id=o.userData.bom; const row=document.querySelector(`.row[data-id="${id}"]`); if(row) row.scrollIntoView({block:'nearest'}); selectBom(id,row); } }
   else { tip.style.opacity=0; cv.style.cursor='grab'; } }
 const status=document.getElementById('status');
 
 function resize(){ const w=vp.clientWidth,h=vp.clientHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); place(); }
 window.addEventListener('resize',resize);
-const v=new THREE.Vector3(); const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches; let t0=performance.now();
-function frame(now){ const dt=(now-t0)/1000; t0=now;
-  if(goal){ const k=1-Math.pow(0.001,dt); tgt.lerp(goal.t,k); dist+=(goal.d-dist)*k; az+=(goal.a-az)*k; el+=(goal.e-el)*k; if(Math.abs(dist-goal.d)<1e-3 && tgt.distanceTo(goal.t)<1e-3) goal=null; place(); }
-  if(!reduced && stage!==1){ rotG.rotation.y=Math.sin(now/4000)*0.6; }
+
+const v3=new THREE.Vector3(); const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches; let t0=performance.now();
+function frame(now){ const dt=Math.min((now-t0)/1000,0.05); t0=now;
+  if(goal){ const k=1-Math.pow(0.001,dt); tgt.lerp(goal.t,k); dist+=(goal.d-dist)*k; az+=(goal.a-az)*k; el+=(goal.e-el)*k;
+    if(Math.abs(dist-goal.d)<1e-3 && tgt.distanceTo(goal.t)<1e-3) goal=null; place(); }
+  if(!reduced && stage!==1) rotG.rotation.y=Math.sin(now/4000)*0.6;
   if(!reduced){ drone.rotation.y+=dt*0.4; drone.position.y=1.1+Math.sin(now/900)*0.03; }
-  if(highlight.length){ M.glow.emissiveIntensity=0.5+0.5*Math.abs(Math.sin((now-hlT)/250)); if(now-hlT>4000){ highlight.forEach(o=>o.material=o.userData.origMat); highlight=[]; } }
+  if(highlight.length){ M.glow.emissiveIntensity=0.5+0.5*Math.abs(Math.sin((now-hlT)/250));
+    if(now-hlT>4000){ highlight.forEach(o=>o.material=o.userData.origMat); highlight=[]; } }
   renderer.render(scene,camera);
-  const w=vp.clientWidth,h=vp.clientHeight; const bbView = dist<0.35;
-  labels.forEach(L=>{ const isBB = L.obj.userData.ref!==undefined; const vis=showLabels && isShown(L.obj) && (isBB ? bbView : !bbView); if(!vis){L.el.style.opacity=0;return;}
-    L.obj.getWorldPosition(v); v.add(L.off); v.project(camera); if(v.z>1){L.el.style.opacity=0;return;} L.el.style.left=((v.x*0.5+0.5)*w)+'px'; L.el.style.top=((-v.y*0.5+0.5)*h)+'px'; L.el.style.opacity=1; });
+  const w=vp.clientWidth,h=vp.clientHeight, bbView=dist<0.35, wideView=dist>2.0;
+  labels.forEach(L=>{ const isBB=L.obj.userData.ref!==undefined;
+    const vis=showLabels && isShown(L.obj) && (isBB ? bbView : (!bbView && (!wideView || L.major)));
+    if(!vis){L.el.style.opacity=0;return;}
+    L.obj.getWorldPosition(v3); v3.add(L.off); v3.project(camera);
+    if(v3.z>1){L.el.style.opacity=0;return;}
+    L.el.style.left=((v3.x*0.5+0.5)*w)+'px'; L.el.style.top=((-v3.y*0.5+0.5)*h)+'px'; L.el.style.opacity=1; });
   requestAnimationFrame(frame);
 }
-setStage(1); resize(); place(); status.textContent='stage 1 · fixed horn pair · hover for names, click a BOM row to fly to it'; requestAnimationFrame(frame);
+setStage(1); resize(); place(); requestAnimationFrame(frame);
 })();
 </script>
