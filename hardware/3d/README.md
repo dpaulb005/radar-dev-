@@ -24,19 +24,32 @@ turns the frame.
 
 ## Wiring you can follow
 
-Every pin a wire lands on is a real object with a name, a landing point and a
-direction, so a lead leaves its connector along that connector's own axis and
-arrives at the far one the same way — it looks plugged in rather than passing
-nearby. From there it drops to a cable run a few millimetres above the plywood
-and stays there, routing through the corridors between modules instead of
-flying over them. Parallel leads are fanned apart so a loom reads as ten wires,
-not one rope. Coax is SMA with visible nuts and boots; the breadboard harness is
-hook-up wire in the colours `WIRING.md` calls out.
+Cable routing is done the way harness routing is normally done: each lead is a
+polyline of straight runs with a filleted arc at every bend. A spline through
+the same waypoints overshoots at each direction change — that is exactly what
+throws a cable past its corner and through whatever is behind it — so one is
+not used.
 
-The things a wire has to plug into are modelled too: header sockets under the
-ESP32 and A4988 (which is what lifts their pins clear of the board), a 4-pin
-JST on the stepper, a DC barrel jack and plug on the supply, RCA jacks on the
-UCA202, combo jacks on the UMC404HD, and a USB-A socket on the laptop.
+Each lead then:
+
+1. leaves its connector along that connector's own axis, so it looks plugged in;
+2. turns sideways first if the pin points up or down, so it never doubles back;
+3. drops to a cable run a few millimetres above the plywood and follows a lane
+   between the modules — never over or through one;
+4. climbs at the near edge of the breadboard and comes in over the top, because
+   dropping to run height at a header would put the wire inside the board;
+5. turns 90° at most, and never sharper.
+
+Parallel leads get their own lane so a ten-way loom reads as ten wires rather
+than one rope. Coax is SMA with visible nuts and boots; the breadboard harness
+is hook-up wire in the colours `WIRING.md` calls out.
+
+Everything a lead plugs into is modelled: header sockets under the ESP32 and
+A4988 (which is what lifts their pins clear of the plywood), a 4-pin JST on the
+stepper, a DC barrel jack and plug plus a mains inlet on the supply, RCA jacks
+on the UCA202, combo jacks and a USB-B socket on the UMC404HD, and three USB-A
+sockets on the laptop. The ESP32 and the UCA202 are both corded to the laptop —
+without those the bench has no power and no serial link.
 
 ## The breadboard is the real one
 
@@ -95,10 +108,18 @@ python verify_model.py --render   # also loads the page in headless Chrome
                                   # and fails on any JavaScript error
 ```
 
-198 checks: every part and all 48 jumpers against `WIRING.md` (same refs, same
-holes, same pin order, same wire colours), every connector pin's net against
-its "Nets as built" table, the ESP32 / A4988 / ADF4351 pinouts against
-`MODULES.md`, every `pinAt()` in the harness against the pins that actually
-exist, and the panel's stage totals against `BOM.md`. It exits non-zero and
-names the offending hole, pin or figure. Run it after editing the model **or**
-after editing any of those three documents — a change to either side fails it.
+207 checks: every part and all 48 jumpers against `WIRING.md` (same refs, same
+holes, same pin order, same wire colours), every connector pin's net against its
+"Nets as built" table, the ESP32 / A4988 / ADF4351 pinouts against `MODULES.md`,
+every wire against the pins that actually exist, and the panel's stage totals
+against `BOM.md`.
+
+`--render` additionally loads the page and runs its own geometry self-test over
+the real scene graph: **no lead may pass through a part it is not connected to,
+and no bend may exceed 95°**. It samples every cable curve against every module
+bounding box, because sixty cables cannot be eyeballed. It prints `GEOM OK`, or
+names the wire, the part it hits and the coordinate.
+
+It exits non-zero and names the offending hole, pin, figure or wire. Run it
+after editing the model **or** after editing any of those three documents — a
+change to either side fails it.

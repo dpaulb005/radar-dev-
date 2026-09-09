@@ -248,14 +248,15 @@ def check_harness():
         "adf": set(js_string_list("ADFPINS")),
         "buck": {"IN+", "IN-", "OUT+", "OUT-"},
         "term": {"T%d" % i for i in range(1, 7)},
-        "psu": {"OUT"},
+        "psu": {"OUT", "AC"},
         "uca": {"IN_L", "IN_R", "OUT_L", "OUT_R", "USB"},
         "pa": {"5V", "GND"},
         "lna": {"5V", "GND"},
         "nema": {"M1", "M2", "M3", "M4"},
-        "lap": {"USB"},
-        "umc": {"IN1", "IN2", "IN3"},
+        "lap": {"USB1", "USB2", "USB3"},
+        "umc": {"IN1", "IN2", "IN3", "USB"},
     }
+    defined["esp"] = defined["esp"] | {"USB"}      # micro-USB to the laptop
     # literal P(comp,'PIN') refs are checked by name; P(comp, someVar) ones can
     # only be counted, but counting them still catches a wholesale rename.
     refs = re.findall(r"\bP\((\w+),'([^']+)'\)", HTML_SRC)
@@ -356,20 +357,29 @@ def check_render():
     page.write_text(HTML_SRC.replace("<script src=", ERROR_HOOK + "\n<script src=", 1),
                     encoding="utf-8")
     try:
+        # no --virtual-time-budget: the render loop never idles, so virtual time
+        # never advances and Chrome hangs. The page runs its self-test during
+        # load, so a plain --dump-dom already has the verdict.
         out = subprocess.run(
             [browser, "--headless=new", "--disable-gpu", "--use-gl=swiftshader",
              "--enable-unsafe-swiftshader", "--user-data-dir=%s" % (tmp / "p"),
-             "--virtual-time-budget=4000", "--dump-dom", page.as_uri()],
+             "--dump-dom", page.as_uri()],
             capture_output=True, text=True, timeout=300,
             encoding="utf-8", errors="replace").stdout or ""
     except subprocess.TimeoutExpired:
         check(False, "headless render timed out")
         return
-    title = out.split("</title>")[0]
+    title = out.split("</title>")[0].split("<title>")[-1]
     check("JSERROR" not in title,
           "page threw: " + title.split("JSERROR: ")[-1][:400])
     check("<canvas" in out, "page rendered no canvas")
-    print("  render: page loaded, no JavaScript errors")
+    # the page checks its own geometry: no lead may pass through a part it is
+    # not connected to, and no bend may exceed 95 degrees
+    check("GEOM OK" in title,
+          "wire geometry: " + title.replace("GEOM FAIL", "").strip()[:900])
+    if "GEOM OK" in title:
+        print("  render: loaded clean, wire geometry OK "
+              "(no wire through a part, no bend over 95 deg)")
 
 
 def main():
