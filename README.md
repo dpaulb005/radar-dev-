@@ -16,7 +16,7 @@ the band by sweeping above the WiFi channel.
                                └─► mixer LO ◄──────── LNA ◄── band-pass ◄──┘
  mixer IF = beat tone, pitch ∝ range (417 Hz at 10 m)
    → video amp (TL072, 60 dB, 159 Hz HP ×2, 15.9 kHz LP) → USB sound card
-   → laptop: range FFT · Doppler FFT · CFAR · beam centroid across the turntable
+   → laptop: range FFT · Doppler FFT · CFAR · phase difference between two receivers → azimuth
    → Kalman tracker → web console                 (sensing plane)
 ```
 
@@ -24,10 +24,10 @@ the band by sweeping above the WiFi channel.
 |---|---|
 | sweep | 2440–2480 MHz (40 MHz), 6.4 ms up-chirp, 7.4 ms PRI |
 | range cell / accuracy | 3.75 m / ~0.2 m after peak interpolation |
-| azimuth | turntable, 12° steps, amplitude centroid → 2.5° |
+| azimuth | phase between two RX horns 193 mm apart → 0.09° rms, in one 0.47 s dwell |
 | drone echo at 10 m | −74 dBm, 71 dB SNR after 64 chirps |
 | phone link margin | ~20 dB at the drone's receiver; AP at 10 dBm, band-pass and operator placement protect the radar |
-| stages | 1 range + velocity · 2 turntable → position · 3 stacked RX horn → elevation |
+| stages | 1 range + velocity · 2 second RX horn → azimuth · turntable optional, coverage only |
 
 ## Implement
 
@@ -35,7 +35,7 @@ Read in this order. Each step ends with a checkpoint you can verify before
 moving on.
 
 1. **[`hardware/BOM.md`](hardware/BOM.md)** — every part, priced and stock-checked (Sept 2026). Order the mixer first.
-2. **[`docs/radar-hardware.md`](docs/radar-hardware.md)** — horns (cut list), RF chain in MIT order, the breadboard video amp, sync, power, turntable, stacked RX.
+2. **[`docs/radar-hardware.md`](docs/radar-hardware.md)** — horns (cut list, all three at once), the three-horn frame, RF chain in MIT order, the breadboard video amp, sync, power, and the seven decisions that make stage 1 upgrade to azimuth without a rebuild.
 3. **[`docs/radar-software.md`](docs/radar-software.md)** — flash `firmware/radar_ctl`, run `ground_station/radar_acquire.py`, feed the console.
 4. **[`docs/drone-hardware.md`](docs/drone-hardware.md)** — build the kit exactly per its guide; the one thing to leave off.
 5. **[`docs/drone-software.md`](docs/drone-software.md)** — the kit's official build and flash, with two menuconfig changes (channel 1, 10 dBm); the coexistence sweep and ping test.
@@ -63,7 +63,7 @@ python server.py                              # console at http://localhost:8080
 
 | | |
 |---|---|
-| `firmware/radar_ctl/` | radar ESP32: ADF4351 sweep, sync line, turntable, serial protocol; boots RF-off |
+| `firmware/radar_ctl/` | radar ESP32: ADF4351 sweep, sync line, serial protocol, optional turntable; boots RF-off |
 | `ground_station/radar_acquire.py` | sound card → chirps → range-Doppler → CFAR → azimuth → console; `--selftest`, `--replay` |
 | `ground_station/server.py` + `web/` | the console (PPI scope, tracker, `/api/radar`) |
 | `ground_station/fmcw_sim.py`, `radar_twin.py`, `scan_design.py`, `tracker.py` | simulator, digital twin, scan sizing, Kalman filter |

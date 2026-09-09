@@ -61,19 +61,48 @@ in → the same 107 mV out; sync square wave on the right audio channel.
 
 ## §3 · Horns (before mounting)
 
-A VNA at the SMA, horn pointed at open space. **Note the band:** a plain
-NanoVNA-H4 stops at 1.5 GHz and cannot measure this antenna. You need a
-LiteVNA-64, a NanoVNA V2 Plus4 or a lab VNA. Borrow one if you can — it costs
-more than any single part in the radar.
+### You do not need a VNA to build this
 
+Say this plainly, because an earlier version of these docs implied otherwise.
+A VNA that reaches 2.5 GHz is the most expensive item anywhere near this
+project — a LiteVNA-64 is ~$165, a NanoVNA V2 Plus4 ~$150, and the common
+$65 NanoVNA-H4 stops at 1.5 GHz and **cannot see this antenna at all**. None of
+that is worth buying for one measurement.
+
+You do not need it because the link has ~54 dB of margin at 10 m. A horn with a
+poor 3:1 match loses 1.25 dB, and you have two of them, so a badly tuned pair
+costs 2.5 dB out of 54. The horn dimensions come from closed-form optimum-horn
+theory and are reliable if you cut to them; the VNA only confirms it.
+
+**Build without one, and tune with the radar itself.** Once the chain is alive
+(checkpoint 7), park the PLL with `CW 2460`, put a corner reflector at a fixed
+range on boresight, and adjust the probe depth in 0.5 mm steps for maximum
+detection SNR. That optimises the exact quantity you care about, which is more
+than S11 tells you anyway. Do the two receive horns the same way and stop when
+they read within 1 dB of each other.
+
+**If you want the real measurement,** borrow rather than buy:
+
+- the Penn State ECE teaching labs — any bench that runs the RF or microwave
+  course has a VNA reaching well past 2.5 GHz; ask the lab manager or a TA,
+- the Radar and Communications Lab or the Computational Electromagnetics and
+  Antennas Research Lab, both of which live at 2.4 GHz and above,
+- a local amateur radio club — LiteVNAs are common and members lend them.
+
+Twenty minutes on a borrowed instrument covers every row below.
+
+### With a VNA, if you get one
+
+Horn at the SMA, pointed at open space.
 
 | test | PASS |
 |---|---|
-| seams | < 0.5 Ω panel to panel; no visible gap |
+| seams | < 0.5 Ω panel to panel; no visible gap — **an ohm-meter does this one, no VNA** |
 | return loss | S11 ≤ −10 dB over 2400–2480 MHz (tune the 28 mm probe in 0.5 mm steps for the minimum) |
-| TX–RX isolation at 290 mm | S21 ≤ −35 dB |
+| TX–RX isolation, TX 290 mm above the RX row | S21 ≤ −35 dB |
+| **RX A vs RX B match** | S11 curves within 2 dB of each other across the band — the two receive horns feed a phase comparison, so they want to be twins |
 | gain, two-antenna method at 3 m | 13.4 ± 1.5 dBi |
-| beamwidths on the turntable | 34 ± 4° E, 36 ± 4° H; first sidelobe ≤ −12 dB |
+| beamwidths (rotate the horn by hand against a protractor) | 34 ± 4° E, 36 ± 4° H; first sidelobe ≤ −12 dB |
 
 Full procedure and the printable pass/fail sheet: `archive/LLM-DESIGN-PROMPT.md` §3.
 

@@ -48,12 +48,12 @@ Dimensions: aperture 263.8 × 193.1 mm, WR-340 throat 86.4 × 43.2 mm, flare
 | 15 | TL072 ×2, breadboard, resistors/capacitors kit | 1 | 25 | video amp (`radar-hardware.md` §5) |
 | 16 | 12 V 3 A supply + LM2596 buck ×2 | 1 | 18 | 12 V for the op-amp/stepper, 5 V for RF modules + ESP32 |
 
-## D. Mechanical — turntable — ~$53
+## D. Mechanical — frame, and an optional turntable — ~$53
 
 | # | item | qty | ~$ | notes |
 |---|---|---|---|---|
 | 17 | Plywood ~18" × 15", L-brackets, M3 hardware, standoffs | 1 | 28 | |
-| 18 | **NEMA-17 stepper + A4988** (+ lazy-susan bearing) | 1 | 25 | not a hobby servo: three copper horns sag one, and the 2.5° azimuth budget cannot absorb that |
+| 18 | NEMA-17 stepper + A4988 (+ lazy-susan bearing) | 0–1 | 25 | **optional.** Only points the 34° beam at a wider sector; it takes no part in measuring azimuth. Skip it first if the budget is tight |
 
 ## E. Drone — nothing (flown from the phone)
 
@@ -71,7 +71,7 @@ fallback if the coexistence test in `docs/drone-software.md` §4 fails.
 | 20 | **RadioMaster Bandit Nano** 915 MHz ELRS TX module | 1 | 40 | FCC915 |
 | 21 | **BetaFPV ELRS Nano RX 915 MHz** (0.7 g) or HappyModel ES900RX (0.6 g) | 1 | 17 | same four CRSF pads as the RP1 V2 |
 
-## F. Stage 3 — azimuth interferometer — ~$251
+## F. Stage 2 — azimuth interferometer — ~$251
 
 Bearing from the phase difference between two receivers, in one 0.47 s dwell,
 which is the only way to get it on a *moving* drone. See
@@ -88,17 +88,17 @@ which is the only way to get it on a *moving* drone. See
 | 28 | second LNA (SPF5189Z 4-pack, row 3) | — | 0 | |
 | 29 | 2 more SMA jumper 3-packs | 2 | 18 | the second receive chain adds four coax runs. Buy them together: the two RX chains must be phase-matched, and identical cables from one batch is the cheap way to do it |
 
-## G. Test gear — borrow it
+## G. Test gear — buy none of it
 
 | # | item | qty | ~$ | notes |
 |---|---|---|---|---|
-| 30 | VNA reaching 2.5 GHz | 1 | 0–190 | **borrow this.** Checkpoint 2 tunes the horn probe against it and there is no substitute |
-| 31 | RTL-SDR v4 + 30 dB SMA pad | 1 | 0–40 | optional, checkpoint 3. A borrowed power meter does the same job |
+| 30 | VNA reaching 2.5 GHz | 0 | 0 | **not required.** The link has 54 dB of margin, so a badly tuned horn costs 2.5 dB of it. Tune the probe against the radar's own detection SNR instead — `docs/testing.md` §3. Borrow one if you want the real numbers |
+| 31 | RTL-SDR v4 + 30 dB SMA pad | 0 | 0 | optional. The leakage tone at checkpoint 7 already proves the whole chain is alive |
 
-**Do not buy a NanoVNA-H4.** It stops at 1.5 GHz and cannot see a 2.44 GHz
-horn at all. A VNA that reaches this band is a LiteVNA-64 at ~$165 or a
-NanoVNA V2 Plus4 at ~$150 — more than any single radar part in this build, and
-the one item most worth borrowing from a university lab.
+**Do not buy a NanoVNA-H4.** It stops at 1.5 GHz and cannot see a 2.44 GHz horn
+at all. A VNA that does reach this band is a LiteVNA-64 at ~$165 or a NanoVNA V2
+Plus4 at ~$150 — more than any single radar part here, for a measurement the
+build does not depend on.
 
 ## Totals
 
@@ -133,7 +133,7 @@ interface, less the switch and the UCA202. Costs $122 more and removes the
 motion-phase correction, which is the only real software risk in A.
 
 Both assume: horns printed rather than cut from copper sheet, **no turntable**,
-and a borrowed VNA.
+and **no VNA** — the probe gets tuned against the radar's own SNR instead.
 
 **Why no turntable.** It was mandatory when azimuth came from scanning. With
 two receivers the interferometer covers the full ±17° beam from a fixed mount,
@@ -165,10 +165,10 @@ channels on one sample clock. That is the only change from buying in stages.
 | C. Baseband, control, power (**less the UCA202**) | 53 | 353 |
 | D. Turntable | 53 | 406 |
 | F. Second receiver and interferometer | 251 | **657** |
-| G. Test gear, if bought rather than borrowed | 205 | 862 |
-| shipping (Mini-Circuits direct) + 6 % tax | ~55 | **~917** |
+| G. Test gear (buy none) | 0 | 657 |
+| shipping (Mini-Circuits direct) + 6 % tax | ~55 | **~712** |
 
-**Parts only: ~$657. With bought test gear, delivered: ~$917.**
+**Parts only: ~$657. Delivered: ~$712.**
 
 Already owned, not counted: the laptop, the phone, and the ESP-FLY drone.
 
@@ -176,12 +176,14 @@ Already owned, not counted: the laptop, the phone, and the ESP-FLY drone.
 
 | | | running |
 |---|---|---|
-| Stage 1 — range and velocity (A + B + C with the UCA202) | 383 | 383 |
-| + Stage 2 — turntable (D) | 53 | 436 |
-| + Stage 3 — azimuth (F) | 251 | 687 |
-| + test gear (G) | 205 | 892 |
+| Stage 1 — range and velocity (A + B + C, but buy the UMC404HD not the UCA202) | 453 | 453 |
+| + Stage 2 — azimuth (F, less the interface already bought) | 151 | 604 |
+| + optional turntable (D) | 53 | 657 |
 
-Staging costs **$30 more** (the UCA202 becomes a spare) and defers $251.
+
+Staged this way nothing is wasted and nothing is rebuilt: stage 1 buys the
+4-input interface up front and puts up the three-horn frame, and stage 2 is
+purely additive.
 
 ### The cheaper azimuth path
 
@@ -194,14 +196,14 @@ phase has to be corrected from the measured velocity.
 | | |
 |---|---|
 | A + B + C (with UCA202) + D + SPDT SMA switch + jumpers | **~$475** |
-| + test gear and tax | ~$720 |
+| + tax and shipping | ~$620 |
 
 ### Ways to spend less
 
 | | saves |
 |---|---|
 | 3D print the horns and line them with copper tape instead of cutting sheet | ~$40 |
-| Borrow a 2.5 GHz-capable VNA from the department | $165 |
+| Skip the VNA entirely and tune against detection SNR | $165 |
 | Skip the RTL-SDR, use a borrowed power meter | $40 |
 | Data Alliance band-pass at $13.70 instead of GPIO Labs at $29, ×2 | $31 |
 

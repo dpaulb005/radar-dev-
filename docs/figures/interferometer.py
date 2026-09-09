@@ -33,7 +33,9 @@ from radar_twin import beam_gain                             # noqa: E402
 FS, T_UP, RETRACE, N_CHIRPS = 48_000.0, 6.4e-3, 1.0e-3, 64
 F0, BW = 2.440e9, 40e6
 C = 2.99792458e8
-LAM = C / (F0 + BW / 2)                  # 0.1219 m
+LAM = C / (F0 + BW / 2)                  # 0.1219 m, free space
+VF_RG316 = 0.695                         # PTFE coax: a wave is slower inside the cable
+LAM_COAX = LAM * VF_RG316                # 0.0847 m — this is what a length mismatch sees
 TARGET_R, TARGET_V, TARGET_RCS = 10.0, -1.8, 0.0026
 BASELINE = 0.1931                        # horn E-plane width: two horns touching
 
@@ -76,7 +78,7 @@ def bearing(rd1, rd2, d, cal=0.0):
 
 def run():
     truths = list(range(-16, 17, 2))
-    out = {"lam": LAM, "baseline": BASELINE,
+    out = {"lam": LAM, "lam_coax": LAM_COAX, "baseline": BASELINE,
            "unambiguous_deg": math.degrees(math.asin(min(1.0, LAM / (2 * BASELINE))))}
 
     # --- accuracy across the beam, three noise seeds --------------------
@@ -119,7 +121,7 @@ def run():
     # --- what an uncalibrated cable-length mismatch costs ----------------
     cal_rows = []
     for mm in (0, 2, 5, 10, 20):
-        phase = 2 * math.pi * (mm / 1000.0) / LAM
+        phase = 2 * math.pi * (mm / 1000.0) / LAM_COAX     # coax, not free space
         errs = []
         for az in (-12, 0, 12):
             r1, r2 = two_channel(az, BASELINE, 1)

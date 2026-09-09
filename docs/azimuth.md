@@ -46,7 +46,9 @@ equivalent to pushing the drone out past 40 m, and the cliff after that is the
 CFAR losing the target altogether, not the phase measurement degrading.
 
 **Calibration is the actual requirement.** 1 mm of extra coax on one channel is
-3° of phase at 2.46 GHz and 0.3° of bearing error. Beyond about 8 mm of
+**4.3° of phase and 0.43° of bearing**. Not 3°: a wave travels about 30 % slower
+in PTFE coax than in air, so a length difference sees the 84.7 mm wavelength
+inside the cable, not the 121.9 mm one outside it. Beyond about **6 mm** of
 uncorrected mismatch you are outside the budget. Either match the two cables
 physically, or measure the fixed offset once against a reflector on boresight
 and subtract it. A trihedral corner reflector is a good target for this and
@@ -75,40 +77,42 @@ azimuth beamwidth changes from 36° to 34°, which is nothing, and the
 polarisation rotates, which is fine as long as the transmit horn is rotated
 with them.
 
-The turntable stays, but its job changes. It no longer scans during a
-measurement. It points the pair, and only moves when the target drifts towards
-the edge of the 34° beam.
+The turntable is now optional and does nothing during a measurement. If you
+fit one, it points the whole frame at a wider sector, moving between dwells and
+never during one. Most indoor flying at 3–10 m fits inside a single 34° beam,
+so it is the first thing to cut.
 
 ---
 
 ## What to buy
 
-The parts are the ones already scoped for stage 3. They were specified to stack
-a second receive horn *below* for elevation; for azimuth the same parts go
-*beside* instead.
+These are stage 2. Build them into the three-horn frame from
+[`radar-hardware.md`](radar-hardware.md) § 7, which stage 1 already put up.
 
 | item | ~$ | note |
 |---|---|---|
-| second ZX05-43MH-S+ mixer | 73 | the critical-path part, order first |
+| second mixer | 25–73 | a 1.5–4.5 GHz SMA module at ~$25, or the ZX05-43MH again |
 | second 2-way splitter | 13 | LO to both mixers |
+| 6 dB SMA pad, plus the spare SPF5189Z | 9 | **only if you used the ZX05-43MH.** Splitting the LO twice leaves +7 dBm against its +13 dBm rating; pad-then-amplify puts it back to +13. Cheap level-7 modules need neither |
 | second 2400–2500 band-pass | 29 | in front of the second LNA |
 | 4-input USB interface (UMC404HD) | 100 | beat A, beat B and sync on **one sample clock** |
 | third horn | 0 | copper for three is already in BOM section B |
 | second LNA | 0 | the SPF5189Z 4-pack covers it |
 | second TL072 video channel | 0 | parts already in section C |
-| **total** | **~215** | |
+| **total** | **~167 with a cheap mixer, ~224 with the ZX05-43MH** | |
 
-The 4-input interface is not optional and not substitutable. Two UCA202s have
+The 4-input interface is not substitutable *for this version*. Two UCA202s have
 independent sample clocks, and a phase measurement between two independently
-clocked converters means nothing.
+clocked converters means nothing. The switched version below needs only two
+channels and runs on the UCA202 — but if you already bought the UMC404HD in
+stage 1, as § 7 of the hardware doc advises, this line is already paid for.
 
 ---
 
 ## What to write
 
 About fifteen lines, and the plan is already in
-[`radar-software.md`](radar-software.md) § 9 — written for elevation, but the
-maths is identical.
+[`radar-software.md`](radar-software.md) § 9.
 
 1. Read 3 channels instead of 2.
 2. Run `segment_chirps` on both beat channels against the **one** sync channel,

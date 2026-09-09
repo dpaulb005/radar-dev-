@@ -37,7 +37,7 @@ copper tape on the top plate, flat, roughly doubles it. Not needed indoors.
 ## 4. Where to hover
 
 The horns' beams are 34° × 36°. At 5 m that is a ~3 m wide, ~3 m tall
-window per beam position; the turntable sweeps it across the sector. Fly
+window; the interferometer reads bearing across it without moving. Fly
 inside the sector at 3–10 m from the horns, at horn height ±1.5 m — the
 first flights should stay where a single beam sees the drone at all times.
 

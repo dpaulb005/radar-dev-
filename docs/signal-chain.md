@@ -225,13 +225,13 @@ caps the 4.3 s scan at 1.4 m/s.
 So mechanical scanning is a way to measure the bearing of a **hovering** drone.
 It is not a way to track a flying one, at any dwell or step size, and no amount
 of servo tuning changes that. Bearing on a moving target needs it measured
-within a single dwell, which is what stage 3 does with a second receive horn and
+within a single dwell, which is what stage 2 does with a second receive horn and
 the phase difference between them. This finding is an argument for going
 there sooner rather than for optimising the scan.
 
 ### What to do now
 
-- **Stage 1 and 2 are unaffected.** Range and velocity are accurate throughout;
+- **Range and velocity are unaffected.** They are accurate throughout;
   only bearing is in question, and only for moving targets.
 - **If you keep the 40 MHz sweep**, raise the dwell to 160 chirps. It is a
   one-line change and it restores the azimuth budget for a hovering target.

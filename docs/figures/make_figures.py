@@ -456,9 +456,10 @@ def fig_interferometer():
     ax[2].set_ylabel("bearing rms, degrees")
     ax[2].set_title("calibration is the real requirement")
     ax[2].annotate("2.5° budget", (13.5, 2.8), color=ACC, fontsize=8)
-    ax[2].annotate("1 mm of coax = 3° of phase\n= 0.3° of bearing.\n"
-                   "Match the cables, or measure\nthe offset once against a\nreflector on boresight.",
-                   (0.05, 0.50), xycoords="axes fraction", color=GREY, fontsize=8)
+    ax[2].annotate("1 mm of coax = 4.3° of phase\n= 0.43° of bearing, because a\n"
+                   "wave is 30 % slower in PTFE.\nThe budget is gone at ~6 mm.\n"
+                   "Match the cables, or null the\noffset once on boresight.",
+                   (0.04, 0.46), xycoords="axes fraction", color=GREY, fontsize=8)
     save(fig, "08-interferometer.png")
 
 

@@ -7,7 +7,7 @@ Two programs:
 
 | where | file | job |
 |---|---|---|
-| radar ESP32 | `firmware/radar_ctl/radar_ctl.ino` | step the ADF4351 sweep, drive SYNC, point the turntable, serial protocol |
+| radar ESP32 | `firmware/radar_ctl/radar_ctl.ino` | step the ADF4351 sweep, drive SYNC, serial protocol; also drives the optional turntable or the stage-2 RF switch |
 | laptop | `ground_station/radar_acquire.py` | sound card → chirps → range-Doppler → CFAR → azimuth centroid → fix → console |
 
 `radar_acquire.py` is the hardware twin of `radar_twin.py`: it reuses
@@ -62,7 +62,7 @@ chirps gives **0.2°**. 160 chirps at 40 MHz lands exactly where 64 chirps at
 That only helps a hovering target. The centroid assumes every beam saw the
 drone at one bearing, so `t_scan < theta * R / v_tangential`; at 10 m and 2.5°
 the 4.3 s scan needs the drone under 0.10 m/s. Bearing on a *moving* drone has
-to come from one dwell, which is stage 3's second RX horn. See
+to come from one dwell, which is stage 2's second RX horn. See
 [`signal-chain.md`](signal-chain.md) § stage 10.
 
 ---
@@ -167,14 +167,14 @@ shows the ~135 Hz square wave (hardware checkpoint 6).
 
 ---
 
-## 4. Stage 1 — range and velocity (no turntable)
+## 4. Stage 1 — range and velocity
 
 ```bash
 python radar_acquire.py --device 3 --ctl /dev/ttyUSB0 --range-only --record first-walk.wav
 ```
 
 `--ctl` is still needed in stage 1 — the script turns the sweep on and off
-through it; `--range-only` keeps the turntable out of it.
+through it; `--range-only` keeps the scan logic out of it.
 
 `--device` is the UCA202's index from `python -m sounddevice`. Output is one
 JSON line per block of 64 chirps (~0.5 s):
@@ -205,7 +205,7 @@ any time with `--replay first-walk.wav`.
 
 ---
 
-## 5. Stage 2 — scanning, and into the console
+## 5. Scanning the turntable — legacy, and only for coverage
 
 ```bash
 python radar_acquire.py --device 3 --ctl /dev/ttyUSB0 --sector 100 --step 12 \
@@ -284,13 +284,11 @@ side needs nothing new (`AZ` is enough).
 
 ---
 
-## 9. Stage 3 — azimuth from two receivers (not written yet)
+## 9. Stage 2 — azimuth from two receivers (not written yet)
 
-The plan below was written for elevation, with the second horn stacked below.
-For **azimuth**, which is what the project needs, put the second horn *beside*
-the first instead and rotate all three horns 90°. The maths is identical; only
-the baseline's orientation changes. Measured performance and the full build
-note: [`azimuth.md`](azimuth.md).
+This is how azimuth is measured. It replaces the beam-scan centroid in §5,
+which cannot work on a moving drone. Measured performance, the parts and the
+calibration procedure: [`azimuth.md`](azimuth.md).
 
 With two receive channels at 193 mm spacing, the angle off boresight is
 `θ = asin( Δφ · λ / (2π · d) )` from the phase difference between the two
