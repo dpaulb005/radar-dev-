@@ -167,25 +167,76 @@ adopted so the drone's WiFi could live below it, is off by up to **6.3°**, well
 outside the 2.5° budget. `radar_acquire.py --selftest` fails on azimuth for this
 reason.
 
-The cause follows from figure 4. Halving the bandwidth halves how far the target
-sits from DC, from 5.3 bins to 2.7, which buries it deeper in the leakage
-mainlobe. It also doubles the range cell to 3.75 m, and the centroid groups
-detections within 1.5 cells, so its acceptance window widened to ±5.6 m and now
-swallows the leakage-sidelobe false detections visible around 3–6 m in figure 5.
-Those spurious detections carry no real bearing information and drag the
-centroid.
+The cause is **not** what I first assumed. Widening or tightening the
+centroid's grouping window changes nothing at all: from 1.5 range cells down to
+0.3 the answer is identical. The error is not a systematic bias from swallowing
+false alarms. It is **variance**. Halving the bandwidth moves the target from
+5.3 FFT bins from DC to 2.7, deeper into the leakage mainlobe of figure 4, which
+makes every beam's amplitude estimate noisier, and the centroid is a weighted
+average of exactly those amplitudes.
 
-Range and velocity are unaffected and remain accurate. **Stage 1 and stage 2 of
-the build are unaffected. Stage 3, which needs bearing, is blocked until this is
-resolved.** The options, none yet chosen:
+That diagnosis says how to fix it, and it is not by moving the servo more.
 
-- Reclaim bandwidth. The bin position depends only on `2BR/c`, so no change to
-  chirp timing helps; only more sweep width or more range does.
-- Tighten the centroid's grouping window so it stops absorbing near-range false
-  alarms, and weight beams by the target's own range–Doppler cell rather than by
-  a CFAR ratio.
-- Move the drone link off 2.4 GHz entirely, which was the archived 915 MHz plan,
-  and take the whole ISM band back for the radar.
+### Where the scan-time budget should go
+
+A scan costs `n_beams × n_chirps × PRI` seconds. That budget can buy finer servo
+steps or longer dwells. Measured, over three noise seeds, by
+[`figures/scan_budget.py`](figures/scan_budget.py):
+
+![scan budget](figures/07-scan-budget.png)
+
+| configuration | scan time | rms error | worst |
+|---|---|---|---|
+| 9 beams × 64 chirps | 4.3 s | 1.5° | 2.7° |
+| 16 beams × 64 | 7.6 s | 1.5° | 3.3° |
+| 23 beams × 64 | 10.9 s | 0.9° | 2.0° |
+| 12 beams × 96 | 8.5 s | 0.7° | 2.1° |
+| **9 beams × 160** | **10.7 s** | **0.1°** | **0.2°** |
+| 9 beams × 256 | 17.1 s | 0.1° | 0.2° |
+| 9 beams × 64, at 80 MHz | 4.3 s | 0.1° | 0.2° |
+
+Finer servo steps do help: tripling the beam count takes the worst error from
+2.7° to 2.0°. But for the same ten seconds, **staying at 9 beams and dwelling
+2.5× longer takes it to 0.2°**, an order of magnitude better.
+
+That is what a variance-limited estimator looks like. The horns have a 34° beam,
+so 12° steps already sample the beam pattern three times over; adding more
+samples of a smooth curve you have already oversampled buys almost nothing,
+while making each sample quieter buys everything. Note also that 160 chirps at
+40 MHz lands exactly where 64 chirps at 80 MHz already was. Integration time
+buys back precisely what the halved bandwidth cost.
+
+### The limit that outranks both
+
+None of this survives a moving target. The centroid assumes every beam saw the
+drone at the same bearing, so the scan has to finish before the drone's bearing
+changes by more than the budget:
+
+```
+t_scan  <  θ · R / v_tangential
+```
+
+At 10 m and a 2.5° budget that is 0.44 seconds per metre per second of
+crosswise speed. The 4.3 s scan therefore needs the drone slower than
+**0.10 m/s**, and the 10.7 s scan needs **0.04 m/s**. Both mean a drone that is
+essentially parked. Even the loose test, finishing within one 34° beamwidth,
+caps the 4.3 s scan at 1.4 m/s.
+
+So mechanical scanning is a way to measure the bearing of a **hovering** drone.
+It is not a way to track a flying one, at any dwell or step size, and no amount
+of servo tuning changes that. Bearing on a moving target needs it measured
+within a single dwell, which is what stage 3 does with a second receive horn and
+the phase difference between them. This finding is an argument for going
+there sooner rather than for optimising the scan.
+
+### What to do now
+
+- **Stage 1 and 2 are unaffected.** Range and velocity are accurate throughout;
+  only bearing is in question, and only for moving targets.
+- **If you keep the 40 MHz sweep**, raise the dwell to 160 chirps. It is a
+  one-line change and it restores the azimuth budget for a hovering target.
+- **If you reclaim the bandwidth**, nothing else needs changing.
+- **For a moving drone**, neither helps. Stage 3.
 
 ---
 

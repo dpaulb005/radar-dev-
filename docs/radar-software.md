@@ -46,13 +46,24 @@ Consequences the software handles for you:
   steps. Irrelevant indoors.
 
 **Known issue, azimuth at 40 MHz.** The coexistence sweep halves the
-bandwidth, which halves how far the target sits from DC (2.7 FFT bins at
-10 m instead of 5.3) and doubles the range cell to 3.75 m. The centroid
-groups detections within 1.5 cells, so its window widened to ±5.6 m and now
-absorbs leakage-sidelobe false alarms at 3-6 m. Measured azimuth error is up
-to 6.3° against a 2.5° budget; `--selftest` fails on it. Range and velocity
-are unaffected. The same test passes at 2400/80. See
-[`signal-chain.md`](signal-chain.md) § stage 10 for the evidence and options.
+bandwidth, moving the target from 5.3 FFT bins from DC to 2.7, deeper into the
+leakage mainlobe. Every beam's amplitude estimate gets noisier, and the
+centroid is a weighted average of exactly those amplitudes, so azimuth error
+rises to 6.3° against a 2.5° budget and `--selftest` fails on it. It is
+variance, not bias: tightening the centroid's grouping window from 1.5 range
+cells to 0.3 changes the answer not at all. Range and velocity are unaffected.
+
+The fix is integration, not finer beam steps. Measured over three noise seeds
+([`../docs/figures/scan_budget.py`](figures/scan_budget.py)), for the same
+~10 s of scan time: 23 beams x 64 chirps gives 2.0° worst, while 9 beams x 160
+chirps gives **0.2°**. 160 chirps at 40 MHz lands exactly where 64 chirps at
+80 MHz already was. `--chirps 160` is the one-line change.
+
+That only helps a hovering target. The centroid assumes every beam saw the
+drone at one bearing, so `t_scan < theta * R / v_tangential`; at 10 m and 2.5°
+the 4.3 s scan needs the drone under 0.10 m/s. Bearing on a *moving* drone has
+to come from one dwell, which is stage 3's second RX horn. See
+[`signal-chain.md`](signal-chain.md) § stage 10.
 
 ---
 

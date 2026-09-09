@@ -335,6 +335,71 @@ def fig_azimuth():
 
 
 # ======================================================================
+# 7 — where the scan-time budget should go, and the limit on all of it
+# ======================================================================
+def fig_scan_budget():
+    """Reads scan_budget.json, written by scan_budget.py."""
+    import json as _json
+    f = HERE / "scan_budget.json"
+    if not f.exists():
+        print("skip 07: run scan_budget.py first")
+        return
+    rows = _json.loads(f.read_text())
+    fig, ax = plt.subplots(1, 2, figsize=(9.8, 3.9))
+
+    # -- left: what the budget buys ------------------------------------
+    fam_style = {"beams": (ACC, "s-", "more beams (finer servo steps)"),
+                 "dwell": (GRN, "o-", "longer dwell (same 9 beams)"),
+                 "mixed": (BLU, "^", "a bit of both")}
+    base = [r for r in rows if r["family"] == "base"][0]
+    ax[0].axhspan(0, 2.5, color=GRN, alpha=0.10)
+    for fam, (c, m, lab) in fam_style.items():
+        pts = sorted([r for r in rows if r["family"] in (fam, "base")],
+                     key=lambda r: r["scan_s"])
+        if fam == "mixed":
+            pts = [r for r in rows if r["family"] == "mixed"]
+        ax[0].plot([r["scan_s"] for r in pts], [r["worst"] for r in pts], m,
+                   color=c, lw=1.6, ms=6, label=lab)
+    wb = [r for r in rows if r["family"] == "wideband"]
+    if wb:
+        ax[0].plot(wb[0]["scan_s"], wb[0]["worst"], "*", color=GREY, ms=15,
+                   label="80 MHz sweep, 9 beams · 64")
+    ax[0].set_xlabel("total scan time, seconds")
+    ax[0].set_ylabel("worst azimuth error, degrees")
+    ax[0].set_title("7 · Spend the scan budget on dwell, not on beams")
+    ax[0].legend(fontsize=8, loc="upper right")
+    ax[0].annotate("2.5° budget", (0.52, 0.06), xycoords="axes fraction",
+                   color=GRN, fontsize=8.5)
+    for r in rows:
+        if r["family"] in ("dwell", "beams") and r["scan_s"] > 9:
+            ax[0].annotate(r["label"], (r["scan_s"], r["worst"] + 0.15),
+                           fontsize=7.5, color=GREY, ha="center")
+
+    # -- right: the limit that outranks both ---------------------------
+    v = np.linspace(0.08, 3.0, 300)
+    t_budget = 2.5 * TARGET_R * math.pi / 180 / v          # stay inside 2.5 deg
+    t_beam = 34.0 * TARGET_R * math.pi / 180 / v           # stay inside one beamwidth
+    ax[1].fill_between(v, 1e-2, t_budget, color=GRN, alpha=0.13)
+    ax[1].plot(v, t_budget, color=GRN, lw=1.8, label="scan must finish inside 2.5°")
+    ax[1].plot(v, t_beam, color=GREY, lw=1.4, ls="--", label="…inside one 34° beamwidth")
+    for t, lab, c in [(base["scan_s"], f"9 beams · 64  ({base['scan_s']:.1f} s)", ACC),
+                      (10.7, "9 beams · 160  (10.7 s)", BLU)]:
+        ax[1].axhline(t, color=c, lw=1.3, ls=":")
+        vmax = 2.5 * TARGET_R * math.pi / 180 / t
+        ax[1].plot([vmax], [t], "o", color=c, ms=6)
+        ax[1].annotate(f"{lab}\nneeds v < {vmax:.2f} m/s", (0.30, t * 1.15),
+                       color=c, fontsize=8)
+    ax[1].set_yscale("log")
+    ax[1].set_xlim(0, 3)
+    ax[1].set_ylim(0.05, 60)
+    ax[1].set_xlabel("target's tangential speed at 10 m, m/s")
+    ax[1].set_ylabel("longest usable scan, seconds")
+    ax[1].set_title("but a moving drone outruns any mechanical scan")
+    ax[1].legend(fontsize=8, loc="upper right")
+    save(fig, "07-scan-budget.png")
+
+
+# ======================================================================
 if __name__ == "__main__":
     fig_chirp()
     beat, sync = make_audio()
@@ -347,6 +412,7 @@ if __name__ == "__main__":
     fig_range_fft(cube)
     fig_range_doppler(cube, timing, dets)
     t_az, a40, a80 = fig_azimuth()
+    fig_scan_budget()
 
     print("\n--- numbers used in the doc -------------------------------")
     print(f"audio recorded      : {len(beat)} samples = {len(beat)/FS*1e3:.0f} ms per block")

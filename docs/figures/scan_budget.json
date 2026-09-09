@@ -1,0 +1,79 @@
+[
+ {
+  "label": "9 beams \u00b7 64",
+  "step": 12,
+  "chirps": 64,
+  "beams": 9,
+  "family": "base",
+  "bw_mhz": 40.0,
+  "scan_s": 4.26,
+  "rms": 1.46,
+  "worst": 2.71
+ },
+ {
+  "label": "16 beams \u00b7 64",
+  "step": 6,
+  "chirps": 64,
+  "beams": 16,
+  "family": "beams",
+  "bw_mhz": 40.0,
+  "scan_s": 7.58,
+  "rms": 1.53,
+  "worst": 3.34
+ },
+ {
+  "label": "23 beams \u00b7 64",
+  "step": 4,
+  "chirps": 64,
+  "beams": 23,
+  "family": "beams",
+  "bw_mhz": 40.0,
+  "scan_s": 10.89,
+  "rms": 0.9,
+  "worst": 2.04
+ },
+ {
+  "label": "12 beams \u00b7 96",
+  "step": 8,
+  "chirps": 96,
+  "beams": 12,
+  "family": "mixed",
+  "bw_mhz": 40.0,
+  "scan_s": 8.52,
+  "rms": 0.73,
+  "worst": 2.1
+ },
+ {
+  "label": "9 beams \u00b7 160",
+  "step": 12,
+  "chirps": 160,
+  "beams": 9,
+  "family": "dwell",
+  "bw_mhz": 40.0,
+  "scan_s": 10.66,
+  "rms": 0.09,
+  "worst": 0.16
+ },
+ {
+  "label": "9 beams \u00b7 256",
+  "step": 12,
+  "chirps": 256,
+  "beams": 9,
+  "family": "dwell",
+  "bw_mhz": 40.0,
+  "scan_s": 17.05,
+  "rms": 0.08,
+  "worst": 0.16
+ },
+ {
+  "label": "9 beams \u00b7 64, 80 MHz",
+  "step": 12,
+  "chirps": 64,
+  "beams": 9,
+  "family": "wideband",
+  "bw_mhz": 80.0,
+  "scan_s": 4.26,
+  "rms": 0.09,
+  "worst": 0.16
+ }
+]
