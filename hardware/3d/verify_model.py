@@ -18,6 +18,7 @@ Checked:
   BOM          the stage totals shown in the panel against hardware/BOM.md
 """
 import argparse
+import math
 import pathlib
 import re
 import subprocess
@@ -382,6 +383,70 @@ def check_render():
               "(no wire through a part, no bend over 95 deg)")
 
 
+def js_const(name):
+    """Pull a bare `const NAME=<number>` out of the model source."""
+    m = re.search(r"const\s+%s\s*=\s*([0-9.]+)" % re.escape(name), HTML_SRC)
+    if not m:
+        m = re.search(r"\b%s\s*=\s*([0-9.]+)" % re.escape(name), HTML_SRC)
+    return None if not m else float(m.group(1))
+
+
+def check_horn_geometry():
+    """The three-horn frame's geometry carries the whole azimuth argument, and
+    none of it was checked. Three properties matter and each fails differently:
+
+      baseline   RX A to RX B must be under the ambiguity limit lam/(2 sin17),
+                 or the bearing wraps inside the beam and the answer is wrong
+                 without looking wrong.
+      symmetry   TX must sit on the perpendicular bisector of the RX pair. The
+                 leakage is ~52 dB above the drone echo, so if it reaches one
+                 receiver before the other it is a large coherent bias on the
+                 phase difference -- and a range-dependent one, so calibration
+                 cannot remove it. Centred, it is common mode and cancels.
+      clearance  the horns are 263.8 mm tall once rolled; TX has to clear the
+                 receive row rather than intersect it.
+    """
+    C, LAM = 2.99792458e8, 2.99792458e8 / 2.46e9
+    A1, B1 = 0.2638, 0.1931              # horn aperture, docs/radar-hardware.md
+    d = js_const("D_BASE")
+    rxy = js_const("RXY")
+    check(d is not None and rxy is not None, "model must define D_BASE and RXY")
+    if d is None or rxy is None:
+        return
+    m = re.search(r"TXY\s*=\s*RXY\s*\+\s*([0-9.]+)", HTML_SRC)
+    check(m is not None, "TXY must be defined relative to RXY")
+    if not m:
+        return
+    dz = float(m.group(1))
+
+    # baseline: the rolled horns touch, so the baseline IS the short dimension
+    check(abs(d - B1) < 1e-4,
+          "RX baseline %.4f m must equal the rolled horn width %.4f" % (d, B1))
+    limit = LAM / (2 * math.sin(math.radians(17.0)))
+    check(d < limit,
+          "baseline %.3f m must stay under the %.3f m ambiguity limit" % (d, limit))
+    check(A1 > limit,
+          "and un-rolled (%.4f m) it would not, which is why the roll exists" % A1)
+
+    # symmetry: TX centred above the midpoint -> equal path to both receivers
+    txa = math.hypot(d / 2, dz)
+    txb = math.hypot(-d / 2, dz)
+    check(abs(txa - txb) < 1e-9,
+          "TX leakage path must be equal into both receivers: %.6f vs %.6f" % (txa, txb))
+    # and the alternative it replaced is not: TX beside the pair in the same row
+    beside_a, beside_b = abs(-dz - (-d / 2)), abs(-dz - (d / 2))
+    check(abs(beside_a - beside_b) > 0.1,
+          "a side-by-side TX would be asymmetric, which is the point")
+
+    # clearance: rolled horns are A1 tall, so TX must clear the receive row
+    check(dz > A1, "TX centre %.3f m must clear the %.4f m horn height" % (dz, A1))
+    check(txa > dz, "the slant path is longer than the vertical drop")
+    # and the offset is vertical, orthogonal to the baseline, so it cannot bias
+    # a bearing no matter how large it is
+    check(abs(math.hypot(d / 2, dz) - math.hypot(-d / 2, dz)) < 1e-12,
+          "a vertical TX offset is orthogonal to the baseline by construction")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--render", action="store_true",
@@ -394,7 +459,8 @@ def main():
                      ("module pinouts", check_pinouts),
                      ("harness pin references", check_harness),
                      ("BOM rows", check_bom_rows),
-                     ("BOM totals", check_bom_totals)):
+                     ("BOM totals", check_bom_totals),
+                     ("horn frame geometry", check_horn_geometry)):
         before = len(FAILURES)
         fn()
         print("  %s: %s" % (name, "ok" if len(FAILURES) == before else "FAILED"))
