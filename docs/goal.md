@@ -121,9 +121,23 @@ techniques the 2.4 GHz build cannot use:
 - **λ/2 = 6.2 mm element spacing**, so a fully unambiguous interferometer over
   the whole beam instead of the ±18.4° you have.
 
-What that needs is a 24 GHz front end with an **external antenna port**, which
-the cheap modules do not have. That is the part to research before committing,
-and it is the difference between a band swap and a new antenna project.
+That research is now done and it is written up in
+[`24ghz/`](24ghz/README.md) — a costed rough draft of the whole thing.
+
+**The premise above is wrong in one important way, and the correction is what
+unblocks it.** I wrote that this needs a front end with an *external antenna
+port*. It does not. A 24 GHz radar MMIC brings its RF out on **single-ended
+50 Ω pins** meant to be soldered to a microstrip trace, and at a 12.4 mm
+wavelength that trace runs a few millimetres to an antenna etched on the same
+board. There is no port, no connector and no cable — the antenna is part of
+the layout you draw. Test 1 passes, and it passes more completely than it does
+at 2.4 GHz, where the horn is yours but the rest of the chain is bought modules.
+
+The draft picks Infineon's **BGT24LTR22** ($15.26, two *simultaneous*
+quadrature receivers, differential analog IF on pins) with an **ADF4159** ramp
+PLL ($20.48), and three printed four-patch columns. The receive columns sit
+λ/2 = 6.213 mm apart, which makes the interferometer **unambiguous to ±90°**
+instead of ±18.4°, over the entire 81° pattern the antenna can see.
 
 **Order of operations, which is also Kevin's own advice:** finish this radar
 first. Everything downstream of the mixer's IF is band-independent — the video
@@ -135,8 +149,11 @@ write that once, and it is written.
 
 ## What is still open
 
-- **A 24 GHz front end with an external antenna port.** Unresearched. It
-  decides whether K-band is a band swap or a second antenna project.
+- ~~A 24 GHz front end with an external antenna port.~~ **Answered** in
+  [`24ghz/`](24ghz/README.md), including the fact that the question itself was
+  wrong: these chips have no antenna port because the antenna is on your board.
+  What is open there instead is a **PCB and assembly quote**, which is 60–80 %
+  of that build's cost and cannot be pinned down until the board is drawn.
 - **Switched-mode azimuth on real hardware.** Implemented and tested in
   simulation, never run against a real RF switch.
 - **The calibration constant's drift** with temperature, over a session. Known

@@ -150,13 +150,19 @@ What survives is Kevin's physics, which is worth having:
 1. **Finish the 2.4 GHz build.** Range, velocity, azimuth. Everything downstream
    of the mixer's IF is band-independent and you only get to write it once. It
    is written and tested.
-2. **Then research a 24 GHz front end with an external antenna port.** That is
-   the missing piece, and it is the difference between a band swap and a real
-   second antenna project. The cheap modules do not have one.
-3. **If you find one, design the 24 GHz antenna yourself.** A 27 × 20 mm horn is
-   too small to fold from sheet, which is the point: a patch array on $5 FR-4 is
-   a deeper design exercise than the horn was, and λ/2 = 6.2 mm spacing gives a
-   fully unambiguous interferometer instead of the ±18.4° you have now.
+2. ~~Then research a 24 GHz front end with an external antenna port.~~
+   **Done — and the question was wrong.** There is no such thing as an external
+   antenna port at 24 GHz because there is no external antenna: the MMIC's RF
+   pins are single-ended 50 Ω and connect to a printed antenna a few
+   millimetres away on the same board. Every module on this page fails test 1
+   precisely because it is a module; the **chips** do not.
+3. **Design the 24 GHz antenna yourself.** Costed and drafted in
+   [`24ghz/`](24ghz/README.md): a BGT24LTR22 ($15.26) and an ADF4159 ($20.48)
+   beside three printed four-patch columns, λ/2 = 6.213 mm apart, which is a
+   **fully unambiguous ±90° interferometer** instead of the ±18.4° you have
+   now, at a **0.60 m range cell** instead of 3.75 m. A $5 FR-4 dimension sweep
+   comes first, then a Rogers board; the whole thing is $205–720 depending on
+   quotes and reuses the entire back end you already built.
 
 Buy the IWR6843 only if what you want is a drone tracker rather than a radar you
 built. It is better than anything on this list, it is available today, and it is

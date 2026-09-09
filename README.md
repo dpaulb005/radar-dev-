@@ -53,6 +53,8 @@ Schematics: [`hardware/kicad/`](hardware/kicad/) — `radar_flow.kicad_sch` (**s
 
 **[`docs/higher-bands.md`](docs/higher-bands.md)** — what moving to 24 or 60 GHz would cost and buy, and why every off-the-shelf module fails the antenna test despite being the better radar. Kevin's suggestion, costed and then re-judged.
 
+**[`docs/24ghz/`](docs/24ghz/README.md)** — the 24 GHz build, drafted and costed: one board carrying a BGT24LTR22, an ADF4159 ramp PLL and three printed patch columns you lay out yourself. A **0.60 m range cell** instead of 3.75 m, and an interferometer **unambiguous to ±90°** instead of ±18.4°, for $205–720 that reuses the whole back end. Design numbers from [`antenna/patch24.py`](antenna/patch24.py).
+
 **[`docs/azimuth.md`](docs/azimuth.md)** — how bearing is actually measured: two receivers, one dwell, 0.09° rms. Scanning cannot do it on a moving target.
 
 **[`docs/signal-chain.md`](docs/signal-chain.md)** — what the signal actually is at every point, from the frequency staircase leaving the antenna to the 100-byte fix, with every figure generated from the running code. Read this to understand *how it works*.
