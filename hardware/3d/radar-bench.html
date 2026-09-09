@@ -171,11 +171,25 @@ function run(pts,r,m,seg){ const c=new THREE.CatmullRomCurve3(pts);
 
 // --- named electrical pins -------------------------------------------
 // Every connector pin is a real object with a name; hovering one names the net.
-function addPin(parent,name,x,y,z,mesh){ mesh.position.set(x,y,z); mesh.userData.pinName=name; parent.add(mesh);
+// `pinTop` is where the wire actually lands on the pin; `pinDir` is the
+// direction a wire has to leave in, so every lead looks plugged in rather than
+// merely passing near the connector.
+function addPin(parent,name,x,y,z,mesh,dir){ mesh.position.set(x,y,z); mesh.userData.pinName=name;
+  if(dir) mesh.userData.pinDir=dir; parent.add(mesh);
   (parent.userData.pins=parent.userData.pins||{})[name]=mesh; return mesh; }
 function pinAt(comp,name){ const p=comp.userData.pins[name];
   if(!p) throw new Error('no pin '+name+' on '+(comp.userData.name||'?'));
   return p.localToWorld(new THREE.Vector3(0,p.userData.pinTop||0,0)); }
+// {pos,dir} for a pin, in world space — the pair every wire is built from
+function P(comp,name){
+  const p=comp.userData.pins[name];
+  if(!p) throw new Error('no pin '+name+' on '+(comp.userData.name||'?'));
+  const d=(p.userData.pinDir||new THREE.Vector3(0,1,0)).clone();
+  const o=p.localToWorld(new THREE.Vector3(0,0,0));
+  return {pos:p.localToWorld(new THREE.Vector3(0,p.userData.pinTop||0,0)),
+          dir:p.localToWorld(d).sub(o).normalize()};
+}
+const PV=(v,dx,dy,dz)=>({pos:v.clone(),dir:new THREE.Vector3(dx||0,dy===undefined?1:dy,dz||0).normalize()});
 
 // =====================================================================
 // bench and table
@@ -338,39 +352,70 @@ const D_BASE=0.1931;                    // RX A to RX B centres: the baseline
 const RXY=0.300, TXY=RXY+0.290;         // horn centres above the frame base
 const UPX=0.213;                        // uprights, just outboard of the RX pair
 const BEAM_RX=RXY-GW-0.010, BEAM_TX=TXY-GW-0.010;
-// --- NEMA-17: 42.3 mm chamfered stack, end caps, tie bolts, boss and D-shaft
+// --- NEMA-17: chamfered stack, end caps, tie bolts, pilot boss, a D-shaft that
+// points UP because it drives the turntable, and the 4-pin connector the A4988
+// plugs into.
 function nema17(){
-  const g=new THREE.Group(); const S=0.0423, CH=0.005, LEN=0.040;
+  const g=new THREE.Group(); const S=0.0423, LEN=0.040;
   const stack=new THREE.Mesh(new THREE.CylinderGeometry(S*0.72,S*0.72,LEN-0.016,8),M.steel);
-  stack.rotation.x=Math.PI/2; stack.rotation.z=Math.PI/8; g.add(stack);   // laminations read as a chamfered square
+  stack.rotation.y=Math.PI/8; g.add(stack);
   [-1,1].forEach(s=>{
-    const cap=box(S,S,0.008,M.aluDark); cap.position.z=s*(LEN/2-0.004); g.add(cap);
-    [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>{                       // chamfer the cap corners
-      const c=box(CH*1.6,CH*1.6,0.0082,M.dark); c.rotation.z=Math.PI/4;
-      c.position.set(a*S/2,b*S/2,s*(LEN/2-0.004)); g.add(c); });
+    g.add(at(box(S,0.008,S,M.aluDark),0,s*(LEN/2-0.004),0));
+    [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>{
+      const c=box(0.008,0.0082,0.008,M.dark); c.rotation.y=Math.PI/4;
+      c.position.set(a*S/2,s*(LEN/2-0.004),b*S/2); g.add(c); });
   });
-  [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>{                         // four M3 tie bolts, 31 mm square
-    const r=cyl(0.0015,LEN+0.001,M.steel,8); r.rotation.x=Math.PI/2; r.position.set(a*0.0155,b*0.0155,0); g.add(r); });
-  g.add(at(cyl(0.011,0.002,M.alu,24),0,0,LEN/2+0.001));                    // 22 mm pilot boss
-  const shaft=cyl(0.0025,0.024,M.steel,16); shaft.rotation.x=Math.PI/2; shaft.position.z=LEN/2+0.014; g.add(shaft);
-  g.add(at(box(0.005,0.0012,0.016,M.steel),0,0.0019,LEN/2+0.016));         // the flat on the D-shaft
-  const exit=box(0.010,0.006,0.004,M.rubber); exit.position.set(S/2-0.006,0,-LEN/2-0.001); g.add(exit);
-  g.userData.cableExit=exit;
+  [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>
+    g.add(at(cyl(0.0015,LEN+0.001,M.steel,8),a*0.0155,0,b*0.0155)));
+  g.add(at(cyl(0.011,0.002,M.alu,24),0,LEN/2+0.001,0));            // 22 mm pilot boss
+  g.add(at(cyl(0.0025,0.022,M.steel,16),0,LEN/2+0.013,0));         // 5 mm D-shaft, upward
+  g.add(at(box(0.0012,0.014,0.005,M.steel),0.0019,LEN/2+0.014,0)); // the flat
+  // 4-pin JST-XH on the rear face - where the A4988's motor leads plug in
+  g.add(at(box(0.014,0.008,0.006,mat({color:0xdedede,roughness:.6})),0,-LEN/2+0.007,-S/2-0.003));
+  g.add(at(box(0.012,0.006,0.001,M.dark),0,-LEN/2+0.007,-S/2-0.0061));
+  ['M1','M2','M3','M4'].forEach((n,i)=>{
+    const p=box(0.0009,0.0009,0.005,M.gold); p.userData.pinTop=0;
+    addPin(g,n,-0.0045+i*0.003,-LEN/2+0.007,-S/2-0.008,p,new THREE.Vector3(0,0,-1));
+    p.userData.name='NEMA-17 '+n+' (coil '+(i<2?'A':'B')+')';
+  });
   return g;
 }
 
 const turnG=new THREE.Group(); bench.add(turnG);      // the optional turntable
 const rotG=new THREE.Group(); bench.add(rotG);        // the frame; turns with it
-const nema=nema17(); nema.position.set(0,TOP+0.0212,ZCLAMP); nema.rotation.y=Math.PI/2; turnG.add(nema);
-reg('D18a',nema,'NEMA-17 stepper - 42.3 mm, 1.8 deg/step','ok'); addLabel(nema,'NEMA-17','ok');
-const susan=cyl(0.075,0.008,M.alu,44); susan.position.set(0,TOP+0.056,ZCLAMP); turnG.add(susan);
-susan.add(at(cyl(0.070,0.0035,M.aluDark,44),0,0,0));
-reg('D18b',susan,'lazy-susan bearing 150 mm','ok');
-const pedestal=box(0.17,0.010,0.11,M.aluDark); pedestal.position.set(0,TOP+0.005,ZCLAMP); bench.add(pedestal);
+
+// Direct 1:1 drive, which is what STEPS_PER_DEG 8.889 assumes: the motor stands
+// on the board with its shaft up, four standoffs carry the bearing's fixed race
+// at shaft height, and a printed hub clamps the shaft to the rotating plate.
+const nema=nema17(); nema.position.set(0,TOP+0.020,ZCLAMP); turnG.add(nema);
+reg('D18a',nema,'NEMA-17 stepper - 42.3 mm, 1.8 deg/step, direct 1:1','ok');
+addLabel(nema,'NEMA-17','ok');
+[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>{
+  turnG.add(at(cyl(0.0035,0.044,M.aluDark,10),a*0.058,TOP+0.022,ZCLAMP+b*0.058));
+  turnG.add(at(cyl(0.005,0.003,M.alu,10),a*0.058,TOP+0.0015,ZCLAMP+b*0.058));
+});
+const race=cyl(0.075,0.004,M.aluDark,44); race.position.set(0,TOP+0.046,ZCLAMP); turnG.add(race);
+reg('D18b',race,'lazy-susan bearing - fixed race, on the standoffs','ok');
+const susan=cyl(0.072,0.006,M.alu,44); susan.position.set(0,TOP+0.051,ZCLAMP); turnG.add(susan);
+for(let i=0;i<24;i++){ const a=i*Math.PI/12;
+  susan.add(at(cyl(0.0022,0.0064,M.steel,8),Math.cos(a)*0.063,0,Math.sin(a)*0.063)); }
+reg('D18b',susan,'lazy-susan bearing 150 mm - the rotating race','ok');
+const pedestal=new THREE.Group(); bench.add(pedestal);
+pedestal.add(at(box(0.17,0.010,0.11,M.aluDark),0,TOP+0.005,ZCLAMP));
+[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>
+  pedestal.add(at(cyl(0.002,0.003,M.sma,6),a*0.072,TOP+0.011,ZCLAMP+b*0.042)));
 reg('D17',pedestal,'fixed frame base (no turntable)');
 
 // the frame: two uprights, a cross beam under each horn row, diagonal braces
 const plate=cyl(0.090,0.006,M.wood,40); plate.position.y=0.003; rotG.add(plate);
+reg('D17',plate,'frame base plate - bolts to the turntable, or to the fixed pedestal');
+// the hub turns with the frame: it is what actually couples the shaft to it
+const hubG=new THREE.Group(); rotG.add(hubG);
+hubG.add(at(cyl(0.015,0.012,M.pcbRed,20),0,0.012,0));
+hubG.add(at(cyl(0.0062,0.006,M.aluDark,16),0,0.021,0));
+[0,1,2,3].forEach(i=>{ const a=i*Math.PI/2+Math.PI/4;
+  hubG.add(at(cyl(0.0014,0.010,M.sma,6),Math.cos(a)*0.0105,0.011,Math.sin(a)*0.0105)); });
+reg('D18b',hubG,'printed hub - clamps the D-shaft to the frame base plate','ok');
 [-1,1].forEach(s=>{
   rotG.add(at(box(0.030,0.006,0.050,M.alu),s*UPX,0.003,0));
   rotG.add(at(box(0.018,BEAM_TX+0.006,0.018,M.alu),s*UPX,(BEAM_TX+0.006)/2,0));
@@ -414,8 +459,8 @@ reg('D17',scrG,'foil-on-card screen behind the horns');
 // stage 1 leaves the RX B position empty; the turntable is optional at any stage
 function layoutHorns(s){ mRXB.visible=(s>=2); }
 function setTurntable(on){
-  turnG.visible=on; pedestal.visible=!on;
-  rotG.position.set(0,TOP+(on?0.060:0.010),ZCLAMP);
+  turnG.visible=on; pedestal.visible=!on; hubG.visible=on;
+  rotG.position.set(0,TOP+(on?0.054:0.010),ZCLAMP);   // plate lands on the bearing, or on the pedestal
   if(!on) rotG.rotation.y=0;
 }
 
@@ -651,13 +696,18 @@ function esp32Devkit(){
   g.add(at(box(0.0020,0.0010,0.0012,M.ledBlue),-0.0060,0.0021,0.0098));
   [[ESP_L,-ROW/2],[ESP_R,ROW/2]].forEach(([names,x])=>{
     g.add(at(box(0.0025,0.0025,names.length*PITCH,M.black),x,0.0029,0));
-    names.forEach((n,i)=>{ const p=box(0.0007,0.009,0.0007,M.gold); p.userData.pinTop=-0.0045;
-      addPin(g,n,x,0.0018,-((names.length-1)/2)*PITCH+i*PITCH,p);
+    names.forEach((n,i)=>{ const p=box(0.0007,0.009,0.0007,M.gold); p.userData.pinTop=-0.0020;
+      addPin(g,n,x,0.0018,-((names.length-1)/2)*PITCH+i*PITCH,p,new THREE.Vector3(Math.sign(x),0,0));
       p.userData.name=`ESP32 ${n.replace('GND2','GND')}`; });
   });
   return g;
 }
-const esp=esp32Devkit(); esp.position.set(0.100,TOP,0.152); bench.add(esp);
+const esp=esp32Devkit(); esp.position.set(0.100,TOP+0.0075,0.152); bench.add(esp);
+// female header strips: the devkit plugs into these, which is what lifts its
+// pins clear of the plywood so a lead can actually reach them
+[-0.01143,0.01143].forEach(x=>{ const s=box(0.0064,0.0075,15*PITCH,M.pcbBlack);
+  s.position.set(0.100+x,TOP+0.00375,0.152); bench.add(s);
+  reg('C14',s,'header socket - the ESP32 plugs in here','ok'); });
 reg('C14',esp,'ESP32 devkit — radar_ctl','ok'); addLabel(esp,'ESP32 devkit','ok');
 
 // A4988 (Pololu pinout) — 16 pins, two 8-pin rows 0.5 in apart
@@ -672,13 +722,16 @@ function a4988(){
   g.add(at(cyl(0.0022,0.0040,M.elec,14),0.0042,0.0036,-0.0060));                             // 100 µF VMOT cap
   [[ A49_L,-ROW/2],[A49_R,ROW/2]].forEach(([names,x])=>{
     g.add(at(box(0.0025,0.0025,names.length*PITCH,M.black),x,0.0029,0));
-    names.forEach((n,i)=>{ const p=box(0.0007,0.009,0.0007,M.gold); p.userData.pinTop=-0.0045;
-      addPin(g,n,x,0.0018,-((names.length-1)/2)*PITCH+i*PITCH,p);
+    names.forEach((n,i)=>{ const p=box(0.0007,0.009,0.0007,M.gold); p.userData.pinTop=-0.0020;
+      addPin(g,n,x,0.0018,-((names.length-1)/2)*PITCH+i*PITCH,p,new THREE.Vector3(Math.sign(x),0,0));
       p.userData.name=`A4988 ${n}`; });
   });
   return g;
 }
-const a49=a4988(); a49.position.set(0.162,TOP,0.135); bench.add(a49);
+const a49=a4988(); a49.position.set(0.162,TOP+0.0075,0.135); bench.add(a49);
+[-0.00635,0.00635].forEach(x=>{ const s=box(0.0064,0.0075,8*PITCH,M.pcbBlack);
+  s.position.set(0.162+x,TOP+0.00375,0.135); bench.add(s);
+  reg('D18c',s,'header socket - the A4988 plugs in here','ok'); });
 reg('D18c',a49,'A4988 stepper driver — 1/16 microstep','ok'); addLabel(a49,'A4988','ok');
 
 // LM2596 buck module
@@ -706,7 +759,7 @@ function terminalBlock(n){
     g.add(at(cyl(0.0022,0.0016,M.tin,10),x,0.0113,-0.0028));                       // screw head
     g.add(at(box(0.0060,0.0022,0.0030,M.dark),x,0.0104,-0.0028));
     const p=box(0.0012,0.0060,0.0012,M.tin); p.userData.pinTop=0.0;
-    addPin(g,'T'+(i+1),x,0.0030,0.0064,p); p.userData.name='terminal '+(i+1); }
+    addPin(g,'T'+(i+1),x,0.0030,0.0064,p,new THREE.Vector3(0,0,1)); p.userData.name='terminal '+(i+1); }
   return g;
 }
 const term=terminalBlock(6); term.position.set(-0.090,TOP,0.152); bench.add(term);
@@ -715,8 +768,14 @@ reg('D17',term,'terminal block — star ground'); addLabel(term,'terminal block 
 // 12 V supply brick with a barrel-jack lead
 const psu=new THREE.Group(); psu.position.set(-0.36,0,0.13); world.add(psu);
 psu.add(at(box(0.11,0.032,0.05,M.brick),0,0.016,0));
-psu.add(at(box(0.030,0.012,0.020,M.black),0.056,0.016,0));
-const psuOut=box(0.002,0.002,0.002,M.black); addPin(psu,'OUT',0.072,0.016,0,psuOut);
+// DC barrel jack with its plug seated in it
+psu.add(at(cyl(0.0055,0.010,M.black,16),0.0555,0.016,0));
+psu.children[psu.children.length-1].rotation.z=Math.PI/2;
+psu.add(at(cyl(0.0042,0.014,mat({color:0x1a1a1a,roughness:.8}),16),0.0665,0.016,0));
+psu.children[psu.children.length-1].rotation.z=Math.PI/2;
+const psuOut=cyl(0.0030,0.004,M.dark,12); psuOut.rotation.z=Math.PI/2;
+addPin(psu,'OUT',0.0745,0.016,0,psuOut,new THREE.Vector3(1,0,0));
+psuOut.userData.name='12 V supply - barrel plug, centre positive';
 psu.add(at(box(0.040,0.0008,0.028,mat({color:0xcfd6dd,roughness:.8})),0,0.0325,0));
 reg('C16a',psu,'12 V 3 A supply','pow'); addLabel(psu,'12 V 3 A supply','pow',new THREE.Vector3(0,0.03,0));
 
@@ -729,7 +788,7 @@ function uca202(){
     j.add(at(cyl(0.0055,0.0060,mat({color:c,roughness:.55}),16),0,0,-0.0030));
     const b=j.children[0]; b.rotation.x=Math.PI/2;
     j.add(at(cyl(0.0011,0.0070,M.gold,10),0,0,-0.0035)); j.children[1].rotation.x=Math.PI/2;
-    const p=box(0.001,0.001,0.001,M.gold); addPin(g,name,x,H*0.55,-D/2-0.006,p);
+    const p=box(0.001,0.001,0.001,M.gold); addPin(g,name,x,H*0.55,-D/2-0.007,p,new THREE.Vector3(0,0,-1));
     p.userData.name='UCA202 '+label; g.add(j); };
   rca(-0.034,0xe8e8e8,'IN_L','INPUT L (white) ← J2 AUDIO_L');
   rca(-0.020,0xd03028,'IN_R','INPUT R (red) ← J12 AUDIO_R');
@@ -752,6 +811,11 @@ lap.add(at(box(0.276,0.0012,0.104,mat({color:0x16191d,roughness:.7})),0,0.0122,-
 for(let r=0;r<5;r++) for(let c=0;c<15;c++)
   lap.add(at(box(0.0150,0.0012,0.0150,mat({color:0x24282d,roughness:.65})),-0.132+c*0.0189,0.0129,-0.070+r*0.0195));
 lap.add(at(box(0.090,0.0010,0.058,mat({color:0x3a4046,roughness:.5})),0,0.0125,0.062));
+// USB-A socket on the left flank, which is where the UCA202 plugs in
+lap.add(at(box(0.004,0.0065,0.014,mat({color:0x8f979e,metalness:.7,roughness:.35})),-0.160,0.0062,0.030));
+const lapUsb=box(0.002,0.005,0.011,M.dark);
+addPin(lap,'USB',-0.1625,0.0062,0.030,lapUsb,new THREE.Vector3(-1,0,0));
+lapUsb.userData.name='laptop USB-A';
 const lid=box(0.32,0.21,0.008,M.brick); lid.position.set(0,0.115,-0.105); lid.rotation.x=-0.25; lap.add(lid);
 const scr=box(0.292,0.181,0.002,M.screen); scr.position.set(0,0.115,-0.0985); scr.rotation.x=-0.25; lap.add(scr);
 reg('C13b',lap,'laptop — radar_acquire.py + console','dsp'); addLabel(lap,'laptop · console','dsp',new THREE.Vector3(0,0.24,0),true);
@@ -761,7 +825,10 @@ umc.add(at(box(0.20,0.045,0.12,mat({color:0x2a2d31,roughness:.5})),0,0.0225,0));
 for(let i=0;i<4;i++){ umc.add(at(cyl(0.0090,0.0140,M.black,18),-0.070+i*0.030,0.026,-0.058));
   umc.children[umc.children.length-1].rotation.x=Math.PI/2;
   umc.add(at(cyl(0.0055,0.0060,mat({color:0xd8d8d8,roughness:.5}),14),-0.070+i*0.030,0.045,-0.020)); }
-reg('F26',umc,'Behringer UMC404HD — 4 inputs, one clock (stage 3)','dsp'); addLabel(umc,'UMC404HD (stage 3)','dsp',new THREE.Vector3(0,0.04,0));
+['IN1','IN2','IN3'].forEach((n,i)=>{ const p=cyl(0.0030,0.004,M.gold,12); p.rotation.x=Math.PI/2;
+  addPin(umc,n,-0.070+i*0.030,0.026,-0.066,p,new THREE.Vector3(0,0,-1));
+  p.userData.name='UMC404HD '+n+' (combo jack)'; });
+reg('F26',umc,'Behringer UMC404HD — 4 inputs, one clock (stage 2)','dsp'); addLabel(umc,'UMC404HD (stage 2)','dsp',new THREE.Vector3(0,0.04,0));
 
 // stage-3 second receive chain: RX B → band-pass → LNA → mixer, mirroring the first
 const bpf2=rfBarrel(0.042,0.0065,M.alu,[{name:'out',side:'l'},{name:'in',side:'r'}]);
@@ -780,77 +847,117 @@ const stage2Only=[bpf2,lna2,mix2,spl2,umc];
 // =====================================================================
 const wireG=new THREE.Group(); world.add(wireG);
 const stepWireG=new THREE.Group(); turnG.add(stepWireG);
-function hookup(pA,pB,col,via,r){
-  const pts=[pA.clone(),pA.clone().setY(pA.y+0.010)].concat((via||[]).map(v=>v.clone()),[pB.clone().setY(pB.y+0.010),pB.clone()]);
-  return run(pts,r||R_WIRE,wireMat[col]);
-}
-function link(name,a,b,col,via,into,r){
-  const w=hookup(a,b,col,via,r); w.userData.name=name;
-  reg('C15b',w,name,'pow'); (into||wireG).add(w); return w;
-}
 const V=(x,y,z)=>new THREE.Vector3(x,y,z);
 
-// ESP32 ↔ J9. GPIO18 SCK, 23 MOSI, 5 LE, 19 LD, 25 SYNC, 26 STEP, 27 DIR, 14 EN.
-[['GND','1','black'],['D18','2','blue'],['D23','3','blue'],['D5','4','blue'],['D19','5','blue'],
- ['D25','6','grey'],['D26','7','white'],['D27','8','white'],['D14','9','white'],['3V3','10','yellow']
-].forEach(([gpio,jp,col],i)=>{
-  const a=pinAt(esp,gpio), b=pinAt(bbParts.J9,jp);
-  link(`ESP32 ${gpio} → J9 pin ${jp} (${JNETS.J9[+jp-1]})`,a,b,col,[V(a.x,TOP+0.030+i*0.0012,(a.z+b.z)/2)]);
-});
-// A4988 ↔ J11
-[['GND_L','1','black'],['VDD','2','yellow'],['STEP','3','white'],['DIR','4','white'],['ENABLE','5','white']
-].forEach(([pin,jp,col],i)=>{
-  const a=pinAt(a49,pin), b=pinAt(bbParts.J11,jp);
-  link(`A4988 ${pin} → J11 pin ${jp} (${JNETS.J11[+jp-1]})`,a,b,col,[V((a.x+b.x)/2,TOP+0.026+i*0.0012,(a.z+b.z)/2)]);
-});
-// A4988 motor supply, straight off the terminal block (never through the breadboard)
-link('A4988 VMOT ← 12 V (terminal block)',pinAt(a49,'VMOT'),pinAt(term,'T1'),'red',
-  [V(0.190,TOP+0.030,0.170),V(0.000,TOP+0.034,0.178),V(-0.070,TOP+0.030,0.170)]);
-link('A4988 GND (motor) ← supply −',pinAt(a49,'GND_M'),pinAt(term,'T2'),'black',
-  [V(0.186,TOP+0.026,0.176),V(0.000,TOP+0.030,0.184),V(-0.074,TOP+0.026,0.174)]);
-// A4988 → NEMA-17, coil A (1A/1B) and coil B (2A/2B)
-const motorIn=nema.localToWorld(new THREE.Vector3(0,0,0)).add(V(0.021,0,0));
-[['1A','red',0.000],['1B','blue',0.0018],['2A','green',0.0036],['2B','black',0.0054]].forEach(([pin,col,dy])=>{
-  link(`A4988 ${pin} → NEMA-17 coil ${pin[0]==='1'?'A':'B'}`,pinAt(a49,pin),motorIn.clone().add(V(0,dy,0)),col,
-    [V(0.205,TOP+0.028+dy,0.110),V(0.212,TOP+0.030+dy,0.010),V(0.150,TOP+0.032+dy,-0.006),V(0.060,TOP+0.030+dy,-0.014)],
+// Wiring rules, so a lead can be followed end to end:
+//  - it leaves its pin along that pin's own axis, so it looks plugged in;
+//  - it then drops to WY, a cable run a few mm above the plywood, and stays
+//    there, hugging the board rather than flying over it;
+//  - it routes through corridors between the modules instead of across them;
+//  - parallel leads are fanned apart so they never merge into one rope.
+const WY=TOP+0.0035;
+const FRONT=0.116, BACKC=-0.116, MIDGAP=0.065, RIGHT=0.148, FAR=0.184;
+
+function hookup(A,B,col,via,r){
+  const outA=A.out||0.004, outB=B.out||0.004;
+  const pts=[A.pos.clone(), A.pos.clone().addScaledVector(A.dir,outA)]
+    .concat((via||[]).map(v=>v.clone()))
+    .concat([B.pos.clone().addScaledVector(B.dir,outB), B.pos.clone()]);
+  return run(pts,r||R_WIRE,wireMat[col]);
+}
+function link(name,A,B,col,via,into,r){
+  const w=hookup(A,B,col,via,r); w.userData.name=name;
+  reg('C15b',w,name,'pow'); (into||wireG).add(w); return w;
+}
+// corridor path at cable-run height: drops under A, follows [x,z] waypoints,
+// rises under B. `s` fans parallel leads apart.
+function route(A,B,corr,s){
+  s=s||0;
+  return [V(A.pos.x+s,WY,A.pos.z+s)]
+    .concat((corr||[]).map(p=>V(p[0]+s,WY,p[1]+s)))
+    .concat([V(B.pos.x+s,WY,B.pos.z+s)]);
+}
+function loom(items,corr){
+  items.forEach((it,i)=>{
+    const s=(i-(items.length-1)/2)*0.0017;
+    link(it.name,it.a,it.b,it.col,route(it.a,it.b,corr(it,i),s));
+  });
+}
+
+// ESP32 to J9. GPIO18 SCK, 23 MOSI, 5 LE, 19 LD, 25 SYNC, 26 STEP, 27 DIR, 14 EN.
+loom([['GND','1','black'],['D18','2','blue'],['D23','3','blue'],['D5','4','blue'],['D19','5','blue'],
+      ['D25','6','grey'],['D26','7','white'],['D27','8','white'],['D14','9','white'],['3V3','10','yellow']
+     ].map(function(e){ return {name:'ESP32 '+e[0]+' -> J9 pin '+e[1]+' ('+JNETS.J9[+e[1]-1]+')',
+                                a:P(esp,e[0]), b:P(bbParts.J9,e[1]), col:e[2]}; }),
+     function(it){ return [[it.a.pos.x,FRONT+0.008],[it.b.pos.x,FRONT-0.006]]; });
+
+// A4988 to J11
+loom([['GND_L','1','black'],['VDD','2','yellow'],['STEP','3','white'],['DIR','4','white'],['ENABLE','5','white']
+     ].map(function(e){ return {name:'A4988 '+e[0]+' -> J11 pin '+e[1]+' ('+JNETS.J11[+e[1]-1]+')',
+                                a:P(a49,e[0]), b:P(bbParts.J11,e[1]), col:e[2]}; }),
+     function(it){ return [[0.150,it.a.pos.z],[0.144,FRONT],[it.b.pos.x,FRONT-0.008]]; });
+
+// A4988 motor supply, straight off the terminal block - never through the breadboard
+link('A4988 VMOT <- 12 V (terminal block)',P(a49,'VMOT'),P(term,'T1'),'red',
+  route(P(a49,'VMOT'),P(term,'T1'),[[FAR,0.135],[FAR,0.184],[0.000,0.187],[-0.086,0.176]]));
+link('A4988 GND (motor) <- supply minus',P(a49,'GND_M'),P(term,'T2'),'black',
+  route(P(a49,'GND_M'),P(term,'T2'),[[FAR+0.004,0.132],[FAR+0.004,0.188],[0.000,0.191],[-0.080,0.178]]));
+
+// A4988 to the NEMA-17 4-pin connector: coil A on 1A/1B, coil B on 2A/2B.
+// Down the right-hand edge and in behind the motor, clear of the receive row.
+[['1A','M1','red'],['1B','M2','blue'],['2A','M3','green'],['2B','M4','black']].forEach(function(e,i){
+  const a=P(a49,e[0]), b=P(nema,e[1]), s=(i-1.5)*0.0017;
+  link('A4988 '+e[0]+' -> NEMA-17 '+e[1]+' (coil '+(e[0][0]==='1'?'A':'B')+')',a,b,e[2],
+    route(a,b,[[FAR+0.012,a.pos.z],[FAR+0.012,0.010],[0.140,-0.036],[0.050,-0.100],[0.006,-0.098]],s),
     stepWireG,0.0007);
 });
-// ADF4351 logic ← J10, power ← J6
-[['CLK','2','blue'],['DATA','3','blue'],['LE','4','blue'],['LD','5','blue'],['CE','6','violet']
-].forEach(([pin,jp,col],i)=>{
-  const a=pinAt(adf,pin), b=pinAt(bbParts.J10,jp);
-  link(`ADF4351 ${pin} → J10 pin ${jp} (${JNETS.J10[+jp-1]})`,a,b,col,
-    [V(-0.170,TOP+0.032+i*0.0012,-0.100),V(-0.060,TOP+0.036+i*0.0012,-0.040),V(0.060,TOP+0.034+i*0.0012,0.030)]);
-});
-[['VCC','1','red'],['GND','2','black']].forEach(([pin,jp,col],i)=>{
-  const a=pinAt(adf,pin), b=pinAt(bbParts.J6,jp);
-  link(`ADF4351 ${pin} → J6 pin ${jp}`,a,b,col,
-    [V(-0.168,TOP+0.026+i*0.0012,-0.104),V(-0.055,TOP+0.030+i*0.0012,-0.030),V(0.050,TOP+0.028+i*0.0012,0.040)]);
-});
-// 5 V to the two amplifier modules
-[[pa,'J7','PA'],[lna,'J8','LNA']].forEach(([m,j,nm])=>{
-  [['5V','1','red'],['GND','2','black']].forEach(([pin,jp,col],i)=>{
-    const a=pinAt(m,pin), b=pinAt(bbParts[j],jp);
-    link(`${nm} ${pin} → ${j} pin ${jp}`,a,b,col,[V((a.x+b.x)/2,TOP+0.024+i*0.0012,(a.z+b.z)/2-0.010)]);
+
+// ADF4351 logic to J10, power to J6. Along the corridor between the two RF rows,
+// up the right-hand side, then in along row a.
+loom([['CLK','2','blue'],['DATA','3','blue'],['LE','4','blue'],['LD','5','blue'],['CE','6','violet']
+     ].map(function(e){ return {name:'ADF4351 '+e[0]+' -> J10 pin '+e[1]+' ('+JNETS.J10[+e[1]-1]+')',
+                                a:P(adf,e[0]), b:P(bbParts.J10,e[1]), col:e[2]}; }),
+     function(it){ return [[it.a.pos.x,BACKC],[RIGHT,BACKC],[RIGHT,-0.030],[RIGHT,it.b.pos.z],
+                           [it.b.pos.x+0.016,it.b.pos.z]]; });
+loom([['VCC','1','red'],['GND','2','black']
+     ].map(function(e){ return {name:'ADF4351 '+e[0]+' -> J6 pin '+e[1],
+                                a:P(adf,e[0]), b:P(bbParts.J6,e[1]), col:e[2]}; }),
+     function(it){ return [[it.a.pos.x,BACKC-0.008],[MIDGAP,BACKC-0.008],[MIDGAP,-0.020],
+                           [MIDGAP,0.040],[it.b.pos.x,it.b.pos.z-0.010]]; });
+
+// 5 V to the two amplifier modules, forward through the gap between mixer and LNA
+[[pa,'J7','PA'],[lna,'J8','LNA']].forEach(function(m){
+  [['5V','1','red'],['GND','2','black']].forEach(function(e,i){
+    const a=P(m[0],e[0]), b=P(bbParts[m[1]],e[1]), s=(i-0.5)*0.0018;
+    link(m[2]+' '+e[0]+' -> '+m[1]+' pin '+e[1],a,b,e[2],
+      route(a,b,[[a.pos.x,a.pos.z+0.014],[MIDGAP-0.010,-0.050],[MIDGAP-0.010,0.030],
+                 [b.pos.x,b.pos.z-0.012]],s));
   });
 });
-// power in: brick → terminal block → J3, J4 → buck, buck → J5
-link('12 V supply → terminal block',pinAt(psu,'OUT'),pinAt(term,'T3'),'brown',
-  [V(-0.280,0.020,0.150),V(-0.170,TOP+0.020,0.160)],wireG,0.0012);
-link('terminal block → J3 pin 1 (VIN12)',pinAt(term,'T3'),pinAt(bbParts.J3,'1'),'red',[V(-0.045,TOP+0.026,0.140)]);
-link('terminal block → J3 pin 2 (GND)',pinAt(term,'T2'),pinAt(bbParts.J3,'2'),'black',[V(-0.042,TOP+0.023,0.146)]);
-link('J4 pin 1 (VPROT) → LM2596 IN+',pinAt(bbParts.J4,'1'),pinAt(buck,'IN+'),'red',[V(0.006,TOP+0.024,0.126)]);
-link('J4 pin 2 (GND) → LM2596 IN−',pinAt(bbParts.J4,'2'),pinAt(buck,'IN-'),'black',[V(0.012,TOP+0.022,0.128)]);
-link('LM2596 OUT+ → J5 pin 1 (V5)',pinAt(buck,'OUT+'),pinAt(bbParts.J5,'1'),'red',[V(0.028,TOP+0.024,0.126)]);
-link('LM2596 OUT− → J5 pin 2 (GND)',pinAt(buck,'OUT-'),pinAt(bbParts.J5,'2'),'black',[V(0.032,TOP+0.022,0.130)]);
-// audio out: J2 → UCA202 INPUT L (beat), J12 → INPUT R (sync)
-link('J2 pin 1 AUDIO_L → UCA202 INPUT L',pinAt(bbParts.J2,'1'),pinAt(uca,'IN_L'),'white',
-  [V(0.150,TOP+0.030,0.055),V(0.240,0.030,0.070),V(0.300,0.024,0.075)],wireG,0.0011);
-link('J12 pin 1 AUDIO_R → UCA202 INPUT R',pinAt(bbParts.J12,'1'),pinAt(uca,'IN_R'),'red',
-  [V(0.170,TOP+0.026,0.050),V(0.250,0.028,0.062),V(0.305,0.024,0.070)],wireG,0.0011);
-link('UCA202 → laptop (USB)',pinAt(uca,'USB'),V(0.560,0.014,0.170),'black',
-  [V(0.430,0.014,0.168),V(0.500,0.012,0.176)],wireG,0.0013);
 
+// power in: brick -> terminal block -> J3, J4 -> buck, buck -> J5
+link('12 V supply -> terminal block',P(psu,'OUT'),P(term,'T3'),'brown',
+  [V(-0.262,0.016,0.130),V(-0.240,0.012,0.142),V(-0.200,WY,0.168),V(-0.140,WY,0.176)],wireG,0.0012);
+link('terminal block -> J3 pin 1 (VIN12)',P(term,'T3'),P(bbParts.J3,'1'),'red',
+  route(P(term,'T3'),P(bbParts.J3,'1'),[[-0.086,0.170],[-0.050,FRONT+0.006],[0.000,FRONT-0.004]]));
+link('terminal block -> J3 pin 2 (GND)',P(term,'T2'),P(bbParts.J3,'2'),'black',
+  route(P(term,'T2'),P(bbParts.J3,'2'),[[-0.082,0.173],[-0.046,FRONT+0.010],[0.004,FRONT-0.002]]));
+link('J4 pin 1 (VPROT) -> LM2596 IN+',P(bbParts.J4,'1'),P(buck,'IN+'),'red',
+  route(P(bbParts.J4,'1'),P(buck,'IN+'),[[0.012,FRONT-0.004],[-0.004,FRONT+0.012]]));
+link('J4 pin 2 (GND) -> LM2596 IN-',P(bbParts.J4,'2'),P(buck,'IN-'),'black',
+  route(P(bbParts.J4,'2'),P(buck,'IN-'),[[0.016,FRONT-0.001],[-0.002,FRONT+0.016]]));
+link('LM2596 OUT+ -> J5 pin 1 (V5)',P(buck,'OUT+'),P(bbParts.J5,'1'),'red',
+  route(P(buck,'OUT+'),P(bbParts.J5,'1'),[[0.034,FRONT+0.014],[0.026,FRONT-0.004]]));
+link('LM2596 OUT- -> J5 pin 2 (GND)',P(buck,'OUT-'),P(bbParts.J5,'2'),'black',
+  route(P(buck,'OUT-'),P(bbParts.J5,'2'),[[0.038,FRONT+0.018],[0.030,FRONT-0.001]]));
+
+// audio out: J2 to UCA202 INPUT L (beat), J12 to INPUT R (sync)
+link('J2 pin 1 AUDIO_L -> UCA202 INPUT L',P(bbParts.J2,'1'),P(uca,'IN_L'),'white',
+  [V(0.068,WY,0.086),V(0.100,WY,FRONT-0.004),V(0.190,WY,0.110),V(0.250,0.012,0.104)],wireG,0.0011);
+link('J12 pin 1 AUDIO_R -> UCA202 INPUT R',P(bbParts.J12,'1'),P(uca,'IN_R'),'red',
+  [V(0.142,WY,0.070),V(RIGHT,WY,0.090),V(0.195,WY,0.104),V(0.255,0.012,0.098)],wireG,0.0011);
+link('UCA202 -> laptop (USB)',P(uca,'USB'),P(lap,'USB'),'black',
+  [V(0.400,0.012,0.166),V(0.470,0.010,0.186),V(0.530,0.010,0.196)],wireG,0.0013);
 // =====================================================================
 // coax
 // =====================================================================
@@ -927,8 +1034,9 @@ function buildCoax(stage){
     const t3=pathCoax(bpf2,'in',[V(0.228,TOP+0.044,0.024),V(0.140,TOP+0.052,-0.012),cRB],M.coaxRx);
     reg('A6',t3,'SMA RG316 jumper - RX B to 2nd band-pass','ok'); coaxG.add(t3);
     up(hRXB,mRXB,M.coaxRx,cRB,'SMA RG316 jumper - RX B to 2nd band-pass','ok');
+    const umcIn=P(umc,'IN1');
     const if2=pathCoax(mix2,'if',[V(0.100,TOP+0.014,0.055),V(0.180,TOP+0.014,0.115),
-      V(0.270,0.030,0.200),V(0.320,0.048,0.262)],M.rubber,R_WIRE);
+      V(0.270,0.026,0.200),umcIn.pos.clone().addScaledVector(umcIn.dir,0.012),umcIn.pos],M.rubber,R_WIRE);
     reg('A7',if2,'IF 2 to the UMC404HD (stage 2)'); coaxG.add(if2);
   }
   rotG.rotation.y=savedRot;

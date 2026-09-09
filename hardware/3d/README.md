@@ -22,6 +22,22 @@ the beam's top face flush to the guide's underside. Every horn feed hands over
 near the rotation axis, so the cabling stays attached if the optional turntable
 turns the frame.
 
+## Wiring you can follow
+
+Every pin a wire lands on is a real object with a name, a landing point and a
+direction, so a lead leaves its connector along that connector's own axis and
+arrives at the far one the same way — it looks plugged in rather than passing
+nearby. From there it drops to a cable run a few millimetres above the plywood
+and stays there, routing through the corridors between modules instead of
+flying over them. Parallel leads are fanned apart so a loom reads as ten wires,
+not one rope. Coax is SMA with visible nuts and boots; the breadboard harness is
+hook-up wire in the colours `WIRING.md` calls out.
+
+The things a wire has to plug into are modelled too: header sockets under the
+ESP32 and A4988 (which is what lifts their pins clear of the board), a 4-pin
+JST on the stepper, a DC barrel jack and plug on the supply, RCA jacks on the
+UCA202, combo jacks on the UMC404HD, and a USB-A socket on the laptop.
+
 ## The breadboard is the real one
 
 Every part sits in the holes `hardware/breadboard/WIRING.md` gives it, and all
@@ -48,7 +64,7 @@ leakage path equal into both receivers.
 |---|---|
 | 1 · TX + RX A | the frame with two horns fitted and the RX B position built and left empty — range and radial velocity |
 | 2 · + RX B → azimuth | RX B and its receive chain added (band-pass 2 → LNA 2 → mixer 2 into the UMC404HD) — azimuth from phase in one dwell |
-| Turntable | optional at either stage: NEMA-17, lazy susan, and the service loops that let the whole frame turn |
+| Turntable | optional at either stage. The motor stands on the board shaft **up**, four standoffs carry the bearing fixed race at shaft height, and a printed hub clamps the D-shaft to the frame base plate — direct 1:1, which is what `STEPS_PER_DEG 8.889` assumes. With it off, the frame sits on a fixed pedestal |
 
 The roll is what makes the baseline legal, per
 [`../../docs/azimuth.md`](../../docs/azimuth.md): side by side *unrolled* the
