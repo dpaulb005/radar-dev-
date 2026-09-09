@@ -257,12 +257,21 @@ def simulate(s: RadarSpec, targets, seed=0, leakage=True):
     return cube
 
 
-def range_doppler(cube, s: RadarSpec, bg_subtract=False, complex_out=False):
+def range_doppler(cube, s: RadarSpec, bg_subtract=False, complex_out=False,
+                  range_pad=1):
     """Range FFT then Doppler FFT. Returns (rd, range_axis, vel_axis).
 
     rd is magnitude in dB by default. Pass complex_out=True for the raw complex
     map, which is what an interferometer needs: the bearing lives in the phase
     between two receivers at the same cell (see interferometer.py).
+
+    range_pad zero-pads the range FFT. It buys no resolution -- that is c/2B
+    and nothing downstream can change it -- but it samples the mainlobe more
+    finely, and the sub-bin parabola in cfar_detect is fitted to SAMPLES of
+    that lobe. Below about two bins from DC the lobe is clipped by the DC edge
+    and the three-point fit is badly biased: measured, a 3 m target at 40 MHz
+    (bin 0.80) reads 1.13 m long. Padding is the fix; see docs/signal-chain.md
+    stage 8a.
     """
     c = cube.copy()
     if bg_subtract:
@@ -271,12 +280,13 @@ def range_doppler(cube, s: RadarSpec, bg_subtract=False, complex_out=False):
     # complex (I/Q) beat signal -> full FFT, keep the positive-range half.
     # NOTE: the stock MIT radar has a single real mixer output, so on real
     # hardware you get |Doppler| without its sign until you add an I/Q mixer.
-    n_half = c.shape[1] // 2
-    rng_fft = np.fft.fft(c * win_r, axis=1)[:, :n_half]
+    n_fft = int(c.shape[1] * max(1, int(range_pad)))
+    n_half = n_fft // 2
+    rng_fft = np.fft.fft(c * win_r, n=n_fft, axis=1)[:, :n_half]
     win_d = np.hanning(c.shape[0])[:, None]
     rd = np.fft.fftshift(np.fft.fft(rng_fft * win_d, axis=0), axes=0)
     n_bins = rng_fft.shape[1]
-    freqs = np.arange(n_bins) * s.fs / c.shape[1]
+    freqs = np.arange(n_bins) * s.fs / n_fft
     ranges = s.range_of_beat(freqs)
     vels = np.fft.fftshift(np.fft.fftfreq(c.shape[0], s.t_chirp)) * s.lam / 2
     if complex_out:

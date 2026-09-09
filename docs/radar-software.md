@@ -44,12 +44,24 @@ Consequences the software handles for you:
   change on the laptop.
 - Stepped sweeps have a range ambiguity at `c / (2·Δf)` = 114 m with 64
   steps. Irrelevant indoors.
+- **The staircase itself costs nothing, and that is now measured rather than
+  assumed.** `SynthSource(n_steps=64, band_select_us=20, lock_tau_us=10)`
+  generates what the hardware really transmits — 64 plateaux, each with the
+  ADF4351's VCO band select and loop settling on its leading edge — and the
+  range answers track an ideal linear ramp to **2 mm** across 3–20 m. The
+  reason is that a step's worth of frequency error `Δf` only turns into a phase
+  error of `2π·Δf·τ`, and `τ` is 66.7 ns at 10 m: **15°**. It would matter at
+  120 m, where it reaches 180°. This is why a stepped sweep is allowed to stand
+  in for a ramp at all, and `test_radar.py`'s `ranging` group holds it.
+- **Set R3 DB23.** The firmware does. It picks the ADF4351's fast band-select
+  mode, 20 µs instead of 80 µs. At 80 µs of a 100 µs step the PLL would spend
+  most of every step slewing.
 
 **Known issue, azimuth at 40 MHz.** The coexistence sweep halves the
 bandwidth, moving the target from 5.3 FFT bins from DC to 2.7, deeper into the
 leakage mainlobe. Every beam's amplitude estimate gets noisier, and the
 centroid is a weighted average of exactly those amplitudes, so azimuth error
-rises to 6.3° against a 2.5° budget and `--selftest` fails on it. It is
+rises to 5.3° against a 2.5° budget and `--selftest` fails on it. It is
 variance, not bias: tightening the centroid's grouping window from 1.5 range
 cells to 0.3 changes the answer not at all. Range and velocity are unaffected.
 

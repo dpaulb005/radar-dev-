@@ -26,6 +26,12 @@ What it covers, and why each one is here:
   limits        the documented limits are real: the switched fold is half the
                 simultaneous one, and the un-rotated horn spacing genuinely
                 wraps inside the beam.
+  ranging       stage 1's actual job: does a target at a known range come back
+                at that range, across the whole 3-20 m envelope, on the
+                waveform the hardware really transmits (a 64-step staircase
+                with PLL settling, not an ideal ramp). Includes the bin-0
+                notch that used to cost a metre at 3 m, so it cannot come
+                back, and the TX->RX isolation the whole thing rests on.
 """
 
 import math
@@ -257,9 +263,89 @@ def test_limits():
 
 
 # ======================================================================
+def _range_err(truth, dc_per_chirp=False, iso=35.0, n_steps=64, seeds=(0, 1, 2, 3)):
+    """Mean signed range error for a target at `truth`, straight through the
+    real pipeline: SynthSource -> segment_chirps -> process, fix chosen by
+    absolute level exactly as radar_acquire.run() chooses it."""
+    errs = []
+    for seed in seeds:
+        src = R.SynthSource(FS, T_UP, N, [(truth, 0.0, -1.8, 0.0026)],
+                            retrace_s=RETRACE, f0=F0, bw=BW, seed=seed,
+                            isolation_db=iso, n_steps=n_steps,
+                            band_select_us=20.0, lock_tau_us=10.0)
+        beats, sync = src.read()
+        cube, timing = R.segment_chirps(beats[0], sync, FS, N,
+                                        dc_per_chirp=dc_per_chirp)
+        if cube is None:
+            continue
+        dets, spec = R.process(cube, FS, timing, N, f0=F0, bw=BW,
+                               min_range=1.0, max_range=60.0)
+        if not dets:
+            continue
+        mid = truth + (-1.8) * (timing[1] * N / 2)     # the target moves in the dwell
+        errs.append(sorted(dets, key=lambda d: -d[3])[0][0] - mid)
+    return float(np.mean(errs)) if errs else float("nan")
+
+
+def test_ranging():
+    g = "ranging"
+    ENV = (3.0, 5.0, 8.0, 10.0, 15.0, 20.0)
+
+    # -- the waveform the hardware actually transmits. radar_ctl steps an
+    #    ADF4351 64 times and each write retriggers a VCO band select, so the
+    #    beat is a staircase with a settling transient on every step, not a
+    #    tone. It has to make no difference at these ranges, because the phase
+    #    error it causes is 2*pi*df*tau -- 15 deg at 10 m -- and that is the
+    #    whole reason a stepped sweep is allowed to stand in for a ramp.
+    worst = max(abs(_range_err(r, n_steps=64) - _range_err(r, n_steps=None))
+                for r in ENV)
+    check(g, "stepped sweep matches an ideal ramp", worst < 0.05,
+          f"worst divergence {worst:.3f} m over 3-20 m")
+
+    # -- the actual requirement
+    errs = {r: _range_err(r) for r in ENV}
+    worst_r, worst_e = max(errs.items(), key=lambda kv: abs(kv[1]))
+    check(g, "range is accurate across the 3-20 m envelope",
+          all(abs(e) < 0.25 for e in errs.values()),
+          f"worst {worst_e:+.2f} m at {worst_r:.0f} m")
+    check(g, "and best where the drone flies (3-10 m)",
+          max(abs(errs[r]) for r in (3.0, 5.0, 8.0, 10.0)) < 0.2,
+          f"{', '.join(f'{r:.0f}m {errs[r]:+.2f}' for r in (3.0, 5.0, 8.0, 10.0))}")
+
+    # -- the regression this group exists for. Subtracting the per-chirp mean
+    #    removes a window-shaped lobe two bins wide centred on DC, which eats
+    #    part of any target within 7.5 m at 40 MHz. If someone puts it back,
+    #    3 m goes a metre long and nothing else complains.
+    near_off, near_on = _range_err(3.0), _range_err(3.0, dc_per_chirp=True)
+    check(g, "the bin-0 notch stays OFF", abs(near_off) < 0.2 < abs(near_on),
+          f"3 m reads {near_off:+.2f} m without it, {near_on:+.2f} m with it")
+    check(g, "the notch is worse across the whole envelope",
+          (np.mean([abs(_range_err(r, dc_per_chirp=True)) for r in ENV])
+           > 3 * np.mean([abs(e) for e in errs.values()])),
+          "mean |error| at least 3x worse with it on")
+
+    # -- what the whole thing rests on. 35 dB is the design figure
+    #    (docs/radar-hardware.md, separate horns 305 mm apart); below about
+    #    32 dB the leakage skirt outranks the target and the radar reports the
+    #    leak's range no matter where the target is. That is a 3 dB margin and
+    #    it is worth knowing about before first light.
+    check(g, "works at the designed 35 dB isolation",
+          max(abs(_range_err(r, iso=35.0)) for r in (3.0, 10.0)) < 0.25)
+    check(g, "still works at 33 dB",
+          max(abs(_range_err(r, iso=33.0)) for r in (3.0, 10.0)) < 0.5)
+    # below the cliff it either finds nothing or finds the leak. Both are
+    # "blind"; the first is the better failure, because it abstains.
+    blind = _range_err(10.0, iso=30.0)
+    check(g, "goes blind below ~32 dB, as documented",
+          math.isnan(blind) or abs(blind) > 2.0,
+          "no fix at all at 30 dB" if math.isnan(blind)
+          else f"10 m reads {blind:+.2f} m off — the leak, not the target")
+
+
 GROUPS = [("geometry", test_geometry), ("dsp", test_dsp), ("azimuth", test_azimuth),
           ("calibration", test_calibration), ("refusal", test_refusal),
-          ("limits", test_limits)]
+          ("limits", test_limits),
+          ("ranging", test_ranging)]
 
 if __name__ == "__main__":
     want = [a for a in sys.argv[1:] if not a.startswith("-")]

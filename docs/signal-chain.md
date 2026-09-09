@@ -98,9 +98,18 @@ Two timings come out of this, and they are **not the same number**:
 
 Both are measured on every block rather than assumed, so changing `step_us` on
 the ESP32 needs no matching change on the laptop. The first 5 % of each chirp is
-dropped while the PLL settles, leaving 292 samples, and the per-chirp mean is
-removed. The result is a 64 × 292 array: **one row per chirp, one column per
-sample**.
+dropped while the PLL settles, leaving 292 samples. The result is a 64 × 292
+array: **one row per chirp, one column per sample**.
+
+> **What is deliberately *not* done here: removing the per-chirp mean.** It used
+> to be, and it cost a metre at 3 m. Subtracting a constant from a chirp removes
+> a window-shaped lobe centred on range bin 0 and about two bins wide, so it
+> eats part of any target within two bins of DC — which at 40 MHz is everything
+> closer than **7.5 m**, the bottom half of this radar's envelope. Measured
+> across 3–20 m it cost a mean 0.27 m and 1.05 m at 3 m; without it, 0.04 m and
+> 0.04 m. The DC it was removing is already gone twice over: the sound card is
+> AC-coupled, and the range-Doppler map subtracts the average chirp. Guarded by
+> the `ranging` group in `test_radar.py` so it cannot come back quietly.
 
 ---
 
@@ -162,8 +171,8 @@ It does not currently work at the bandwidth this project is configured for.
 ![azimuth accuracy at both bandwidths](figures/06-azimuth.png)
 
 Run the real pipeline against a target at known azimuths and the original
-80 MHz sweep tracks truth to within **0.6°**. The 40 MHz coexistence sweep,
-adopted so the drone's WiFi could live below it, is off by up to **6.3°**, well
+80 MHz sweep tracks truth to within **0.7°**. The 40 MHz coexistence sweep,
+adopted so the drone's WiFi could live below it, is off by up to **5.3°**, well
 outside the 2.5° budget. `radar_acquire.py --selftest` fails on azimuth for this
 reason.
 

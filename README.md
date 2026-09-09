@@ -28,7 +28,7 @@ cheaper higher-band modules were rejected despite being better radars.
 | | |
 |---|---|
 | sweep | 2440–2480 MHz (40 MHz), 6.4 ms up-chirp, 7.4 ms PRI |
-| range cell / accuracy | 3.75 m / ~0.2 m after peak interpolation |
+| range cell / accuracy | 3.75 m / **0.04 m mean, 0.10 m worst** measured 3-20 m on the real stepped waveform |
 | azimuth | phase between two RX horns 193 mm apart → 0.09° rms, in one 0.47 s dwell |
 | drone echo at 10 m | −74 dBm, 71 dB SNR after 64 chirps |
 | phone link margin | ~20 dB at the drone's receiver; AP at 10 dBm, band-pass and operator placement protect the radar |

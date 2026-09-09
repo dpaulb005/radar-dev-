@@ -55,11 +55,15 @@ SETTLE_FRAC = 0.05       # drop the first 5 % of each chirp (PLL settle)
 # sync + segmentation
 # ----------------------------------------------------------------------
 
-def segment_chirps(beat, sync, fs, n_chirps, return_edges=False):
+def segment_chirps(beat, sync, fs, n_chirps, return_edges=False,
+                   dc_per_chirp=False):
     """Cut the beat channel into an (n_chirps, n_samples) cube using the sync
     square wave. Returns (cube, t_chirp_s). t_chirp is MEASURED from the sync,
     never assumed — the stepped PLL sweep's real period is set by the ESP32's
-    step_us and any drift shows up here first."""
+    step_us and any drift shows up here first.
+
+    dc_per_chirp is off; see the comment where it is applied. It is the reason
+    near-range accuracy used to be a metre out at 3 m."""
     # Sound-card inputs are AC-coupled: an 86 %-duty square wave arrives as
     # a small positive plateau that droops, and a big negative retrace pulse.
     # Levels are useless; the EDGES survive coupling intact, so detect the
@@ -98,7 +102,17 @@ def segment_chirps(beat, sync, fs, n_chirps, return_edges=False):
     if len(rows) < n_chirps:
         return (None, None, None) if return_edges else (None, None)
     cube = np.array(rows, dtype=float)
-    cube -= cube.mean(axis=1, keepdims=True)         # kill DC per chirp
+    if dc_per_chirp:
+        # OFF by default, and it used to be on. Subtracting a constant from a
+        # chirp removes a WINDOW-SHAPED lobe centred on range bin 0, about two
+        # bins wide -- so it eats part of any target inside two bins of DC,
+        # which at 40 MHz is everything closer than 7.5 m, and biases the peak
+        # outward. Measured over 3-20 m it cost a mean 0.27 m and 1.05 m at
+        # 3 m; without it, 0.04 m and 0.04 m. The DC it was meant to remove is
+        # already gone twice over: the sound card is AC-coupled, and
+        # range_doppler(bg_subtract=True) subtracts the average chirp. Keep the
+        # switch only so the regression test can show the difference.
+        cube -= cube.mean(axis=1, keepdims=True)
     pri = float(np.median(np.diff(edges[:n_chirps + 1]))) / fs
     if return_edges:
         return cube, (n_up / fs, pri), edges[:n_chirps + 1]
@@ -216,6 +230,11 @@ class SynthSource:
     antenna alternates chirp by chirp, so even chirps carry antenna A and odd
     chirps carry antenna B one PRI later.
 
+    n_steps models the waveform the hardware ACTUALLY transmits. radar_ctl does
+    not ramp: it steps an ADF4351 through n_steps discrete frequencies, so the
+    beat is a staircase, not a tone. Leave it None for the ideal linear chirp
+    (which is what every measurement in this repo used before it existed).
+
     read() returns (beats, sync) where beats is a list of channels.
     """
 
@@ -224,7 +243,8 @@ class SynthSource:
     def __init__(self, fs, t_chirp, n_chirps, targets, retrace_s=1e-3,
                  beam_az=0.0, bw_az=36.0, seed=0, isolation_db=35.0,
                  f0=None, bw=None, n_rx=1, baseline_m=interf.DEFAULT_BASELINE_M,
-                 cal_rad=0.0, switched=False, marker=True, marker_after=2):
+                 cal_rad=0.0, switched=False, marker=True, marker_after=2,
+                 n_steps=None, band_select_us=20.0, lock_tau_us=10.0):
         self.fs, self.t_chirp, self.n_chirps = fs, t_chirp, n_chirps
         self.targets, self.retrace_s = targets, retrace_s
         self.beam_az, self.bw_az = beam_az, bw_az
@@ -234,10 +254,53 @@ class SynthSource:
         self.cal_rad = float(cal_rad)
         self.switched = bool(switched)
         self.marker, self.marker_after = bool(marker), int(marker_after)
+        self.n_steps = None if n_steps is None else int(n_steps)
+        self.band_select_us = float(band_select_us)
+        self.lock_tau_us = float(lock_tau_us)
         self.spec = fmcw_sim.RadarSpec(f0=f0 or F0_HZ, bw=bw or BW_HZ, t_chirp=t_chirp, fs=fs,
                                        n_chirps=n_chirps, gt_dbi=13.4, gr_dbi=13.4,
                                        isolation_db=isolation_db)
         self.frames = None
+
+    # -- what the transmitter is actually doing ------------------------
+    def _t_held(self, t):
+        """Map real time to the time the transmit frequency has reached.
+
+        For an ideal linear ramp these are the same thing, and the beat is a
+        tone. The hardware is not a ramp: radar_ctl writes the ADF4351 once per
+        step and holds, so the transmit frequency is a staircase and the beat
+        is that staircase sampled -- one plateau per step, ~4.8 audio samples
+        wide at 48 kHz and 100 us steps.
+
+        Two things happen at every step edge, and both are in here:
+
+          band select   writing R0 retriggers the ADF4351's VCO band select.
+                        20 us with R3 DB23 set (which radar_ctl does set; it is
+                        80 us without, longer than most of the step). The output
+                        is still on the OLD frequency through this.
+          loop settling then the loop pulls in, modelled first-order with
+                        lock_tau_us. 20 + 3*10 = 50 us of a 100 us step.
+
+        Because phase is 4*pi*f(t)*r/c and the ramp is linear in t, quantising
+        f is exactly quantising t -- so this returns a time and the caller's
+        existing beat expression is unchanged."""
+        if self.n_steps is None:
+            return t
+        t_step = self.t_chirp / self.n_steps
+        k = np.floor(t / t_step + 1e-12)
+        dt = t - k * t_step
+        held = k * t_step                       # the settled staircase
+        bs = self.band_select_us * 1e-6
+        tau = self.lock_tau_us * 1e-6
+        if bs > 0 or tau > 0:
+            # during band select the frequency has not moved at all; after it,
+            # relax from the previous step's value to this one
+            prev = held - t_step
+            settling = np.where(
+                dt < bs, prev,
+                held - t_step * np.exp(-np.maximum(dt - bs, 0.0) / max(tau, 1e-12)))
+            held = settling
+        return held
 
     # -- the extra phase antenna B sees, per target -------------------
     def _rx_phase(self, rx_index, az_deg):
@@ -253,6 +316,7 @@ class SynthSource:
         n_gap = int(round(self.retrace_s * self.fs))
         pri = (n_up + n_gap) / self.fs
         t = np.arange(n_up) / self.fs
+        th = self._t_held(t)          # the ramp time the transmitter has reached
         noise_w = fmcw_sim.K_BOLTZ * fmcw_sim.T0 * (self.fs / 2) * 10 ** (s.nf_db / 10)
         noise_amp = math.sqrt(noise_w * 1e3)
         lk = math.sqrt(10 ** ((s.pt_dbm - s.isolation_db) / 10))
@@ -274,10 +338,10 @@ class SynthSource:
                         continue
                     rt = r + v * tk
                     amp = math.sqrt(10 ** (s.rx_dbm(rt, rcs * g * g) / 10))
-                    sig += amp * np.cos(2 * math.pi * s.beat_hz(rt) * t
+                    sig += amp * np.cos(2 * math.pi * s.beat_hz(rt) * th
                                         + 4 * math.pi * rt / s.lam
                                         + self._rx_phase(rx, az))
-                sig += lk * np.cos(2 * math.pi * s.beat_hz(0.3) * t)
+                sig += lk * np.cos(2 * math.pi * s.beat_hz(0.3) * th)
                 sig += noise_amp * self.rng.normal(size=n_up)
                 beats[j].append(sig)
                 beats[j].append(np.zeros(n_gap))
