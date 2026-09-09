@@ -38,7 +38,11 @@ hardware is not the problem.
 
 **Simulate first.** `hardware/spice/README.md` has one test card per block
 with part values, stimulus and expected readings; `hardware/spice/multisim/`
-has the same blocks as Multisim-importable subcircuits. The schematic with
+has the same blocks for Multisim: `multisim/import/*.cir` open straight
+through **File ▸ Open ▸ SPICE netlist (*.cir)** and draw themselves as a
+schematic; the `.sub` files are for pasting into an Arbitrary SPICE Block.
+The ngspice decks in `hardware/spice/` itself do **not** import — they carry
+`.control` blocks. See `hardware/spice/multisim/README.md`. The schematic with
 every value on it is `hardware/kicad/radar_multisim.kicad_sch` (PNG beside it).
 
 | block | stimulus | PASS |

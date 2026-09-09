@@ -1,0 +1,53 @@
+* VIDEO AMP -- full stage-1 gain (101 x 11), 15.9 kHz LP, output buffer.
+* Import-ready: no .control block, no B-sources, nothing .include-d.
+* Multisim: File > Open > "SPICE netlist files (*.cir)".  ngspice: ngspice -b 01_video_amp.cir
+*
+* TL072-class op-amp: Aol 100 dB, GBW 3 MHz, output clamped 1.5 V inside each rail.
+* In Multisim you may delete this subcircuit and drop in three library TL072CP instead.
+.subckt TL072X inp inn vcc vee out
+Rin   inp inn 1e12
+E1    n1  0   inp inn 1e5
+R1    n1  n2  1k
+C1    n2  0   5.305u
+E2    n3  0   n2  0   1
+Rout  n3  out 100
+Vch   vcc chp DC 1.5
+Dch   out chp DCLAMP
+Vcl   chn vee DC 1.5
+Dcl   chn out DCLAMP
+.model DCLAMP D(IS=1e-12 N=0.05)
+.ends
+*
+* --- supplies -------------------------------------------------------------
+VANA  vana 0  DC 11.4
+VREF  vref 0  DC 5.7
+* --- mixer IF source: 0.5 mVpk 1 kHz behind 50 ohm ------------------------
+VIN   vs   0  DC 0 AC 1 SIN(0 0.5m 1k)
+RS    vs   if 50
+* --- the amplifier --------------------------------------------------------
+R1    if   0    49.9
+C20   if   0    1n
+C1    if   ap   100n
+R2    ap   vref 10k
+XU1A  ap   am   vana 0 aout TL072X
+R3    aout am   100k
+R4    am   vref 1k
+C2    aout bp   100n
+R6    bp   vref 10k
+XU1B  bp   bm   vana 0 bout TL072X
+R7    bout bm   10k
+R8    bm   vref 1k
+R12   bout lp   1k
+C9    lp   vref 10n
+XU2B  lp   obuf vana 0 obuf TL072X
+R13   obuf oiso 100
+C10   oiso audio 10u
+R14   audio 0  100k
+C3    vana 0   100n
+RLOAD audio 0  10k
+* --- analyses (Multisim ignores these; set them in Simulate > Analyses) ----
+.ac dec 40 1 100k
+.tran 5u 60m 40m
+.print ac vdb(audio)
+.print tran v(audio)
+.end

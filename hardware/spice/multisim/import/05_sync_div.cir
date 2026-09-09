@@ -1,0 +1,11 @@
+* SYNC DIVIDER -- ESP32 GPIO25 (3.3 V) through 10k/1k into the sound card's right input.
+* Expect: v(sync) 283 mV high, v(sc) +201 mV plateau with droop, -100 mV retrace pulse.
+VGPIO g   0  PULSE(0 3.3 0 10n 10n 6.4m 7.4m)
+RG    g   pin 30
+R23   pin sync 10k
+R24   sync 0   1k
+CCPL  sync sc  10u
+RSC   sc   0   10k
+.tran 5u 60m 0
+.print tran v(sync) v(sc)
+.end

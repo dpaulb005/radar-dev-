@@ -1,0 +1,16 @@
+* POWER IN -- 12 V, D1 reverse protection, R15/C13 filter to VANA.
+* Expect: v(vprot) = 11.68 V, v(vana) = 11.58 V, ~4 mVpp ripple on VANA.
+.model D1N5822 D(IS=2e-6 N=1.05 RS=0.02 BV=40 IBV=1m CJO=180p)
+VIN   vin  0     DC 12 AC 1 SIN(12 0.1 150k)
+D1    vin  vprot D1N5822
+C11   vprot 0    100u
+RBUCK vprot 0    60
+R15   vprot vana 10
+C13   vana 0     100u
+ROPA  vana 0     1.1k
+.op
+.ac dec 20 1 1meg
+.tran 100n 300u 200u
+.print ac vdb(vana)
+.print tran v(vana) v(vprot)
+.end
