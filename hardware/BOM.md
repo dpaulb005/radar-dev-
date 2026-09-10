@@ -3,8 +3,9 @@
 > **To actually order, use [`ORDER.md`](ORDER.md)** — the same list with links
 > and prices re-checked 10 September 2026. Three have moved: the ZX05 mixer is
 > $79 and scarce, the UMC404HD is $139 not $100, and the GPIO Labs filter comes
-> in SMA *and* RP-SMA (you need SMA). This page is the reasoning; that one is
-> the shopping.
+> in SMA *and* RP-SMA (you need SMA — its 3 dB edges are 2380/2500 MHz, which
+> the full-band sweep fits inside). This page is the reasoning; that one is the
+> shopping.
 
 Researched September 2026 (Mini-Circuits store checked directly; Amazon /
 FPV retailers for the rest). Prices are US street, rounded. Order in the

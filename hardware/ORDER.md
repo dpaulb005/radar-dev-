@@ -14,6 +14,9 @@ just where to click.
 >    price move and it pushes the stage-1 order to ~$433.
 > 3. **The GPIO Labs filter comes in SMA *and* RP-SMA.** You need **plain SMA**.
 >    RP-SMA reverses the pin gender and will not mate with the rest of the chain.
+>    Its 3 dB edges are **2380 / 2500 MHz**, so the full-band 2400–2483.5 sweep
+>    fits with about 20 MHz to spare at each end — checked, because the sweep
+>    now runs to the band edge where it used to stop at 2480.
 
 ---
 
@@ -29,7 +32,7 @@ just where to click.
 | 5 | SMA 3 dB attenuator, DC–6/8 GHz | ~9 est. | [Amazon B0B93NB895](https://www.amazon.com/clp/B0B93NB895) (2 pcs) |
 | 6 | SMA M-M RG316 jumpers, 20 cm | ~18 est. | any Amazon 3-pack — **buy all of them in one order** so the two receive cables are from the same reel (1 mm of mismatch is 0.43° of bearing) |
 | 7 | SMA adapter assortment | ~12 est. | any Amazon kit; skip until you need it |
-| 7b | **2.4 GHz band-pass, 2400–2500 MHz** | **33.00** confirmed | [GPIO Labs — SMA version](https://gpio.com/products/2450-mhz-ism-bandpass-filter-for-wifi-zigbee-and-bluetooth) · ⚠️ [the RP-SMA version](https://gpio.com/products/2450-mhz-or-2-4-ghz-ism-bandpass-filter-for-wifi-zigbee-and-bluetooth-with-rp-sma-connectors) will **not** mate with your chain |
+| 7b | **2.4 GHz band-pass** — buy **two**, one per receive chain | **29.10** confirmed | [GPIO Labs, SMA-F both ends](https://gpio.com/products/2450-mhz-ism-bandpass-filter-for-wifi-zigbee-and-bluetooth) — **3 dB edges 2380 / 2500 MHz**, 2.7 dB loss, >40 dB at 2.2 and 2.8 GHz. Your 2400–2483.5 sweep sits inside it with ~20 MHz of margin at each end. ⚠️ [the RP-SMA version](https://gpio.com/products/2450-mhz-or-2-4-ghz-ism-bandpass-filter-for-wifi-zigbee-and-bluetooth-with-rp-sma-connectors) will **not** mate with your chain |
 
 ## B. Horns
 
@@ -72,6 +75,25 @@ you do not need across a bedroom.
 ⚠️ Flash **both ends** to the same ExpressLRS major version and the same
 regulatory domain (**FCC915**), with one binding phrase. Version mismatch is the
 most common ELRS failure and it simply will not bind.
+
+### Band-pass alternatives, if you want more margin
+
+| part | passband (3 dB) | loss | rejection | $ | note |
+|---|---|---|---|---|---|
+| **GPIO Labs 2450 ISM** | 2380–2500 | 2.7 dB | >40 dB | **29.10** | the one to buy. SMA-F both ends |
+| [Mini-Circuits ZFBP-2400-S+](https://www.minicircuits.com/WebStore/dashboard.html?model=ZFBP-2400-S%2B) | 2300–2500 | 2.2 dB | 50 dB | 49.95 | more margin and 0.5 dB less loss, in a shielded case. Worth it only if you find the cheap one is tilting the sweep |
+| ~~Mini-Circuits VBF-2435+~~ | 2340–2530 | — | — | 57.50 | **not a drop-in.** It is a surface-mount LTCC chip, not a connectorised part — you would have to build a carrier board with SMA launches |
+
+The filter sits **in front of the LNA**, so its insertion loss adds directly to
+the system noise figure: 2.7 dB on top of the 4 dB the link budget assumes. That
+is irrelevant against 71 dB of margin, and it is the price of not putting every
+signal in the room into a 50–4000 MHz amplifier.
+
+**You can measure your own filter without a VNA.** Park the ADF4351 at a series
+of CW frequencies (`CW 2380`, `CW 2400`, … `CW 2500`) and watch the TX→RX
+leakage level in `radar_acquire.py`. The leakage is flat with frequency, so what
+you are plotting is the filter's response. If the bottom of the sweep is more
+than a couple of dB down, raise `SET f0_mhz` until it is not.
 
 ## F. Stage 2 — azimuth (order later)
 
