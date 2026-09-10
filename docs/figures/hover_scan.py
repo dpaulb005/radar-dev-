@@ -22,6 +22,15 @@ all, for the scan and for the interferometer, on the same targets.
     pure radial     drift straight at the radar: full Doppler, no smear
     pure tangential drift across it: zero Doppler, maximum smear
 
+MEASURED ON THE 40 MHz COEXISTENCE SWEEP, and deliberately left there. Re-run
+at the 83.5 MHz sweep the radar now uses and the 4.3 s scan collapses to 42.5
+deg rms: the TX leakage is sharper and taller in narrower range cells, and in
+an off-boresight beam the TARGET is attenuated by the beam pattern while the
+LEAKAGE is not, so the leak outranks it and the amplitude centroid tracks the
+leak instead. That is a real property of the scanning method -- it gets WORSE
+as bandwidth improves -- and closing it needs a leakage gate in centroid(),
+which is a change to the method being measured. Logged in signal-chain.md.
+
 Writes hover_scan.json.
 
 Usage:

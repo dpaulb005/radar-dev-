@@ -28,16 +28,22 @@ HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent.parent / "ground_station"))
 
 from radar_acquire import SynthSource, segment_chirps        # noqa: E402
-from radar_twin import beam_gain                             # noqa: E402
+from radar_twin import beam_gain, cfar_detect                # noqa: E402
+import fmcw_sim                                              # noqa: E402
 
 FS, T_UP, RETRACE, N_CHIRPS = 48_000.0, 6.4e-3, 1.0e-3, 64
-F0, BW = 2.440e9, 40e6
+F0, BW = 2.400e9, 83.5e6
 C = 2.99792458e8
 LAM = C / (F0 + BW / 2)                  # 0.1219 m, free space
 VF_RG316 = 0.695                         # PTFE coax: a wave is slower inside the cable
 LAM_COAX = LAM * VF_RG316                # 0.0847 m — this is what a length mismatch sees
 TARGET_R, TARGET_V, TARGET_RCS = 10.0, -1.8, 0.0026
 BASELINE = 0.1931                        # horn E-plane width: two horns touching
+
+
+_SPEC = None
+RANGES = None
+VELS = None
 
 
 def two_channel(true_az, d, seed, rcs=TARGET_RCS, n_chirps=N_CHIRPS,
@@ -59,17 +65,41 @@ def two_channel(true_az, d, seed, rcs=TARGET_RCS, n_chirps=N_CHIRPS,
         rng = np.fft.fft(c * np.hanning(c.shape[1]), axis=1)[:, :c.shape[1] // 2]
         rd = np.fft.fftshift(np.fft.fft(rng * np.hanning(c.shape[0])[:, None], axis=0), axes=0)
         maps.append(rd)
+    global _SPEC, RANGES, VELS
+    if RANGES is None or len(RANGES) != maps[0].shape[1]:
+        _SPEC = fmcw_sim.RadarSpec(f0=F0, bw=BW, t_chirp=T_UP, fs=FS,
+                                   n_chirps=n_chirps)
+        _, RANGES, VELS = fmcw_sim.range_doppler(
+            np.zeros((n_chirps, cube.shape[1])) + 0j, _SPEC)
+        VELS = VELS * (T_UP / (T_UP + RETRACE))
     return maps[0], maps[1]
 
 
 def bearing(rd1, rd2, d, cal=0.0):
-    """Phase-difference bearing at the strongest non-zero-Doppler cell."""
-    mag = np.abs(rd1)
-    nv = mag.shape[0]
-    zero = nv // 2
-    mag[zero - 1:zero + 2, :] = 0.0                     # skip leakage / clutter
-    mag[:, :1] = 0.0
-    vi, ri = np.unravel_index(np.argmax(mag), mag.shape)
+    """Phase-difference bearing at the cell the RADAR would actually report.
+
+    This used to take a raw argmax of the map with range bin 0 blanked, and on
+    the 40 MHz sweep that happened to be the target. On the full 83.5 MHz band
+    it is not: narrower range cells concentrate the TX leakage into a taller,
+    sharper peak, so once the echo weakens by 10 dB the argmax lands on the
+    leakage skirt at range bin 1 and reports a confident 0.00 deg.
+
+    The shipping path does not have that failure because it does not take an
+    argmax -- radar_acquire.process() runs CFAR, which requires a cell to be a
+    local peak standing above its own neighbourhood, and gates the range. Use
+    the same thing here, so the figure measures the radar rather than a
+    simplification of it."""
+    mag_db = 20 * np.log10(np.abs(rd1) + 1e-15)
+    dets = cfar_detect(mag_db, RANGES, VELS, min_range=1.5, max_range=30.0,
+                       thresh_db=15.0)
+    if not dets:
+        return float("nan")
+    r_hat = max(dets, key=lambda x: x[3])[0]             # strongest by LEVEL
+    ri = int(np.argmin(np.abs(RANGES - r_hat)))
+    col = np.abs(rd1[:, ri]).copy()
+    zero = col.shape[0] // 2
+    col[zero - 1:zero + 2] = 0.0                        # leakage / clutter Doppler
+    vi = int(np.argmax(col))
     dphi = np.angle(rd2[vi, ri] * np.conj(rd1[vi, ri])) - cal
     dphi = (dphi + math.pi) % (2 * math.pi) - math.pi
     s = dphi * LAM / (2 * math.pi * d)

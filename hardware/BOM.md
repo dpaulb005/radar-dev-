@@ -55,21 +55,35 @@ Dimensions: aperture 263.8 × 193.1 mm, WR-340 throat 86.4 × 43.2 mm, flare
 | 17 | Plywood ~18" × 15", L-brackets, M3 hardware, standoffs | 1 | 28 | |
 | 18 | NEMA-17 stepper + A4988 (+ lazy-susan bearing) | 0–1 | 25 | **optional.** Only points the 34° beam at a wider sector; it takes no part in measuring azimuth. Skip it first if the budget is tight |
 
-## E. Drone — nothing (flown from the phone)
+## E. Drone and its control link — ~$122
 
-The drone is the stock ESP-FLY kit built per its official guide, ESP-Drone
-firmware with the AP on WiFi channel 1 at 10 dBm; the radar sweeps
-2440–2480 MHz above it. Do not buy or fit the kit's radio-controller option.
-**$0.** The table below is the
-fallback if the coexistence test in `docs/drone-software.md` §4 fails.
+The drone is a **stock Seeed ESP-FLY**, built to its own guide, flown on a
+**915 MHz ELRS link** so the radar can sweep the whole 2400–2483.5 MHz band
+instead of squeezing into 40 MHz above the drone's WiFi. Do not buy or fit the
+kit's 2.4 GHz radio option (ESP-NOW transmitter or RP1 V2) — it hops across the
+radar's sweep. Why this is worth $130 is measured in
+[`../docs/testing.md`](../docs/testing.md) § a small room changes the answer.
 
-### E-fallback. 915 MHz control link — ~$130
+### The 915 MHz ELRS link
 
 | # | item | qty | ~$ | notes |
 |---|---|---|---|---|
-| 19 | **RadioMaster Pocket** (EdgeTX, Nano module bay) | 1 | 65 | the T8L has no module bay and is 2.4 GHz only |
-| 20 | **RadioMaster Bandit Nano** 915 MHz ELRS TX module | 1 | 40 | FCC915 |
-| 21 | **BetaFPV ELRS Nano RX 915 MHz** (0.7 g) or HappyModel ES900RX (0.6 g) | 1 | 17 | same four CRSF pads as the RP1 V2 |
+| 19 | **RadioMaster Pocket** (any internal RF — you use the bay) | 1 | 65 | cheapest EdgeTX radio with a **Nano module bay**. The T8L cannot do this: internal 2.4 GHz only, no bay, no 900 MHz variant |
+| 20 | **RadioMaster Bandit Nano**, 915 MHz ELRS module | 1 | 40 | fits the Pocket's Nano bay; 10 mW–1 W; FCC915 |
+| 21 | **BetaFPV ELRS Nano 915 RX** (0.7 g) *or* HappyModel ES900RX (0.6 g) | 1 | 17 | lightest 900 MHz receivers; CRSF to the XIAO's UART2 (GPIO 9 RX / GPIO 8 TX) |
+| 21b | 915 MHz receiver antenna | 0–1 | 0–5 | usually included: ~80 mm wire or a "T" |
+
+Both ends must be the **same ExpressLRS major version** and the **same
+regulatory domain (FCC915)**. Alternatives: any EdgeTX radio with a JR bay
+(Boxer, TX12) plus a Bandit Micro; HappyModel ES900TX instead of the Bandit
+Nano. Procedure in [`../docs/drone-link.md`](../docs/drone-link.md), firmware in
+[`../docs/drone-link-espfc.md`](../docs/drone-link-espfc.md).
+
+**If you are flying outdoors or in a space where 5–10 m is available, you can
+skip section H entirely** and fly from the phone on WiFi channel 1 with a
+2440–2480 MHz sweep. It costs nothing and a 3.75 m range cell is a small
+fraction of a large scene. It is only a bedroom that makes this $122 worth
+spending.
 
 ## F. Stage 2 — azimuth interferometer — ~$251
 
@@ -130,6 +144,10 @@ worth of chain, and buys nothing you will have to replace.
 | **UMC404HD 4-input interface** — not the UCA202 | 100 |
 | | **394** |
 
+**Order 1b — the drone's control link, $122.** Only if you are flying in a
+small room; see § E. RadioMaster Pocket 65, Bandit Nano 915 40, BetaFPV ELRS
+Nano 915 RX 17. Skip it outdoors and fly from the phone on a 40 MHz sweep.
+
 **Order 2 — stage 2, when stage 1 works, $70**
 
 | item | $ |
@@ -140,7 +158,8 @@ worth of chain, and buys nothing you will have to replace.
 | two more TL072, second passives set, second breadboard | 18 |
 | | **70** |
 
-**$464 of parts, about $500 delivered.** Drop the SMA adapter assortment from
+**$464 of parts, about $500 delivered** — plus **$122** for the 915 MHz link if
+you need it, so $586 for the indoor build. Drop the SMA adapter assortment from
 order 1 until you find you need it and it is $489.
 
 Nothing in order 1 becomes redundant. The interface, the LNA 4-pack, the horn

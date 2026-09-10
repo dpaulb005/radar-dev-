@@ -45,14 +45,17 @@ point:
 | | scanning, 9 beams × 64 | two receivers, one dwell |
 |---|---|---|
 | time per fix | 4.3 s | **0.47 s** |
-| bearing error, rms | 1.5° | **0.09°** |
-| bearing error, worst | 2.7° | **0.14°** |
+| bearing error, rms | 1.5° | **0.18°** |
+| bearing error, worst | 2.7° | **0.29°** |
 | works on a moving target | no | yes |
 
-That is 18× inside the 2.5° budget, and 9× faster. Thermal noise is nowhere
-near the limit: the bearing stays under 0.1° until the echo weakens by 25 dB,
-equivalent to pushing the drone out past 40 m, and the cliff after that is the
-CFAR losing the target altogether, not the phase measurement degrading.
+That is 8× inside the 2.5° budget, and 9× faster. Thermal noise is nowhere
+near the limit: the bearing holds 0.16° until the echo weakens by 20 dB, and
+the cliff after that is **CFAR losing the target altogether and the radar
+reporting no bearing** — not the phase measurement quietly degrading. Measured
+on the full 83.5 MHz sweep; on the old 40 MHz one it was 0.09° and held to
+25 dB, because narrower range cells concentrate the TX leakage into a taller
+peak that competes with a weak echo sooner.
 
 **Calibration is the actual requirement.** 1 mm of extra coax on one channel is
 **4.3° of phase and 0.43° of bearing**. Not 3°: a wave travels about 30 % slower
@@ -124,7 +127,7 @@ stage 1, as § 7 of the hardware doc advises, this line is already paid for.
 implement: build the hardware and run it.
 
 ```
-python radar_acquire.py --interferometer --ctl /dev/ttyUSB0 --f0-mhz 2440 --bw-mhz 40
+python radar_acquire.py --interferometer --ctl /dev/ttyUSB0 --f0-mhz 2400 --bw-mhz 83.5
 python radar_acquire.py --switched      --ctl /dev/ttyUSB0    # RF-switch build
 python radar_acquire.py --selftest --interferometer --st-az -8 --st-vel -1.8
 python test_radar.py                                          # 34 cases, no hardware
@@ -187,7 +190,7 @@ answer, and it is not the cheap one, so this is the honest comparison.
 | extra hardware | one servo, **$15–30** | second mixer, splitter, band-pass, LNA, 4-in interface: **$167–224** |
 | receive chains | the one stage 1 already has | two, phase-matched |
 | time per fix | 1.42 s | **0.47 s** |
-| bearing at rest | 0.74° rms | **0.09°** |
+| bearing at rest | 0.74° rms | **0.18°** |
 | holds 2.5° up to | **0.5 m/s** of drift | ≥ 1 m/s, and it is flat — one dwell has nothing to smear |
 | needs calibration | no | yes, and it is 0.43° of bearing per mm of cable |
 | fails on a perfectly still target | yes | yes — same cause |

@@ -302,14 +302,15 @@ def check_bom_totals():
 def check_bom_rows():
     """Every BOM.md line item is represented in the panel.
 
-    The 915 MHz fallback (section E-fallback) is deliberately absent: the model
-    draws the phone-flown build, and the fallback replaces it rather than adding
+    The 915 MHz control link (section E) is deliberately absent: the model draws
+    the radar bench, and the link lives on the drone and in the operator's hand
+    rather than adding
     to it. Everything else must appear.
     """
     text = read(BOM)
     fallback = ""
-    if "### E-fallback" in text:
-        fallback = text.split("### E-fallback", 1)[1].split("\n## ", 1)[0]
+    if "### The 915 MHz ELRS link" in text:
+        fallback = text.split("### The 915 MHz ELRS link", 1)[1].split("\n## ", 1)[0]
     fallback_rows = set(re.findall(r"^\|\s*(\d+[a-z]?)\s*\|", fallback, re.M))
 
     doc = set(re.findall(r"^\|\s*(\d+[a-z]?)\s*\|", text, re.M)) - fallback_rows
@@ -324,7 +325,7 @@ def check_bom_rows():
     check(doc <= shown,
           "BOM.md rows missing from the panel: %s" % sorted(doc - shown))
     check(fallback_rows and fallback_rows.isdisjoint(shown),
-          "915 MHz fallback rows leaked into the panel: %s"
+          "915 MHz link rows leaked into the bench panel: %s"
           % sorted(fallback_rows & shown))
 
 

@@ -27,8 +27,8 @@ from radar_acquire import SynthSource, segment_chirps, process   # noqa: E402
 # the configuration this project actually runs
 # ----------------------------------------------------------------------
 FS = 48_000.0          # UCA202
-F0 = 2.440e9           # sweep start, above the drone's WiFi channel 1
-BW = 40e6              # sweep width -> 3.75 m range cells
+F0 = 2.400e9           # the whole ISM band; the drone's link is on 915 MHz
+BW = 83.5e6            # sweep width -> 1.80 m range cells
 T_UP = 6.4e-3          # 64 PLL steps x 100 us
 RETRACE = 1.0e-3
 N_CHIRPS = 64
@@ -279,7 +279,7 @@ def fig_range_doppler(cube, timing, dets):
 # ======================================================================
 def fig_azimuth():
     """Run the REAL pipeline (radar_acquire.py --selftest) at a spread of true
-    azimuths, on both the 40 MHz coexistence sweep and the original 80 MHz one,
+    azimuths, on both the old 40 MHz coexistence sweep and the full band now used,
     and plot what it reports."""
     import json as _json
     import subprocess
@@ -311,8 +311,8 @@ def fig_azimuth():
     fig, ax = plt.subplots(1, 2, figsize=(9.6, 3.8))
     lim = [-36, 36]
     ax[0].plot(lim, lim, color=GREY, ls=":", lw=1.2, label="perfect")
-    ax[0].plot(t, a80, "o-", color=GRN, lw=1.4, ms=5, label="80 MHz sweep (2400–2480)")
-    ax[0].plot(t, a40, "s-", color=ACC, lw=1.4, ms=5, label="40 MHz sweep (2440–2480)")
+    ax[0].plot(t, a80, "o-", color=GRN, lw=1.4, ms=5, label="full band (2400–2483.5), in use")
+    ax[0].plot(t, a40, "s-", color=ACC, lw=1.4, ms=5, label="40 MHz (2440–2480), the old WiFi-coexistence sweep")
     ax[0].set_xlim(lim); ax[0].set_ylim(lim)
     ax[0].set_xlabel("true azimuth, degrees")
     ax[0].set_ylabel("reported azimuth, degrees")
@@ -327,7 +327,7 @@ def fig_azimuth():
     ax[1].set_xlabel("true azimuth, degrees")
     ax[1].set_ylabel("error, degrees")
     ax[1].set_title("error against the 2.5° budget (shaded)")
-    ax[1].annotate(f"80 MHz: {np.nanmax(np.abs(e80)):.1f}° worst", (0.04, 0.10),
+    ax[1].annotate(f"full band: {np.nanmax(np.abs(e80)):.1f}° worst", (0.04, 0.10),
                    xycoords="axes fraction", color=GRN, fontsize=8.5)
     ax[1].annotate(f"40 MHz: {np.nanmax(np.abs(e40)):.1f}° worst", (0.04, 0.88),
                    xycoords="axes fraction", color=ACC, fontsize=8.5)
@@ -364,7 +364,7 @@ def fig_scan_budget():
     wb = [r for r in rows if r["family"] == "wideband"]
     if wb:
         ax[0].plot(wb[0]["scan_s"], wb[0]["worst"], "*", color=GREY, ms=15,
-                   label="80 MHz sweep, 9 beams · 64")
+                   label="full band, 9 beams · 64")
     ax[0].set_xlabel("total scan time, seconds")
     ax[0].set_ylabel("worst azimuth error, degrees")
     ax[0].set_title("7 · Spend the scan budget on dwell, not on beams")
@@ -492,8 +492,8 @@ if __name__ == "__main__":
     import numpy as _np
     print(f"azimuth worst error : {_np.nanmax(_np.abs(a40-t_az)):.1f} deg at 40 MHz, "
           f"{_np.nanmax(_np.abs(a80-t_az)):.1f} deg at 80 MHz")
-    print(f"target FFT bin      : {2*BW*TARGET_R/C:.2f} bins from DC at 40 MHz, "
-          f"{2*80e6*TARGET_R/C:.2f} at 80 MHz")
+    print(f"target FFT bin      : {2*40e6*TARGET_R/C:.2f} bins from DC at 40 MHz, "
+          f"{2*BW*TARGET_R/C:.2f} on the {BW/1e6:.1f} MHz sweep now in use")
     n_blk = int((T_UP+RETRACE)*FS*(N_CHIRPS+2))
     print(f"audio per block     : {n_blk*2*2/1024:.0f} KB   cube {cube.nbytes/1024:.0f} KB   "
           f"RD map {N_CHIRPS*(cube.shape[1]//2)*8/1024:.0f} KB   fix ~100 B")

@@ -56,7 +56,7 @@
 // The last step sits at f_start + bw - bw/N_STEPS, so the slope is exactly
 // bw / T_up and the software's beat->range scale needs no N/(N-1) fudge.
 #define F_START_HZ      2400000000ULL
-#define SWEEP_BW_HZ     80000000ULL
+#define SWEEP_BW_HZ     83500000ULL
 #define ISM_MARGIN_HZ   3500000ULL    // sweep top must stay <= 2483.5 - this
 #define MOD_DEFAULT     4000          // fractional modulus -> 6.25 kHz resolution
 

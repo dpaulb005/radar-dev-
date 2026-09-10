@@ -13,7 +13,7 @@ the drone before the radar sweeps.
 | 2 | the horns | a VNA **reaching 2.5 GHz** | §3 |
 | 3 | the RF chain | power meter or SDR + pad, the leakage tone | §4 |
 | 4 | the radar end to end | walking-person test, tape measure | §5 |
-| 5 | drone ↔ radar coexistence | ping on the phone with the sweep on | §6 |
+| 5 | drone link ↔ radar | 915 MHz: check LQ holds and the drone is silent in band | §6 |
 | 6 | tracking | console, floor marks | §7 |
 
 ---
@@ -23,7 +23,7 @@ the drone before the radar sweeps.
 ```bash
 cd ground_station && pip install -r requirements.txt
 python radar_acquire.py --selftest                                   # scanning, 8 m at 15°
-python radar_acquire.py --selftest --f0-mhz 2440 --bw-mhz 40 --st-range 5 --st-az -30 --st-vel -2
+python radar_acquire.py --selftest --f0-mhz 2400 --bw-mhz 83.5 --st-range 5 --st-az -30 --st-vel -2
 python radar_acquire.py --selftest --st-range-only --st-range 6 --st-vel 1.5   # stage-1 path
 python radar_twin.py --track 20                                      # 0.09 m RMS
 ```
@@ -152,12 +152,12 @@ Drone on the bench 1 m in front of the horns, phone connected, props off,
 | radar | PASS |
 |---|---|
 | `SWEEP 0` | ~0 % loss (baseline) |
-| `SWEEP 1`, 2440–2480 | **~0 % loss, RTT unchanged** |
+| `SWEEP 1`, 2400–2483.5 | **LQ stays 100, RSSI unmoved** — the link is 1.5 GHz away |
 | `SET f0_mhz 2400`, full band (crosses channel 1) | loss appears — proves the margin is real |
 | drone AP on/off, phone streaming | radar noise floor and CFAR threshold do not move |
 
 Fail → confirm the AP is at 10 dBm, then the band-pass filter, then `SET f0_mhz 2450`,
-then the 915 MHz fallback (`archive/drone-915.md`).
+the 915 MHz link (`drone-link.md`).
 
 ## §7 · Tracking (`drone-hardware.md` §4)
 
@@ -174,7 +174,7 @@ hover with a continuous track and no phone-link glitches is the end state.
 
 Every SNR figure here — the 71 dB at 10 m above all — is thermal-noise-limited
 and assumes an empty universe. Indoors it is not the limit. A 1 m² patch of
-wall is **26 dB above** a 0.0026 m² drone and shares its 3.75 m range cell. The
+wall is **26 dB above** a 0.0026 m² drone and shares its 1.80 m range cell. The
 drone survives only because the wall does not move and gets subtracted, so what
 matters is not how strong the echo is but **how well the room cancels**.
 
@@ -182,12 +182,14 @@ Simulated in `test_radar.py` (`ranging` group), with a room at 4, 8 and 11.5 m:
 
 | clutter cancellation | drone is the strongest return |
 |---|---|
-| 55 dB | 5/5 |
-| **50 dB** | **5/5** |
-| 45 dB | 3/5 |
-| 40 dB and below | 1–2/5 — the walls win |
+| **55 dB** | **5/5** |
+| 50 dB | 3/5 |
+| 45 dB | 2/5 |
+| 40 dB and below | 0/5 — the walls win |
 
-So you need roughly **50 dB**. More sweep bandwidth does *not* rescue this —
+So you need roughly **55 dB** on the 83.5 MHz sweep. More bandwidth does *not*
+rescue this, and mildly hurts: narrower cells concentrate a wall's energy into a
+sharper, taller peak whose residue competes better with the drone —
 measured, 40 MHz and 83.5 MHz need the same cancellation, because the residue
 is spread across Doppler rather than localised in range. It is a mechanical and
 stability problem: a rigid mount, no fan, no one walking about, and a chain that

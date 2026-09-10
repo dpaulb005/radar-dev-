@@ -1,9 +1,8 @@
-# Fallback — esp-fc configuration for the 915 MHz link
+# The control link — esp-fc configuration for 915 MHz
 
-> **Not the current plan** (the drone is flown from the phone — see
-> [`drone-software.md`](../drone-software.md)). This is the software half of the
-> [`drone-915.md`](drone-915.md) fallback, used only if the WiFi/radar
-> coexistence test fails.
+> **This is the current plan.** The software half of
+> [`drone-link.md`](drone-link.md): what runs on the drone once its control
+> link leaves the 2.4 GHz band the radar needs.
 
 What runs on the drone is **esp-fc, unmodified**. There is no custom flight
 code in this repo and there should not be: the drone is a passive target
@@ -14,7 +13,7 @@ for the radar, and CRSF is CRSF whether it arrives at 2.4 GHz or 915 MHz.
 2. EdgeTX on the **Pocket** (model, module, switches)
 3. esp-fc on the **XIAO** (serial port, CRSF, arm/mode switches, failsafe)
 
-The esp-fc part is captured as a CLI script: `firmware/archive/espfly-915/espfly-915.cli`.
+The esp-fc part is captured as a CLI script: `firmware/espfly-915/espfly-915.cli`.
 
 Props OFF for everything until §6.
 
@@ -66,7 +65,7 @@ speaks its MSP; newer configurators refuse it).
    XIAO guide uses **UART 2**, GPIO 9 RX / GPIO 8 TX), tick **Serial Rx**.
    Save. If you are not sure which UART, `get pin` in the CLI tab lists
    `pin_serial_2_rx` etc. against the GPIO you found in
-   [`drone-915.md`](drone-915.md) §3.
+   [`drone-link.md`](drone-link.md) §3.
 2. **Receiver** tab: Receiver Mode **Serial (via UART)**, Serial Receiver
    Provider **CRSF**. Channel map **TAER1234** if the bars move on the wrong
    sticks; otherwise the default. Save.
@@ -79,7 +78,7 @@ If they twitch or drop: wrong UART, or TX/RX wires swapped.
 
 ## 4. esp-fc — CLI script
 
-`firmware/archive/espfly-915/espfly-915.cli` pins the receiver wiring, the serial
+`firmware/espfly-915/espfly-915.cli` pins the receiver wiring, the serial
 function and the failsafe in a form you can paste back after any reset.
 Open the **CLI** tab and paste it line by line (or all at once if your
 configurator passes multi-line). It ends with `save`.
@@ -139,6 +138,6 @@ throughout and a continuous radar track in the console.
   of copper, carbon and motors.
 - No custom code in esp-fc. If you later want the drone to *use* the radar's
   track (the two-drone end goal), that is the laptop-side commander path in
-  [`interception.md`](interception.md), and with ELRS it becomes trivially
+  [`interception.md`](archive/interception.md), and with ELRS it becomes trivially
   cleaner: the laptop drives the Pocket's trainer port or a second ELRS
   module instead of an ESP-NOW commander. Different project, later.

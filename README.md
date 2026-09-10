@@ -16,7 +16,7 @@ cheaper higher-band modules were rejected despite being better radars.
 ```
  phone ──WiFi ch 1──► drone                       (control plane)
 
- ESP32 steps an ADF4351 PLL 2440→2480 MHz in 64 steps / 6.4 ms
+ ESP32 steps an ADF4351 PLL 2400→2483.5 MHz in 64 steps / 6.4 ms
    → 3 dB pad → PA → splitter ─┬─► TX horn ─── echo off the drone ──► RX horn
                                └─► mixer LO ◄──────── LNA ◄── band-pass ◄──┘
  mixer IF = beat tone, pitch ∝ range (417 Hz at 10 m)
@@ -27,9 +27,9 @@ cheaper higher-band modules were rejected despite being better radars.
 
 | | |
 |---|---|
-| sweep | 2440–2480 MHz (40 MHz), 6.4 ms up-chirp, 7.4 ms PRI |
-| range cell / accuracy | 3.75 m / **0.04 m mean, 0.10 m worst** measured 3-20 m on the real stepped waveform |
-| azimuth | phase between two RX horns 193 mm apart → 0.09° rms, in one 0.47 s dwell |
+| sweep | 2400–2483.5 MHz (83.5 MHz), 6.4 ms up-chirp, 7.4 ms PRI — the whole band, because the drone's control link is on 915 MHz |
+| range cell / accuracy | **1.80 m** / 0.04 m mean, 0.10 m worst measured 3–20 m on the real stepped waveform |
+| azimuth | phase between two RX horns 193 mm apart → 0.18° rms, in one 0.47 s dwell |
 | drone echo at 10 m | −74 dBm, 71 dB SNR after 64 chirps |
 | phone link margin | ~20 dB at the drone's receiver; AP at 10 dBm, band-pass and operator placement protect the radar |
 | stages | 1 range + velocity · 2 second RX horn → azimuth · turntable optional, coverage only |
@@ -43,7 +43,7 @@ moving on.
 2. **[`docs/radar-hardware.md`](docs/radar-hardware.md)** — horns (cut list, all three at once), the three-horn frame, RF chain in MIT order, the breadboard video amp, sync, power, and the seven decisions that make stage 1 upgrade to azimuth without a rebuild.
 3. **[`docs/radar-software.md`](docs/radar-software.md)** — flash `firmware/radar_ctl`, run `ground_station/radar_acquire.py`, feed the console.
 4. **[`docs/drone-hardware.md`](docs/drone-hardware.md)** — build the kit exactly per its guide; the one thing to leave off.
-5. **[`docs/drone-software.md`](docs/drone-software.md)** — the kit's official build and flash, with two menuconfig changes (channel 1, 10 dBm); the coexistence sweep and ping test.
+5. **[`docs/drone-software.md`](docs/drone-software.md)** — esp-fc on the XIAO, a 915 MHz ELRS link, and the two checks that replace the old coexistence test. See also [`docs/drone-link.md`](docs/drone-link.md) and [`docs/drone-link-espfc.md`](docs/drone-link-espfc.md).
 
 Breadboard build sheet: [`hardware/breadboard/`](hardware/breadboard/) — every lead and jumper by hole (`WIRING.md`), verified against the netlist, with an interactive `breadboard.html`.
 
@@ -53,9 +53,9 @@ Schematics: [`hardware/kicad/`](hardware/kicad/) — `radar_flow.kicad_sch` (**s
 
 **[`docs/higher-bands.md`](docs/higher-bands.md)** — what moving to 24 or 60 GHz would cost and buy, and why every off-the-shelf module fails the antenna test despite being the better radar. Kevin's suggestion, costed and then re-judged.
 
-**[`docs/24ghz/`](docs/24ghz/README.md)** — the 24 GHz build, drafted and costed: one board carrying a BGT24LTR22, an ADF4159 ramp PLL and three printed patch columns you lay out yourself. A **0.60 m range cell** instead of 3.75 m, and an interferometer **unambiguous to ±90°** instead of ±18.4°, for $205–720 that reuses the whole back end. Design numbers from [`antenna/patch24.py`](antenna/patch24.py).
+**[`docs/24ghz/`](docs/24ghz/README.md)** — the 24 GHz build, drafted and costed: one board carrying a BGT24LTR22, an ADF4159 ramp PLL and three printed patch columns you lay out yourself. A **0.60 m range cell** instead of 1.80 m, and an interferometer **unambiguous to ±90°** instead of ±18.4°, for $205–720 that reuses the whole back end. Design numbers from [`antenna/patch24.py`](antenna/patch24.py).
 
-**[`docs/azimuth.md`](docs/azimuth.md)** — how bearing is actually measured: two receivers, one dwell, 0.09° rms. Scanning cannot do it on a moving target.
+**[`docs/azimuth.md`](docs/azimuth.md)** — how bearing is actually measured: two receivers, one dwell, 0.18° rms. Scanning cannot do it on a moving target.
 
 **[`docs/sar.md`](docs/sar.md)** — synthetic aperture imaging: fly the radar and the flight path becomes the antenna. One TX, one RX, no second receiver. 1.50 m range cells and 0.10 m cross-range, and the hard part is knowing where the radar was to **5 mm line-of-sight** — the first argument in this repo for *staying* at 2.4 GHz. [`ground_station/sar.py`](ground_station/sar.py), 25 assertions.
 

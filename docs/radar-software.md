@@ -36,7 +36,7 @@ non-catalog part now, so the ESP32 **steps an ADF4351 PLL** instead:
 Consequences the software handles for you:
 
 - The beat frequency is `f_b = 2·B·R / (c·T_up)`: **417 Hz at 10 m**, 125 Hz
-  at 3 m with the 40 MHz sweep. Range 0–30 m spans 0–1.25 kHz. Audio — the
+  at 3 m. Range 0–30 m spans 0–2.6 kHz. Audio — the
   sound card's 48 kHz is 40× more than the 15.9 kHz anti-alias filter lets
   through, which itself reaches 380 m (`docs/testing.md`, sound-card budget).
 - `T_up` and the PRI are **measured from the SYNC channel every block**, not
@@ -83,7 +83,8 @@ Consequences the software handles for you:
   mode, 20 µs instead of 80 µs. At 80 µs of a 100 µs step the PLL would spend
   most of every step slewing.
 
-**Known issue, azimuth at 40 MHz.** The coexistence sweep halves the
+**Fixed, and kept here because it explains the band choice: azimuth at 40 MHz.**
+The old coexistence sweep halved the
 bandwidth, moving the target from 5.3 FFT bins from DC to 2.7, deeper into the
 leakage mainlobe. Every beam's amplitude estimate gets noisier, and the
 centroid is a weighted average of exactly those amplitudes, so azimuth error
@@ -176,12 +177,15 @@ Wiring is in the sketch header. Flash, open the serial monitor at 115200:
 `"lock":1` is the ADF4351's lock-detect pin. If it is 0: wrong `F_REF_HZ`,
 or LE/CLK/DATA swapped, or the board's CE pin not tied high.
 
-**If the drone is flown by phone** (its WiFi AP on channel 1), set the
-coexistence sweep now and keep it — `SET f0_mhz 2440` then `SET bw_mhz 40`
-(range cell 3.75 m, drone SNR unchanged; the reasoning and the link test are
-in [`drone-software.md`](drone-software.md)). `radar_acquire.py --ctl` picks
-the edges up from `?`; in stage 1 without `--ctl` pass `--f0-mhz 2440
---bw-mhz 40`.
+**The sweep is the whole band by default** — 2400–2483.5 MHz, a 1.80 m range
+cell — because the drone's control link lives at 915 MHz
+([`drone-link.md`](drone-link.md)). `radar_acquire.py --ctl` picks the edges up
+from `?`; in stage 1 without `--ctl` pass `--f0-mhz 2400 --bw-mhz 83.5`.
+
+**If you kept the phone build instead** (drone's WiFi AP on channel 1), set the
+coexistence sweep and keep it — `SET f0_mhz 2440` then `SET bw_mhz 40`, a 3.75 m
+range cell. Fine outdoors at 5–10 m; not in a room 4 m deep
+([`testing.md`](testing.md)).
 
 Commands you will use by hand:
 
@@ -192,7 +196,7 @@ CW 2440        park anywhere 2200–4400 MHz — for antenna / spectrum tests
 SWEEP 1        chirp
 AZ 30 / HOME   turntable
 SET step_us 80 / SET steps 32 / SET retrace_us 1000
-SET f0_mhz 2440 / SET bw_mhz 40   sweep edges (refused if outside 2400-2483.5)
+SET f0_mhz 2400 / SET bw_mhz 83.5 sweep edges (refused if outside 2400-2483.5)
 ```
 
 The ESP32 **boots silent**: PLL locked and parked, RF output *off*, sweep
@@ -330,10 +334,10 @@ and the calibration procedure are in [`azimuth.md`](azimuth.md).
 
 ```
 # stage 2, two receive chains, three audio channels (beat A, beat B, sync)
-python radar_acquire.py --interferometer --ctl /dev/ttyUSB0 --f0-mhz 2440 --bw-mhz 40
+python radar_acquire.py --interferometer --ctl /dev/ttyUSB0 --f0-mhz 2400 --bw-mhz 83.5
 
 # one chain and an RF switch instead (SWMODE 1 on the ESP32 first)
-python radar_acquire.py --switched --ctl /dev/ttyUSB0 --f0-mhz 2440 --bw-mhz 40
+python radar_acquire.py --switched --ctl /dev/ttyUSB0 --f0-mhz 2400 --bw-mhz 83.5
 
 # calibrate once, against a corner reflector on boresight
 python radar_acquire.py --interferometer --calibrate --cal-az 0 --ctl /dev/ttyUSB0

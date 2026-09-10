@@ -18,8 +18,8 @@ runs on live audio, not drawn by hand.
 ![the transmitted staircase and its echo](figures/01-chirp.png)
 
 The ADF4351 is not swept smoothly. It is re-tuned 64 times, 625 kHz per step,
-100 µs per step, which walks 2440 MHz up to 2480 MHz in 6.4 ms, then parks back
-at 2440 for 1 ms and does it again.
+100 µs per step, which walks 2400 MHz up to 2483.5 MHz in 6.4 ms, then parks
+back at 2400 for 1 ms and does it again.
 
 The echo is that identical staircase, delayed. At the top of the figure the two
 traces sit on top of each other because 66.7 ns is invisible at millisecond
@@ -29,16 +29,16 @@ has stepped up and the echo has not, so the two differ by one whole step of
 625 kHz. That is 0.067 % of the time, and the average difference is:
 
 ```
-f_beat = 2 · B · R / (c · T_up) = 41.70 Hz per metre of range
+f_beat = 2 · B · R / (c · T_up) = 87.04 Hz per metre of range
 ```
 
 | range | beat tone |
 |---|---|
-| 3 m | 125 Hz |
-| 10 m | 417 Hz |
-| 30 m | 1.25 kHz |
+| 3 m | 261 Hz |
+| 10 m | 870 Hz |
+| 30 m | 2.61 kHz |
 
-Range **resolution** is set by the sweep width alone, `c / 2B` = **3.75 m**, and
+Range **resolution** is set by the sweep width alone, `c / 2B` = **1.80 m**, and
 nothing downstream can improve it.
 
 ---
@@ -47,7 +47,7 @@ nothing downstream can improve it.
 
 | # | where | what the data is | size |
 |---|---|---|---|
-| 1 | ADF4351 output | 2440–2480 MHz, +5 dBm | — |
+| 1 | ADF4351 output | 2400–2483.5 MHz, +5 dBm | — |
 | 2 | TX horn | 0.2 W EIRP over a 34° beam | — |
 | 3 | RX horn | the same staircase, 66.7 ns late, −80 dBm | — |
 | 4 | mixer IF | one audio tone per target, 417 Hz at 10 m, 40 µV pk | — |
@@ -104,8 +104,8 @@ array: **one row per chirp, one column per sample**.
 > **What is deliberately *not* done here: removing the per-chirp mean.** It used
 > to be, and it cost a metre at 3 m. Subtracting a constant from a chirp removes
 > a window-shaped lobe centred on range bin 0 and about two bins wide, so it
-> eats part of any target within two bins of DC — which at 40 MHz is everything
-> closer than **7.5 m**, the bottom half of this radar's envelope. Measured
+> eats part of any target within two bins of DC — which at 83.5 MHz is
+> everything closer than **3.6 m**, and was 7.5 m on the old 40 MHz sweep. Measured
 > across 3–20 m it cost a mean 0.27 m and 1.05 m at 3 m; without it, 0.04 m and
 > 0.04 m. The DC it was removing is already gone twice over: the sound card is
 > AC-coupled, and the range-Doppler map subtracts the average chirp. Guarded by
@@ -145,7 +145,7 @@ belongs. **Range alone could not separate them; Doppler could.**
 
 | axis | resolution | unambiguous span |
 |---|---|---|
-| range | 3.75 m | 381 m (filter limited) |
+| range | 1.80 m | 381 m (filter limited) |
 | velocity | 0.13 m/s | ±4.12 m/s |
 
 The velocity window is set by the PRI, so a drone crossing faster than about
@@ -166,15 +166,20 @@ comes instead from scanning: the turntable steps through 9 positions, a full
 block is captured at each, and the target's azimuth is the amplitude-weighted
 centroid across beams. That gives a bearing much finer than the beamwidth.
 
-It does not currently work at the bandwidth this project is configured for.
+**This used to fail, and the fix was to stop sharing the band.**
 
 ![azimuth accuracy at both bandwidths](figures/06-azimuth.png)
 
-Run the real pipeline against a target at known azimuths and the original
-80 MHz sweep tracks truth to within **0.7°**. The 40 MHz coexistence sweep,
-adopted so the drone's WiFi could live below it, is off by up to **5.3°**, well
-outside the 2.5° budget. `radar_acquire.py --selftest` fails on azimuth for this
-reason.
+Run the real pipeline against a target at known azimuths: the full-band sweep
+tracks truth to within **0.7°**, and the old 40 MHz coexistence sweep — adopted
+so the drone's WiFi could live below it — was off by up to **5.3°**, well
+outside the 2.5° budget. `radar_acquire.py --selftest` failed on azimuth for
+that reason alone.
+
+Moving the drone's control link to 915 MHz ([`drone-link.md`](drone-link.md))
+returns the whole band and takes this failure with it. The diagnosis below is
+kept because it is *why* bandwidth mattered here, and because it is the same
+mechanism that makes a small room hard.
 
 The cause is **not** what I first assumed. Widening or tightening the
 centroid's grouping window changes nothing at all: from 1.5 range cells down to
@@ -290,6 +295,20 @@ The 10.7 s configuration — the best row in the previous table, at 0.09° — i
 Its 0.09° was an artefact of pinning the target's range. The interferometer is
 flat: one dwell, so drift has nothing to act on.
 
+> **All the scan numbers in this section were measured on the old 40 MHz
+> coexistence sweep, and they do not carry over to the 83.5 MHz sweep the radar
+> now uses.** Re-run at full band, the 4.3 s scan collapses to **42.5° rms**.
+> The reason is specific and worth knowing: narrower range cells concentrate the
+> TX leakage into a taller, sharper peak, and in an off-boresight beam the
+> *target* is attenuated by the beam pattern while the *leakage is not* — so the
+> leak outranks it and the amplitude centroid tracks the leak. **The scanning
+> method gets worse as the radar's bandwidth gets better.** Closing that needs a
+> leakage gate inside `centroid()`, which is a change to the method being
+> measured rather than to the measurement; it is open, and it is one more reason
+> the second receive horn is the real answer. The interferometer column is
+> unaffected — it reads phase at a CFAR-selected cell, not amplitude across
+> beams.
+
 **Third: the 9-beam geometry is the wrong one.** A scan costs time in
 proportion to its beam count, and 12° steps oversample a 36° beam. Spending
 fewer beams buys drift tolerance far faster than the coarser centroid loses
@@ -335,8 +354,8 @@ excursion, sampled just often enough**, is.
 
 | quantity | expression | this build |
 |---|---|---|
-| beat frequency | `2·B·R / (c·T_up)` | 41.70 Hz per metre |
-| range resolution | `c / 2B` | 3.75 m |
+| beat frequency | `2·B·R / (c·T_up)` | 87.04 Hz per metre |
+| range resolution | `c / 2B` | 1.80 m |
 | target's FFT bin | `2·B·R / c` | 2.67 bins at 10 m |
 | velocity resolution | `λ / (2·N·PRI)` | 0.13 m/s |
 | unambiguous velocity | `± λ / (4·PRI)` | ±4.12 m/s |
@@ -349,7 +368,7 @@ excursion, sampled just often enough**, is.
 
 ```
 cd docs/figures && python3 make_figures.py       # every figure, plus the numbers
-cd ground_station && python3 radar_acquire.py --selftest --f0-mhz 2440 --bw-mhz 40 \
+cd ground_station && python3 radar_acquire.py --selftest --f0-mhz 2400 --bw-mhz 83.5 \
     --st-range 10 --st-az -12 --st-vel -1.8      # currently FAILS on azimuth
 ```
 

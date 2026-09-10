@@ -28,13 +28,14 @@ Built and tested: [`ground_station/sar.py`](../ground_station/sar.py),
 
 ## What it resolves
 
-The scene is static, so **there is no drone WiFi to coexist with** — nothing is
-flying in it that needs channel 1. The sweep can use the whole ISM band:
+The tracking sweep is already the whole ISM band — the drone's control link
+lives at 915 MHz, so nothing has to be swept around
+([`drone-link.md`](drone-link.md)). Imaging simply keeps it:
 
 | | tracking sweep | imaging sweep |
 |---|---|---|
-| bandwidth | 40 MHz | **100 MHz** (2400–2500) |
-| range cell `c/2B` | 3.75 m | **1.50 m** |
+| bandwidth | 83.5 MHz | **100 MHz** (2400–2500, static scene only) |
+| range cell `c/2B` | 1.80 m | **1.50 m** |
 
 Cross-range comes from the path length, and there is a floor the horn sets that
 no amount of flying can beat:

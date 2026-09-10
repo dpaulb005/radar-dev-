@@ -35,7 +35,7 @@ and that neither survives a flying target.
 ### Azimuth by interferometry — adopted
 
 Two receive horns 193 mm apart, bearing from the phase between them, inside one
-0.47 s dwell with nothing moving. **0.09° rms, 0.14° worst**, 18 times inside
+0.47 s dwell with nothing moving. **0.18° rms, 0.29° worst**, 8 times inside
 the budget and nine times faster than the scan.
 
 Passes all three tests, and it is the reason the project has a stage 2 at all.
@@ -54,15 +54,33 @@ It was mandatory when bearing came from scanning. It now points the frame at a
 sector wider than the 34° beam and takes no part in any measurement. Most
 indoor flying at 3–10 m fits in one beam, so it is the first thing to cut.
 
-### Sharing the band with the drone's own WiFi — kept, with a cost
+### Sharing the band with the drone's own WiFi — kept, then reversed
 
-The drone flies from a phone over its own access point on channel 1, so the
-radar sweeps 2440–2480 MHz above it. That halved the bandwidth, which doubled
-the range cell to 3.75 m and pushed the target from 5.3 FFT bins from DC to 2.7
-— and *that* is what made the old scanning azimuth noisy in the first place.
+The drone flew from a phone over its own access point on channel 1, so the
+radar swept 2440–2480 MHz above it. That halved the bandwidth, doubled the
+range cell to 3.75 m and pushed the target from 5.3 FFT bins from DC to 2.7 —
+and *that* is what made the old scanning azimuth noisy in the first place.
 
-It survives because the interferometer does not care: it reads phase, not
-amplitude across beams, and 0.09° has margin to burn.
+It was kept for a long time, because the interferometer does not care: it reads
+phase, not amplitude across beams, and 0.18° has margin to burn.
+
+**Then a real room was measured, and it does not survive that.** A 2.87 × 4.17 m
+bedroom is **1.1 range cells deep** at 40 MHz, so range cannot separate the
+drone from the wall behind it at all. Measured, in that room: at 2 m the 40 MHz
+sweep is 0.54 m out, and inside 1.5 m it finds nothing. At 83.5 MHz the same
+target reads to 0.02 m and works from 1.0 m.
+
+So the link moved to **915 MHz ELRS** and the radar took the whole band —
+2400–2483.5 MHz, a **1.80 m** cell. It costs about $130 and a firmware change
+(esp-fc instead of ESP-Drone; sticks instead of a phone), documented in
+[`drone-link.md`](drone-link.md).
+
+**Judged against the three tests, this changes nothing** — the antenna is still
+mine, the azimuth method is unchanged, the target is still a stock 25 g drone
+carrying nothing. It is a pure win bought with money, which is why it took a
+measurement rather than an argument to justify it. In a garage or a garden the
+old 40 MHz sweep is still perfectly good, and the phone build is kept in
+[`drone-software.md`](drone-software.md) § 6 for exactly that.
 
 ### The horn — the whole point
 
@@ -103,7 +121,7 @@ from a bench, where size and weight cost nothing. So:
 | smaller, lighter antennas | **no** — it sits on plywood |
 | narrower beams | yes |
 | better range resolution | yes, and it is the weakest number you have |
-| less interference | yes, and it would return the bandwidth the WiFi coexistence took |
+| less interference | **no longer** — moving the drone's link to 915 MHz already returned the bandwidth the coexistence took, for $130 instead of a new band |
 
 Three of four are real wins. That is worth taking seriously — just not by
 buying a sealed module.
@@ -156,6 +174,11 @@ write that once, and it is written.
   of that build's cost and cannot be pinned down until the board is drawn.
 - **Switched-mode azimuth on real hardware.** Implemented and tested in
   simulation, never run against a real RF switch.
+- **The servo scan on the full band.** Every scan-geometry number in
+  [`signal-chain.md`](signal-chain.md) was measured at 40 MHz. At 83.5 MHz the
+  scan collapses, because the TX leakage outranks a beam-attenuated target in
+  off-boresight beams. Fixing it means gating the leakage inside `centroid()`.
+  The interferometer does not have this problem.
 - **The calibration constant's drift** with temperature, over a session. Known
   to matter at 0.43° of bearing per mm of cable; never measured.
 

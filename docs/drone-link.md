@@ -1,10 +1,12 @@
-# Fallback — ESP-FLY on a 915 MHz ELRS link
+# The control link — ESP-FLY on 915 MHz ELRS
 
-> **Not the current plan.** The drone is flown from the phone over its own
-> WiFi AP on channel 1, with the radar sweeping 2440–2480 MHz above it
-> ([`drone-915-esp-fc.md`](drone-915-esp-fc.md)). Use this page only if the link
-> test in that guide's §4 fails. The esp-fc side of it is
-> [`drone-915-esp-fc.md`](drone-915-esp-fc.md).
+> **This is the current plan.** The drone flies on a 915 MHz ELRS link so the
+> radar can have the whole 2.4 GHz band — 83.5 MHz of sweep and a 1.80 m range
+> cell, instead of 40 MHz and 3.75 m spent coexisting with the drone's own
+> WiFi. The reason is measured in [`testing.md`](testing.md) § a small room
+> changes the answer. The firmware half of this page is
+> [`drone-link-espfc.md`](drone-link-espfc.md); the airframe is
+> [`drone-hardware.md`](drone-hardware.md).
 
 One drone. Goal: the ESP-FLY flies on a control link that is **not in the
 2.4 GHz band the radar sweeps**. Nothing else on the airframe changes.
@@ -29,7 +31,7 @@ and wall penetration as a bonus.
 
 So both ends of the link get replaced. Keep the T8L: it is still the right
 tool for every flight where the radar is off (all of the bring-up in
-[`drone-915-esp-fc.md`](drone-915-esp-fc.md)).
+[`drone-link-espfc.md`](drone-link-espfc.md)).
 
 ## 2. Parts (≈ $130)
 
@@ -94,7 +96,7 @@ nothing in 2.4 GHz** and the radar band is clean. That was the whole point.
 
 Slide the Bandit Nano into the Pocket's bay, screw it, fit its antenna (the
 module ships with one). Set the Pocket's **internal** RF module to OFF and
-the **external** module to CRSF in the model setup — [`drone-915-esp-fc.md`](drone-915-esp-fc.md) §1.
+the **external** module to CRSF in the model setup — [`drone-link-espfc.md`](drone-link-espfc.md) §1.
 
 **Checkpoint 6:** the Pocket boots, the module's OLED lights, ELRS Lua opens
 and shows the module's version and FCC915.

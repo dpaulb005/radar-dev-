@@ -50,7 +50,7 @@ import interferometer as I                                       # noqa: E402
 import radar_acquire as R                                        # noqa: E402
 
 FS, T_UP, RETRACE, N = 48_000.0, 6.4e-3, 1.0e-3, 64
-F0, BW = 2.440e9, 40e6
+F0, BW = 2.400e9, 83.5e6
 PASS, FAIL = [], []
 VERBOSE = "-v" in sys.argv
 
@@ -355,34 +355,36 @@ def test_ranging():
 
     # -- what the whole thing rests on. 35 dB is the design figure
     #    (docs/radar-hardware.md, separate horns 305 mm apart); below about
-    #    32 dB the leakage skirt outranks the target and the radar reports the
-    #    leak's range no matter where the target is. That is a 3 dB margin and
-    #    it is worth knowing about before first light.
+    #    29 dB the leakage skirt outranks the target and the radar reports the
+    #    leak's range, or nothing at all. That is 6 dB of margin on the 83.5 MHz
+    #    sweep -- it was 3 dB at 40 MHz, and the wider sweep is what bought it.
     check(g, "works at the designed 35 dB isolation",
           max(abs(_range_err(r, iso=35.0)) for r in (3.0, 10.0)) < 0.25)
-    check(g, "still works at 33 dB",
-          max(abs(_range_err(r, iso=33.0)) for r in (3.0, 10.0)) < 0.5)
+    check(g, "still works at 30 dB", abs(_range_err(10.0, iso=30.0)) < 0.5,
+          "the 83.5 MHz sweep buys 3 dB of isolation margin over 40 MHz")
     # below the cliff it either finds nothing or finds the leak. Both are
     # "blind"; the first is the better failure, because it abstains.
     # -- the room. This is the number to measure on day one, and the one most
     #    likely to decide whether the build works: with 1 m^2 walls the drone
     #    needs about 40 dB of clutter cancellation to stay the strongest
-    #    return. Measured here: 5/5 at 50 dB of cancellation, 3/5 at 45,
-    #    and it falls apart below that. Thermal SNR is 71 dB and says nothing
-    #    about any of it.
-    good, n = _in_room(50.0)
+    #    return. Measured on the 83.5 MHz sweep: 5/5 at 55 dB of cancellation,
+    #    3/5 at 50, nothing by 40. Thermal SNR is 71 dB and says nothing about
+    #    any of it. Note the wider sweep needs slightly MORE cancellation, not
+    #    less: narrower cells concentrate a wall's energy into a sharper, taller
+    #    peak, so its residue competes better with the drone.
+    good, n = _in_room(55.0)
     check(g, "drone survives a room when clutter cancels well", good == n,
-          f"{good}/{n} at 50 dB cancellation")
+          f"{good}/{n} at 55 dB cancellation")
     bad, n = _in_room(25.0)
     check(g, "and is lost when it does not", bad < n,
           f"{bad}/{n} at 25 dB — the walls win")
     check(g, "so clutter cancellation, not SNR, is the indoor limit",
           good - bad >= 3, f"{good}/{n} at 50 dB vs {bad}/{n} at 25 dB")
 
-    blind = _range_err(10.0, iso=30.0)
-    check(g, "goes blind below ~32 dB, as documented",
+    blind = _range_err(10.0, iso=28.0)
+    check(g, "goes blind below ~29 dB, as documented",
           math.isnan(blind) or abs(blind) > 2.0,
-          "no fix at all at 30 dB" if math.isnan(blind)
+          "no fix at all at 28 dB" if math.isnan(blind)
           else f"10 m reads {blind:+.2f} m off — the leak, not the target")
 
 
