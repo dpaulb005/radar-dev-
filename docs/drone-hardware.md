@@ -8,6 +8,27 @@ motors, 30 mm props, 1S battery.
 Then make **one change that is not in the kit's guide**: the drone flies on a
 **915 MHz** control link, not on its own 2.4 GHz WiFi.
 
+## What the airframe actually is
+
+Worth being precise about, because the radar cares about the shape and because
+the 3-D model in [`../hardware/3d/drone.html`](../hardware/3d/drone.html) is
+built to it. The ESP-FLY is an **X-frame**, not a box:
+
+- one printed part — a 24 mm centre plate, four **two-prong arms** fanning out
+  to four **cylindrical motor pods** at 37 mm pitch, and a **bumper ring**
+  joining the pods. Pod edge to pod edge is the 46 mm the kit quotes;
+- four **landing legs**, each 25 mm of solid-core jumper wire bent into a V and
+  pushed into holes at a pod base;
+- a small printed **canopy** on the centre plate, about 24 mm square and 12 mm
+  tall, closed by the engraved **ESP FLY cover**. The USB-C looks out of a
+  window in its nose; the FC board and the XIAO stack inside it on headers;
+- the **1S pack hangs underneath** the centre plate in a zip-tie strap, long
+  axis fore and aft, its leads coming up into the canopy's nose opening.
+
+Nothing is glued but the motors (a spot of superglue in each pod). Heights:
+**29 mm** to the top of a motor, **31 mm** to the blade plane, **67 mm** across
+the props.
+
 ## 0. Why, and what it costs
 
 The radar's sweep and the drone's control link cannot share 2.4 GHz. Every WiFi
@@ -44,7 +65,7 @@ HappyModel ES900RX (0.6 g). Same four pads, same CRSF wiring as the RP1 V2:
 
 | receiver pad | XIAO ESP32-S3 |
 |---|---|
-| 5 V (or 3.3 V — check your receiver) | the same rail the RP1 V2 used |
+| **3V3** | the drone has no 5 V in flight (the XIAO's 5 V pin is USB VBUS); the published esp-fc guide powers the receiver from 3V3 |
 | GND | GND |
 | **TX** (receiver → FC) | **GPIO 9** = UART2 RX |
 | **RX** (FC → receiver, telemetry) | **GPIO 8** = UART2 TX |

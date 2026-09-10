@@ -49,6 +49,8 @@ Ordering: **[`hardware/ORDER.md`](hardware/ORDER.md)** — every part with a lin
 
 Breadboard build sheet: [`hardware/breadboard/`](hardware/breadboard/) — every lead and jumper by hole (`WIRING.md`), verified against the netlist, with an interactive `breadboard.html`.
 
+3-D models: [`hardware/3d/`](hardware/3d/) — `radar-bench.html` is the whole radar on its plywood bench, every BOM row as an object and every wire routed pin to pin; `drone.html` is the ESP-FLY target with the 915 MHz receiver fitted, every part, pad and lead labelled with what it weighs. Both are checked against the documents they draw by `verify_model.py` and `verify_drone.py`, geometry included.
+
 Schematics: [`hardware/kicad/`](hardware/kicad/) — `radar_flow.kicad_sch` (**start here**: every part wired to every part it touches, in signal order, with the level on each connection), `radar_breadboard.kicad_sch` (the breadboard at component level) and `radar_multisim.kicad_sch` (every value on the page, one frame per test). All render in KiCad 7/8; PNGs alongside.
 
 ## Test
@@ -79,11 +81,12 @@ python server.py                              # console at http://localhost:8080
 | `firmware/radar_ctl/` | radar ESP32: ADF4351 sweep, sync line, serial protocol, the stage-2 RF switch (`SWMODE`), optional turntable; boots RF-off |
 | `ground_station/radar_acquire.py` | sound card → chirps → range-Doppler → CFAR → azimuth → console; `--selftest`, `--replay` |
 | `ground_station/interferometer.py` | azimuth from the phase between two receivers, in one dwell: geometry, calibration, switched-mode parity and the refusals |
-| `ground_station/test_radar.py` | the regression suite, 34 cases, no hardware or network needed |
+| `ground_station/test_radar.py` | the regression suite, 45 cases, no hardware or network needed |
 | `ground_station/server.py` + `web/` | the console (PPI scope, tracker, `/api/radar`) |
 | `ground_station/fmcw_sim.py`, `radar_twin.py`, `scan_design.py`, `tracker.py` | simulator, digital twin, scan sizing, Kalman filter |
 | `antenna/horn.py` | the horn design (optimum pyramidal, WR-340 feed) |
 | `hardware/kicad/`, `hardware/spice/` | schematics (generated), simulation netlists and test cards |
+| `hardware/3d/` | the bench and drone models, their screenshot renderer and their two verifiers |
 
 ## Archive
 

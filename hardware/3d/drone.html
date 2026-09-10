@@ -1,0 +1,778 @@
+<meta charset="utf-8">
+<title>ESP-FLY Drone Model</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+  :root{
+    color-scheme: light;
+    --bg:#e8ecf1; --surface:#f8fafc; --surface-2:#eef2f6;
+    --ink:#0f151c; --ink-2:#3b4653; --muted:#69757f;
+    --rule:#c3ccd6; --hair:#d7dee6;
+    --rf:#c2622a; --dsp:#2f77b0; --ok:#22794c; --link:#6a4fbf; --pow:#b8860b;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme: dark;
+      --bg:#0b1015; --surface:#131b23; --surface-2:#18222c;
+      --ink:#e6ecf2; --ink-2:#b7c2cc; --muted:#8593a0; --rule:#2c3946; --hair:#222d38;
+      --rf:#e59055; --dsp:#6fb0e6; --ok:#5cc48f; --link:#a893ee; --pow:#e0b04a;
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --bg:#0b1015; --surface:#131b23; --surface-2:#18222c;
+    --ink:#e6ecf2; --ink-2:#b7c2cc; --muted:#8593a0; --rule:#2c3946; --hair:#222d38;
+    --rf:#e59055; --dsp:#6fb0e6; --ok:#5cc48f; --link:#a893ee; --pow:#e0b04a;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);margin:0;font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:14px;line-height:1.5}
+  #app{display:grid;grid-template-columns:1fr 360px;grid-template-rows:auto 1fr;height:100vh;min-height:640px}
+  header{grid-column:1/3;padding:14px 20px 10px;border-bottom:1px solid var(--rule);background:var(--surface);display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+  header h1{font-family:"IBM Plex Serif",Georgia,serif;font-weight:600;font-size:22px;margin:0;letter-spacing:-.01em}
+  header .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--link)}
+  header .sub{color:var(--ink-2);font-size:13px}
+  #vp{position:relative;background:#0a0e13;overflow:hidden}
+  #cv{display:block;width:100%;height:100%}
+  #hud{position:absolute;left:12px;top:12px;display:flex;gap:6px;flex-wrap:wrap;max-width:calc(100% - 24px)}
+  button{font:inherit;font-size:12.5px;padding:6px 11px;border:1px solid var(--rule);background:var(--surface);color:var(--ink);cursor:pointer;border-radius:3px}
+  button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  button.grp{border-radius:0} button.grp:first-child{border-radius:3px 0 0 3px} button.grp:last-child{border-radius:0 3px 3px 0}
+  .grpwrap{display:flex}
+  #tip{position:absolute;pointer-events:none;background:rgba(15,21,28,.93);color:#e6ecf2;font-family:"IBM Plex Mono",monospace;font-size:11.5px;padding:5px 8px;border-radius:3px;border:1px solid #3a4a5a;white-space:nowrap;opacity:0;transform:translate(-50%,-130%)}
+  .lbl{position:absolute;transform:translate(-50%,-50%);pointer-events:none;font-family:"IBM Plex Mono",monospace;font-size:10.5px;padding:1px 5px;border-radius:2px;background:rgba(15,21,28,.78);color:#dfe6ee;border:1px solid rgba(255,255,255,.14);white-space:nowrap;opacity:0;transition:opacity .15s}
+  .lbl.rf{color:#f0a878;border-color:rgba(240,168,120,.45)} .lbl.dsp{color:#89c2ea;border-color:rgba(137,194,234,.45)}
+  .lbl.ok{color:#7ed6a6;border-color:rgba(126,214,166,.45)} .lbl.pow{color:#f2c86a;border-color:rgba(242,200,106,.45)}
+  .lbl.link{color:#c0aef5;border-color:rgba(192,174,245,.45)}
+  #status{position:absolute;left:12px;bottom:10px;font-family:"IBM Plex Mono",monospace;font-size:11px;color:#8593a0;max-width:70%}
+  aside{background:var(--surface);border-left:1px solid var(--rule);overflow-y:auto;padding:12px 14px 30px}
+  aside h2{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px;font-weight:500}
+  aside h2:first-child{margin-top:2px}
+  .row{display:grid;grid-template-columns:30px 1fr auto;gap:8px;align-items:baseline;padding:5px 6px;border-radius:3px;cursor:pointer;font-size:12.5px;border:1px solid transparent}
+  .row:hover{background:var(--surface-2)} .row.sel{border-color:var(--link);background:var(--surface-2)}
+  .row .n{font-family:"IBM Plex Mono",monospace;color:var(--muted);font-size:11px}
+  .row .q{font-family:"IBM Plex Mono",monospace;color:var(--muted);font-size:11px;white-space:nowrap}
+  .row small{display:block;color:var(--muted);font-size:11px}
+  .total{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-2);padding:8px 6px;border-top:1px solid var(--rule);margin-top:10px;line-height:1.7}
+  .pins{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-2);padding:4px 6px;border-top:1px solid var(--hair);margin-top:8px}
+  .pins b{color:var(--ink);font-weight:500}
+  .pins div{display:grid;grid-template-columns:64px 1fr;gap:6px}
+  @media (max-width:900px){#app{grid-template-columns:1fr;grid-template-rows:auto 60vh 1fr} header{grid-column:1} aside{border-left:0;border-top:1px solid var(--rule)}}
+</style>
+
+<div id="app">
+  <header>
+    <div><div class="eyebrow">the target · seeed esp-fly · every part, every pad, every wire</div><h1>ESP-FLY Drone Model</h1></div>
+    <div class="sub">Drag to orbit · scroll to zoom · click a row to fly to the part · hover any pad for its GPIO and what it does.</div>
+  </header>
+  <section id="vp">
+    <canvas id="cv"></canvas>
+    <div id="hud">
+      <div class="grpwrap"><button class="grp on" data-view="over">Overview</button><button class="grp" data-view="top">Top</button><button class="grp" data-view="under">Underside</button><button class="grp" data-view="rx">Receiver</button></div>
+      <button id="b-explode">Exploded</button><button id="b-frame" class="on">Frame</button><button id="b-props" class="on">Props</button><button id="b-labels" class="on">Labels</button><button id="b-spin">Spin</button>
+    </div>
+    <div id="tip"></div>
+    <div id="status"></div>
+  </section>
+  <aside id="bom"></aside>
+</div>
+
+<script>
+(function(){
+// =====================================================================
+// setup — same renderer, lights and palette as radar-bench.html
+// =====================================================================
+const cv=document.getElementById('cv'), vp=document.getElementById('vp'), tip=document.getElementById('tip');
+const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.outputEncoding=THREE.sRGBEncoding;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=0.95;
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+
+const scene=new THREE.Scene();
+function gradientSky(){
+  const c=document.createElement('canvas'); c.width=4; c.height=256; const x=c.getContext('2d');
+  const g=x.createLinearGradient(0,0,0,256);
+  g.addColorStop(0,'#18232e'); g.addColorStop(0.5,'#0e161d'); g.addColorStop(1,'#070a0e');
+  x.fillStyle=g; x.fillRect(0,0,4,256); return new THREE.CanvasTexture(c);
+}
+scene.background=gradientSky();
+// Metal needs something to reflect. A two-stop studio gradient, run through
+// PMREM, is enough to make the motor cans chrome and the pads gold instead of
+// the flat black that metalness with no environment always gives.
+(function(){
+  const c=document.createElement('canvas'); c.width=64; c.height=32; const x=c.getContext('2d');
+  const g=x.createLinearGradient(0,0,0,32);
+  g.addColorStop(0,'#eef4fa'); g.addColorStop(0.45,'#8fa2b4'); g.addColorStop(0.55,'#4d5a67'); g.addColorStop(1,'#20272e');
+  x.fillStyle=g; x.fillRect(0,0,64,32);
+  x.fillStyle='rgba(255,255,255,0.95)'; x.fillRect(6,2,22,7);            // the key light's reflection
+  const t=new THREE.CanvasTexture(c); t.mapping=THREE.EquirectangularReflectionMapping;
+  const pm=new THREE.PMREMGenerator(renderer); pm.compileEquirectangularShader();
+  scene.environment=pm.fromEquirectangular(t).texture; t.dispose(); pm.dispose();
+})();
+const camera=new THREE.PerspectiveCamera(36,1,0.002,4);
+scene.add(new THREE.HemisphereLight(0xaecbe0,0x141b21,0.6));
+const key=new THREE.DirectionalLight(0xfff2e2,1.1); key.position.set(0.12,0.26,0.15);
+key.castShadow=true; key.shadow.mapSize.set(2048,2048); key.shadow.bias=-0.00025; key.shadow.normalBias=0.0006;
+const sc=key.shadow.camera; sc.left=-0.09; sc.right=0.09; sc.top=0.09; sc.bottom=-0.09; sc.near=0.05; sc.far=0.8; sc.updateProjectionMatrix();
+scene.add(key);
+const fill=new THREE.DirectionalLight(0xbcd4e8,0.32); fill.position.set(-0.2,0.12,0.18); scene.add(fill);
+const rim=new THREE.DirectionalLight(0xa893ee,0.4); rim.position.set(-0.15,0.09,-0.25); scene.add(rim);
+const under=new THREE.DirectionalLight(0xc8d8e8,0.55); under.position.set(0.10,-0.22,0.08); scene.add(under);   // lights the underside view
+
+const mat=(o)=>new THREE.MeshStandardMaterial(o);
+const M={
+  pla:mat({color:0xf1f3f5,roughness:.88}),                         // 3D-printed frame, natural white PLA
+  plaDark:mat({color:0xdadfe4,roughness:.88}),
+  strap:mat({color:0xe8eaec,roughness:.6}),                        // the zip-tie round the pack
+  pcbBlack:mat({color:0x15181c,roughness:.62}),
+  pcbDark:mat({color:0x1a2026,roughness:.6}),
+  pcbGreen:mat({color:0x1f6b48,roughness:.55}),                    // the kit's flight-controller board
+  gold:mat({color:0xd4b25a,metalness:.8,roughness:.28}),
+  tin:mat({color:0xbfc6cc,metalness:.75,roughness:.32}),
+  chrome:mat({color:0xc9ced3,metalness:.9,roughness:.22}),
+  steel:mat({color:0x8d959c,metalness:.78,roughness:.30}),
+  black:mat({color:0x14181c,roughness:.55}),
+  ic:mat({color:0x22262b,roughness:.5}),
+  icTop:mat({color:0x2c3136,roughness:.45}),
+  can:mat({color:0xb7bec5,metalness:.7,roughness:.35}),
+  nylon:mat({color:0xe9e4d3,roughness:.7}),
+  lipo:mat({color:0x8f969c,metalness:.35,roughness:.5}),
+  lipoLabel:mat({color:0xd9b03a,roughness:.7}),
+  shrink:mat({color:0xd9dde2,transparent:true,opacity:.28,roughness:.35,depthWrite:false}),
+  propCW:mat({color:0x5a8fd6,transparent:true,opacity:.62,roughness:.4,side:THREE.DoubleSide}),
+  propCCW:mat({color:0xd8dde3,transparent:true,opacity:.62,roughness:.4,side:THREE.DoubleSide}),
+  ledRed:mat({color:0xd03028,emissive:0x8a1008,emissiveIntensity:.8,roughness:.4}),
+  ledBlue:mat({color:0x3070d0,emissive:0x0a3a8a,emissiveIntensity:.8,roughness:.4}),
+  ledGreen:mat({color:0x30c060,emissive:0x0a6a2a,emissiveIntensity:.8,roughness:.4}),
+  fpc:mat({color:0xc98a3a,roughness:.5,side:THREE.DoubleSide}),
+  glow:mat({color:0xffc06a,emissive:0xff9a2a,emissiveIntensity:.9,transparent:true,opacity:.9}),
+};
+const WC={black:0x1a1a1a,red:0xc0392b,blue:0x2e86de,white:0xe8e8e8,yellow:0xd8c02a,green:0x2ecc71,grey:0x8a949c};
+const wireMat={}; for(const k in WC) wireMat[k]=mat({color:WC[k],roughness:.7});
+
+// =====================================================================
+// the numbers — from Seeed's kit page, the Elektor build article and the
+// esp-fc guide. verify_drone.py reads these constants back.
+// =====================================================================
+const BODY=0.046;          // closed-body frame footprint, without props
+const OVERALL=0.067;       // tip to tip across the props
+const H_NOPROP=0.029, H_PROP=0.031;
+const PROP_D=0.030, PROP_BLADES=3, SHAFT_D=0.0008;     // GEMFAN tri-blade, 0.8 mm shaft
+const MOTOR_PITCH=(OVERALL-PROP_D);                     // 37 mm: props do not overlap
+const MOTOR_D=0.006, MOTOR_L=0.015;                     // 615 coreless: 6 mm can, 15 mm long
+const XIAO_L=0.021, XIAO_W=0.0178, XIAO_T=0.0012, XIAO_PITCH=0.00254, XIAO_ROWGAP=0.01524;
+const FC_W=0.022, FC_D=0.022, FC_T=0.0016;               // the green board the XIAO plugs into
+const POD_OD=0.0085, POD_ID=0.0062, POD_H=0.011;        // corner motor pod: the 6 mm can press-fits
+const RING_W=0.0042, RING_H=0.0032;                     // the bumper ring joining the four pods
+const ARM_W=0.0030, ARM_T=0.0024;                       // each arm is two prongs, not one bar
+const HUB=0.024;                                        // the centre plate the canopy stands on
+const CAN_W=0.0240, CAN_H=0.0125, COVER_W=0.0220, COVER_T=0.0012;   // canopy and its ESP FLY cover
+const LEG_R=0.00045;                                    // landing legs: 0.9 mm solid-core wire, bent
+const RX_L=0.019, RX_W=0.012, RX_T=0.0008;              // BetaFPV ELRS Nano 915
+const ANT_LEN=0.080;                                    // 915 MHz quarter-wave, drone-link.md 4
+const BAT=[0.033,0.008,0.020];                          // 1S 250 mAh LiPo, JST-PH
+// mass roll-up, grams. Kit: 4 g frame, 1 g FC module, 18 g without / 25 g with LiPo.
+const MASS={frame:4.0,fc:1.0,xiao:3.0,motor:2.1,prop:0.35,lipo:7.0,rx:0.7,ant:0.3,wiring:0.4};
+const KIT_MASS_NO_LIPO=18.0, KIT_MASS=25.0;
+
+// esp-fc pin map for the ESP-FLY (Elektor esp-fc guide; drone-link-espfc.md)
+const XIAO_LEFT=[['D0','GPIO1','motor 4 — front-left'],['D1','GPIO2','battery voltage (ADC)'],
+  ['D2','GPIO3','motor 3 — rear-left'],['D3','GPIO4','motor 1 — rear-right'],
+  ['D4','GPIO5','I2C SDA → MPU-6050'],['D5','GPIO6','I2C SCL → MPU-6050'],['D6','GPIO43','status LED']];
+const XIAO_RIGHT=[['5V','VBUS','USB only — no 5 V rail in flight'],['GND','GND','ground'],['3V3','3V3','3.3 V out → receiver'],
+  ['D10','GPIO9','UART2 RX ← receiver TX (CRSF)'],['D9','GPIO8','UART2 TX → receiver RX (telemetry)'],
+  ['D8','GPIO7','motor 2 — front-right'],['D7','GPIO44','spare (UART0 RX)']];
+// motor order, position, direction: esp-fc keeps Betaflight order, props-in
+const MOTORS=[['M1','rear-right', 1, 1,'CW', 'GPIO4', 'D3'],['M2','front-right',1,-1,'CCW','GPIO7','D8'],
+              ['M3','rear-left', -1, 1,'CCW','GPIO3','D2'],['M4','front-left', -1,-1,'CW', 'GPIO1','D0']];
+
+// =====================================================================
+// helpers
+// =====================================================================
+const V=(x,y,z)=>new THREE.Vector3(x,y,z);
+function box(w,h,d,m){ return new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); }
+function cyl(r,h,m,seg=18){ return new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,seg),m); }
+function tube(r1,r2,h,m,seg=24){ const g=new THREE.CylinderGeometry(r1,r1,h,seg,1,true); return new THREE.Mesh(g,m); }
+function ring(rOut,rIn,h,m,seg=28){
+  const s=new THREE.Shape(); s.absarc(0,0,rOut,0,Math.PI*2,false);
+  const hole=new THREE.Path(); hole.absarc(0,0,rIn,0,Math.PI*2,true); s.holes.push(hole);
+  const g=new THREE.ExtrudeGeometry(s,{depth:h,bevelEnabled:false,curveSegments:seg}); g.rotateX(-Math.PI/2);
+  return new THREE.Mesh(g,m); }
+function at(m,x,y,z){ m.position.set(x,y,z); return m; }
+function strut(a,b,r,m,seg=8){ const d=new THREE.Vector3().subVectors(b,a); const s=new THREE.Mesh(new THREE.CylinderGeometry(r,r,d.length(),seg),m);
+  s.position.copy(a).add(b).multiplyScalar(.5); s.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize()); return s; }
+function roundedPlate(w,d,t,r,m){
+  const s=new THREE.Shape(); const x=-w/2,y=-d/2;
+  s.moveTo(x+r,y); s.lineTo(x+w-r,y); s.quadraticCurveTo(x+w,y,x+w,y+r); s.lineTo(x+w,y+d-r);
+  s.quadraticCurveTo(x+w,y+d,x+w-r,y+d); s.lineTo(x+r,y+d); s.quadraticCurveTo(x,y+d,x,y+d-r);
+  s.lineTo(x,y+r); s.quadraticCurveTo(x,y,x+r,y);
+  const g=new THREE.ExtrudeGeometry(s,{depth:t,bevelEnabled:false,curveSegments:6}); g.rotateX(-Math.PI/2);
+  return new THREE.Mesh(g,m); }
+
+const pickables=[], labels=[], registry={};
+function reg(id,obj,name,cls){ obj.userData.bom=id; obj.userData.name=name||id; if(cls) obj.userData.cls=cls;
+  (registry[id]=registry[id]||[]).push(obj);
+  obj.traverse(o=>{ if(o.isMesh){ if(o.userData.pinName===undefined && !o.userData.name) o.userData.name=obj.userData.name;
+    o.userData.bom=id; if(!o.userData._pick){o.userData._pick=1; pickables.push(o);} } });
+  return obj; }
+function addLabel(obj,text,cls,off,major){ const el=document.createElement('div'); el.className='lbl '+(cls||''); el.textContent=text;
+  vp.appendChild(el); labels.push({el,obj,off:off||new THREE.Vector3(0,.004,0),major:!!major}); }
+
+// cable routing: straight runs with a fillet at every bend (as radar-bench.html)
+function cablePath(pts,bend){
+  const p=[]; pts.forEach(v=>{ if(!p.length || p[p.length-1].distanceTo(v)>1e-6) p.push(v.clone()); });
+  if(p.length<2) return null;
+  const path=new THREE.CurvePath(); let prev=p[0];
+  for(let i=1;i<p.length-1;i++){
+    const c=p[i], nx=p[i+1];
+    const din=new THREE.Vector3().subVectors(c,prev), dout=new THREE.Vector3().subVectors(nx,c);
+    const lin=din.length(), lout=dout.length(); if(lin<1e-7||lout<1e-7) continue;
+    din.divideScalar(lin); dout.divideScalar(lout);
+    if(din.dot(dout)>0.9995) continue;
+    const rr=Math.min(bend===undefined?0.0015:bend, lin*0.5, lout*0.5);
+    const a=c.clone().addScaledVector(din,-rr), b=c.clone().addScaledVector(dout,rr);
+    if(prev.distanceTo(a)>1e-6) path.add(new THREE.LineCurve3(prev.clone(),a));
+    path.add(new THREE.QuadraticBezierCurve3(a,c.clone(),b)); prev=b; }
+  const last=p[p.length-1]; if(prev.distanceTo(last)>1e-6) path.add(new THREE.LineCurve3(prev.clone(),last.clone()));
+  return path.curves.length?path:null; }
+const wires=[];
+function wire(name,pts,r,m,ends,bend){
+  const c=cablePath(pts,bend); if(!c) return new THREE.Object3D();
+  const len=c.getLength(), n=Math.max(16,Math.min(220,Math.round(len/0.0006)));
+  const mesh=new THREE.Mesh(new THREE.TubeGeometry(c,n,r,8,false),m);
+  mesh.userData.curve=c; mesh.userData.polyline=pts; mesh.userData.name=name; mesh.userData.isWire=true; mesh.userData.ends=ends||[];
+  mesh.userData.len=len; mesh.castShadow=true; wires.push(mesh); return mesh; }
+// named pads: hovering one names the net; every wire lands ON one of these
+function addPin(parent,name,x,y,z,mesh,dir,desc){ mesh.position.set(x,y,z); mesh.userData.pinName=name;
+  mesh.userData.name=desc||name; if(dir) mesh.userData.pinDir=dir; parent.add(mesh);
+  (parent.userData.pins=parent.userData.pins||{})[name]=mesh; return mesh; }
+function P(comp,name){ const p=comp.userData.pins[name]; if(!p) throw new Error('no pad '+name+' on '+(comp.userData.name||'?'));
+  p.updateWorldMatrix(true,false);            // pads are read as they are built; never trust a stale matrix
+  const d=(p.userData.pinDir||new THREE.Vector3(0,1,0)).clone(); const o=p.localToWorld(new THREE.Vector3(0,0,0));
+  return {pos:p.localToWorld(new THREE.Vector3(0,p.userData.pinTop||0,0)), dir:p.localToWorld(d).sub(o).normalize(), comp, pin:name}; }
+function pad(parent,name,x,y,z,w,d,desc){ const p=box(w,0.00015,d,M.gold); p.userData.pinTop=0.0001; return addPin(parent,name,x,y,z,p,V(0,1,0),desc); }
+
+// =====================================================================
+// the drone. +y up, nose is -z, right is +x. Ground = the battery's underside.
+// =====================================================================
+const drone=new THREE.Group(); scene.add(drone);
+const parts={};                                     // sub-groups that the exploded view lifts
+function part(id){ const g=new THREE.Group(); g.userData.explode=new THREE.Vector3(); drone.add(g); parts[id]=g; return g; }
+
+// ---- levels ---------------------------------------------------------------
+// y = 0 is the ground the legs stand on. The kit's two heights fall straight
+// out of the stack: 29 mm to the top of a motor, 31 mm to the blade plane.
+const Y_BAT0=0.0025, Y_PLATE=Y_BAT0+BAT[1];          // the pack hangs under the centre plate
+const PLATE_T=0.0015, Y_PLATE_TOP=Y_PLATE+PLATE_T;   // 12.0
+const Y_POD0=Y_PLATE, Y_POD_TOP=Y_PLATE_TOP+POD_H;   // pods stand off the plate, 23.0 at the top
+const Y_MOTOR0=Y_PLATE_TOP+0.002, Y_MOTOR1=Y_MOTOR0+MOTOR_L;      // 14.0 -> 29.0 = H_NOPROP
+const Y_PROP=Y_MOTOR1+0.0015;                        // blade plane 30.5, tips at 31 = H_PROP
+const Y_FC=Y_PLATE_TOP+0.0025, Y_FC_TOP=Y_FC+FC_T;   // the FC on 2.5 mm standoffs
+const HDR=0.0034;                                    // the XIAO stands on its header pins
+const Y_XIAO=Y_FC_TOP+HDR, Y_XIAO_TOP=Y_XIAO+XIAO_T;
+const Y_DECK=Y_PLATE_TOP+CAN_H, DECK_T=COVER_T, Y_DECK_TOP=Y_DECK+DECK_T;   // the cover, 25.7
+const MP=MOTOR_PITCH/2;                              // 18.5 mm
+
+// ---- the airframe, as printed: an X. A small centre plate carries the
+// canopy; four two-prong arms fan out to the corner motor pods; a bumper ring
+// joins the pods; four bent-wire legs hang under the corners. Nothing about it
+// is a box — the 46 mm across the kit quotes is pod edge to pod edge.
+const frame=part('frame');
+const R_BODY=0.004;
+function extrudeDown(shape,depth,m,seg){ const g=new THREE.ExtrudeGeometry(shape,{depth,bevelEnabled:false,curveSegments:seg||8});
+  g.rotateX(Math.PI/2); return new THREE.Mesh(g,m); }
+function rrect(path,w,d,r,cx,cy){ const x=(cx||0)-w/2,y=(cy||0)-d/2;
+  path.moveTo(x+r,y); path.lineTo(x+w-r,y); path.quadraticCurveTo(x+w,y,x+w,y+r); path.lineTo(x+w,y+d-r);
+  path.quadraticCurveTo(x+w,y+d,x+w-r,y+d); path.lineTo(x+r,y+d); path.quadraticCurveTo(x,y+d,x,y+d-r);
+  path.lineTo(x,y+r); path.quadraticCurveTo(x,y,x+r,y); return path; }
+// a flat bar between two points in plan, w wide and t thick, lying at height y
+function plank(ax,az,bx,bz,w,t,y,m){ const dx=bx-ax, dz=bz-az, L=Math.hypot(dx,dz);
+  const b=box(w,t,L,m); b.position.set((ax+bx)/2,y+t/2,(az+bz)/2); b.rotation.y=Math.atan2(dx,dz); return b; }
+// a formed wire — the landing legs. Same fillet routing as the cabling, but it
+// is a structural part, so it is not registered as a wire for the self-test.
+function formed(pts,r,m,bend){ const c=cablePath(pts,bend===undefined?0.0018:bend);
+  const n=Math.max(24,Math.min(160,Math.round(c.getLength()/0.0004)));
+  const mesh=new THREE.Mesh(new THREE.TubeGeometry(c,n,r,8,false),m); mesh.castShadow=true; return mesh; }
+
+// centre plate: 24 mm, rounded, the canopy's floor and the battery's back
+const plate=roundedPlate(HUB,HUB,PLATE_T,0.0035,M.pla); plate.position.y=Y_PLATE; frame.add(plate);
+plate.userData.name='frame — centre plate, 24 × 24 × 1.5 mm; the pack straps under it';
+
+// four arms, each a two-prong fork from the plate's edges to its pod
+[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz])=>{
+  [[sx*(HUB/2-0.0012),sz*0.0038],[sx*0.0038,sz*(HUB/2-0.0012)]].forEach(([ax,az],k)=>{
+    const arm=plank(ax,az,sx*MP,sz*MP,ARM_W,ARM_T,Y_PLATE_TOP-0.0002,M.pla); frame.add(arm);
+    arm.userData.name='frame — arm prong '+(k?'b':'a')+', hub to the '+(sz<0?'front':'rear')+'-'+(sx<0?'left':'right')+' pod'; });
+});
+// the bumper ring: four bars pod to pod, at the bottom of the pods
+[[-1,1,'left'],[1,1,'right']].forEach(([sx,_,side])=>{
+  const r=plank(sx*MP,-MP,sx*MP,MP,RING_W,RING_H,Y_PLATE,M.pla); frame.add(r); r.userData.name='frame — '+side+' bumper rail'; });
+[[-1,'front'],[1,'rear']].forEach(([sz,end])=>{
+  const r=plank(-MP,sz*MP,MP,sz*MP,RING_W,RING_H,Y_PLATE,M.pla); frame.add(r); r.userData.name='frame — '+end+' bumper rail'; });
+// motor pods and their landing legs
+[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz])=>{
+  const pod=ring(POD_OD/2,POD_ID/2,POD_H+PLATE_T,M.pla); pod.position.set(sx*MP,Y_POD0,sz*MP); frame.add(pod);
+  pod.userData.name='frame — motor pod, 6.2 mm bore; the can press-fits, a spot of glue holds it';
+  const lip=ring(POD_OD/2+0.0003,POD_OD/2-0.0004,0.0012,M.pla); lip.position.set(sx*MP,Y_POD_TOP-0.0012,sz*MP); frame.add(lip);
+  lip.userData.name='frame — pod lip';
+  // leg: 25 mm of solid-core wire bent into a V, both ends into the pod base
+  const dx=sx/Math.SQRT2, dz=sz/Math.SQRT2, tx=-dz, tz=dx, px=sx*MP, pz=sz*MP;
+  const e=(k)=>V(px+tx*k*0.0032+dx*0.0018, Y_PLATE+0.0016, pz+tz*k*0.0032+dz*0.0018);
+  const leg=formed([e(1),
+                    V(px+tx*0.0030+dx*0.0030, Y_PLATE-0.0032, pz+tz*0.0030+dz*0.0030),
+                    V(px+tx*0.0014+dx*0.0038, 0.0002, pz+tz*0.0014+dz*0.0038),
+                    V(px-tx*0.0014+dx*0.0038, 0.0002, pz-tz*0.0014+dz*0.0038),
+                    V(px-tx*0.0030+dx*0.0030, Y_PLATE-0.0032, pz-tz*0.0030+dz*0.0030),
+                    e(-1)],LEG_R,M.black,0.0022);
+  leg.userData.name='landing leg — 25 mm solid-core jumper wire bent into a V';
+  frame.add(leg);
+});
+reg('K6',frame,'3D-printed X-frame — pods at 37 mm, 46 mm across, 4 g of natural PLA','link');
+addLabel(frame,'X-frame · pods at 37 mm · 4 g','link',V(0,-0.004,-0.026),true);
+
+// ---- canopy: the little closed body in the middle, USB-C out of the nose ---
+// Three bands, because the nose has an 11 x 6 mm window: a full ring at the
+// bottom, three walls where the USB-C sits, a full ring again at the top.
+const canopy=part('canopy');
+function shell(h,y,gapFront,gapRear){
+  const g=new THREE.Group();
+  const t=0.0013, W=CAN_W;
+  const sides=[['left',-1,0],['right',1,0]];
+  sides.forEach(([n,sx])=>{ const b=box(t,h,W-2*t,M.pla); b.position.set(sx*(W/2-t/2),y+h/2,0); b.userData.name='canopy — '+n+' wall'; g.add(b); });
+  [['nose',-1,gapFront],['tail',1,gapRear]].forEach(([n,sz,gap])=>{
+    if(!gap){ const b=box(W,h,t,M.pla); b.position.set(0,y+h/2,sz*(W/2-t/2)); b.userData.name='canopy — '+n+' wall'; g.add(b); }
+    else [[-1],[1]].forEach(([sg])=>{ const w=(W-gap)/2; const b=box(w,h,t,M.pla);
+      b.position.set(sg*(gap/2+w/2),y+h/2,sz*(W/2-t/2)); b.userData.name='canopy — '+n+' wall beside the opening'; g.add(b); });
+  });
+  return g;
+}
+canopy.add(shell(0.0050,Y_PLATE_TOP,0,0));                       // bottom band, solid
+canopy.add(shell(0.0060,Y_PLATE_TOP+0.0050,0.0110,0.0070));      // USB-C window forward, loom slot aft
+canopy.add(shell(0.0015,Y_PLATE_TOP+0.0110,0,0));                // top band, solid
+// rounded corner posts, so the canopy reads as the printed part it is
+[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz])=>{
+  const c=cyl(0.0022,CAN_H,M.pla,14); c.position.set(sx*(CAN_W/2-0.0022),Y_PLATE_TOP+CAN_H/2,sz*(CAN_W/2-0.0022));
+  c.userData.name='canopy — corner post'; canopy.add(c); });
+reg('K6',canopy,'3D-printed canopy — closes over the XIAO, USB-C through the nose','link');
+
+// the ESP FLY cover, with its printed label drawn on
+const coverG=part('cover'); coverG.userData.explode.set(0,0.030,0);
+{ const sh=new THREE.Shape(); rrect(sh,COVER_W,COVER_W,0.0030,0,0);
+  const cover=extrudeDown(sh,COVER_T,M.pla,10); cover.position.y=Y_DECK_TOP; coverG.add(cover);
+  cover.userData.name='top cover — the printed ESP FLY lid, 1.2 mm';
+  const cv=document.createElement('canvas'); cv.width=cv.height=256;
+  const cx2=cv.getContext('2d'); cx2.fillStyle='#f7f8f9'; cx2.fillRect(0,0,256,256);
+  cx2.fillStyle='#000000'; cx2.textAlign='center'; cx2.font='bold 96px "Helvetica Neue",Arial,sans-serif';
+  cx2.fillText('ESP',128,118); cx2.fillText('FLY',128,212);
+  const tex=new THREE.CanvasTexture(cv); tex.anisotropy=4;
+  const lbl2=new THREE.Mesh(new THREE.PlaneGeometry(COVER_W-0.0030,COVER_W-0.0030),
+                            mat({map:tex,roughness:.75,metalness:0}));
+  lbl2.rotation.x=-Math.PI/2; lbl2.position.y=Y_DECK_TOP+0.0001; coverG.add(lbl2);
+  lbl2.userData.name='ESP FLY — the label printed into the cover'; }
+reg('K6',coverG,'3D-printed top cover — the ESP FLY lid','link');
+
+// ---- battery: slung under the centre plate, long axis fore and aft ---------
+const bat=part('battery'); bat.userData.explode.set(0,-0.016,0);
+const BW=BAT[2], BH=BAT[1], BL=BAT[0];               // 20 wide, 8 thick, 33 long
+const cell=box(BW,BH,BL,M.lipo); cell.position.set(0,Y_BAT0+BH/2,0.001); bat.add(cell);
+const lbl=box(BW*0.72,0.0002,BL*0.5,M.lipoLabel); lbl.position.set(0,Y_BAT0+BH+0.0001,0.001); bat.add(lbl);
+lbl.userData.name='1S 3.7 V 250 mAh LiPo, 33 × 20 × 8 mm, 7 g';
+// JST-PH plug on the pack's own leads, up into the canopy's nose opening
+const plug=box(0.0060,0.0035,0.0048,M.nylon); plug.position.set(0.0035,Y_FC_TOP+0.0018,-0.0088); bat.add(plug);
+plug.userData.name='JST-PH 2-pin plug — the pack, into the socket on the FC';
+addPin(bat,'B+',0.0055,Y_FC_TOP+0.0006,-0.0088,box(0.0008,0.0008,0.0008,M.tin),V(0,-1,0),'battery + (JST-PH pin 1, red)');
+addPin(bat,'B-',0.0015,Y_FC_TOP+0.0006,-0.0088,box(0.0008,0.0008,0.0008,M.tin),V(0,-1,0),'battery − (JST-PH pin 2, black)');
+// the pack's leads: out of its nose end, up the front of the canopy, into the plug
+[[0.0055,'red','+',0.0035],[0.0015,'black','−',0.0015]].forEach(([x,col,sgn,xo])=>{
+  const y0=Y_BAT0+BH/2, z0=-BL/2+0.001;
+  const w=wire('LiPo lead '+sgn+' ('+col+') — pack to the JST-PH plug',
+    [V(xo,y0,z0),V(xo,y0,z0-0.0055),V(xo,Y_PLATE-0.0010,z0-0.0075),V(xo,Y_FC_TOP-0.0020,-0.0140),V(x,Y_FC_TOP+0.0006,-0.0100),V(x,Y_FC_TOP+0.0006,-0.0088)],
+    0.00035,wireMat[col],[bat],0.0016);
+  w.userData.isBatteryLead=true; bat.add(w); });
+// the zip-tie strap: round the pack and the centre plate
+const strap=new THREE.Group(); const SW=BW+0.0022, SH=BH+PLATE_T+0.0012;
+strap.add(at(box(SW,0.0005,0.0030,M.strap),0,-0.00025,0)); strap.add(at(box(SW,0.0005,0.0030,M.strap),0,SH-0.00025,0));
+strap.add(at(box(0.0005,SH,0.0030,M.strap),-SW/2,SH/2,0)); strap.add(at(box(0.0005,SH,0.0030,M.strap),SW/2,SH/2,0));
+strap.add(at(box(0.0026,0.0022,0.0038,M.strap),SW/2+0.0010,0.0034,0));            // the zip-tie head
+strap.position.set(0,Y_BAT0-0.0004,0.001); bat.add(strap);
+reg('K5',bat,'1S 3.7 V 250 mAh LiPo — under the plate in the zip-tie strap, JST-PH 2-pin','pow');
+addLabel(bat,'1S 250 mAh LiPo · 7 g','pow',V(-0.013,-0.005,0.012),true);
+reg('K8',strap,'zip-tie battery strap','link');
+
+// ---- flight-controller PCB: MPU-6050, 4 x SI2300, motor pads, JST-PH, RX pads
+const fc=part('fc'); fc.userData.explode.set(0,0.012,0);
+const fcb=roundedPlate(FC_W,FC_D,FC_T,0.0025,M.pcbGreen); fcb.position.y=Y_FC; fc.add(fcb);
+fcb.userData.name='flight-controller PCB — custom 4-layer, 22 × 22 mm, 1 g with parts';
+[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz])=>{ const so=cyl(0.0011,0.0025,M.gold,10); so.position.set(sx*0.0092,Y_PLATE_TOP+0.00125,sz*0.0092); fc.add(so);
+  so.userData.name='standoff, 2.5 mm off the centre plate'; });
+const imu=box(0.004,0.0009,0.004,M.ic); imu.position.set(-0.0038,Y_FC_TOP+0.00045,0.0028); fc.add(imu);
+imu.userData.name='MPU-6050 6-axis IMU (QFN-24, 4 × 4 mm) — I2C on GPIO5/GPIO6';
+const imuTop=box(0.0035,0.0001,0.0035,M.icTop); imuTop.position.set(-0.0038,Y_FC_TOP+0.00095,0.0028); fc.add(imuTop);
+// four MOSFETs, one per motor, beside each motor pad pair
+MOTORS.forEach(([id,pos,sx,sz,dir,gpio,d])=>{
+  const q=box(0.0016,0.0011,0.0029,M.ic); q.position.set(sx*0.0094,Y_FC_TOP+0.00055,sz*0.0042); fc.add(q);
+  q.userData.name='SI2300 N-MOSFET (SOT-23) — drives '+id+' '+pos+' from '+gpio+' ('+d+')';
+  pad(fc,id+'a',sx*0.0094,Y_FC_TOP,sz*0.0095,0.0014,0.0012,id+' pad + ('+pos+')');
+  pad(fc,id+'b',sx*0.0094,Y_FC_TOP,sz*0.0077,0.0014,0.0012,id+' pad − ('+pos+')');
+});
+// JST-PH 2-pin battery socket at the rear-right
+const jst=box(0.0060,0.0045,0.0048,M.nylon); jst.position.set(0.0035,Y_FC_TOP+0.00225,-0.0072); fc.add(jst);
+jst.userData.name='JST-PH 2-pin battery socket (2.0 mm pitch) — faces the nose opening';
+pad(fc,'BAT+',0.0055,Y_FC_TOP+0.0046,-0.0072,0.0009,0.0009,'VBAT + → the XIAO BAT pad and the four MOSFET drains');
+pad(fc,'BAT-',0.0015,Y_FC_TOP+0.0046,-0.0072,0.0009,0.0009,'VBAT − → GND');
+// receiver pads at the rear edge, centre-left: the four pads the RP1 V2 used
+const RXPADS=[['P3V3','3V3','3.3 V from the XIAO regulator — the drone has no 5 V rail in flight'],
+              ['PGND','GND','ground'],
+              ['PRX','RX','FC RX = GPIO9 (D10) ← receiver TX, CRSF'],
+              ['PTX','TX','FC TX = GPIO8 (D9) → receiver RX, telemetry']];
+RXPADS.forEach(([n,silk,desc],i)=>{ pad(fc,n,-0.0031+i*0.0021,Y_FC_TOP,0.0093,0.0013,0.0016,'receiver pad '+silk+' — '+desc); });
+// status LED (GPIO43) front-left, orientation LED front-right
+const led1=box(0.0016,0.0006,0.0008,M.ledRed); led1.position.set(-0.0062,Y_FC_TOP+0.0003,-0.0098); fc.add(led1);
+led1.userData.name='status LED — GPIO43 (D6)';
+const led2=box(0.0016,0.0006,0.0008,M.ledRed); led2.position.set(0.0062,Y_FC_TOP+0.0003,-0.0098); fc.add(led2);
+led2.userData.name='orientation LED — front';
+// XIAO castellation lands: 2 rows of 7, 2.54 mm pitch, 15.24 mm apart
+const XZ0=-XIAO_PITCH*3;
+[[XIAO_LEFT,-1],[XIAO_RIGHT,1]].forEach(([rows,sg])=>{
+  fc.add(at(box(0.0025,0.0025,rows.length*XIAO_PITCH,M.black),sg*XIAO_ROWGAP/2,Y_FC_TOP+0.00125,0));
+  rows.forEach(([silk,gpio,fn],i)=>{
+    const pin=box(0.0006,HDR+0.0026,0.0006,M.gold); pin.position.set(sg*XIAO_ROWGAP/2,Y_FC_TOP+0.0013+HDR/2,XZ0+i*XIAO_PITCH);
+    pin.userData.name='header pin '+silk+' / '+gpio+' — '+fn; fc.add(pin);
+    pad(fc,'X_'+silk,sg*XIAO_ROWGAP/2,Y_FC_TOP,XZ0+i*XIAO_PITCH,0.0016,0.0011,'XIAO header '+silk+' / '+gpio+' — '+fn); });
+});
+reg('K2',fc,'flight-controller PCB — MPU-6050, 4 × SI2300, motor pads, JST-PH, receiver pads','dsp');
+reg('K2a',imu,'MPU-6050 6-axis IMU','dsp'); reg('K2c',jst,'JST-PH 2-pin battery socket','pow');
+reg('K2d',led1,'status LED (GPIO43)','dsp');
+addLabel(fc,'flight controller · MPU-6050 · 4 × SI2300','dsp',V(0.004,-0.002,0.019),true);
+addLabel(imu,'MPU-6050','dsp',V(0,0.003,0));
+
+// ---- XIAO ESP32-S3, soldered down on the castellations, USB-C forward -------
+const xiao=part('xiao'); xiao.userData.explode.set(0,0.024,0);
+const xb=roundedPlate(XIAO_W,XIAO_L,XIAO_T,0.0015,M.pcbDark); xb.position.y=Y_XIAO; xiao.add(xb);
+xb.userData.name='Seeed XIAO ESP32-S3 — 21 × 17.8 mm, ~3 g, dual-core 240 MHz';
+const can=box(0.0128,0.0024,0.0128,M.can); can.position.set(0,Y_XIAO_TOP+0.0012,0.0032); xiao.add(can);
+can.userData.name='ESP32-S3 module shield (WiFi/BLE 2.4 GHz — OFF in flight)';
+const usbc=box(0.0089,0.0032,0.0072,M.tin); usbc.position.set(0,Y_XIAO+0.0016,-XIAO_L/2+0.0024); xiao.add(usbc);
+usbc.userData.name='USB-C — flashing, charging the 1S pack, the only source of 5 V';
+[[-0.0058,'RESET'],[0.0058,'BOOT']].forEach(([x,n])=>{ const b=box(0.0016,0.0006,0.0016,M.black); b.position.set(x,Y_XIAO_TOP+0.0003,-0.0042); xiao.add(b); b.userData.name=n+' button'; });
+const ufl=box(0.0026,0.0012,0.0026,M.tin); ufl.position.set(-0.0055,Y_XIAO_TOP+0.0006,0.0093); xiao.add(ufl);
+ufl.userData.name='U.FL — 2.4 GHz antenna connector';
+const rgb=box(0.0012,0.0005,0.0012,M.ledGreen); rgb.position.set(0.0055,Y_XIAO_TOP+0.00025,0.0075); xiao.add(rgb); rgb.userData.name='user LED / charge LED';
+// castellations, gold, along both long edges
+XIAO_LEFT.forEach(([silk,gpio,fn],i)=>{ const c=box(0.0012,XIAO_T+0.0002,0.0016,M.gold); c.userData.name='XIAO '+silk+' / '+gpio+' — '+fn;
+  addPin(xiao,silk,-XIAO_W/2+0.0004,Y_XIAO+XIAO_T/2,XZ0+i*XIAO_PITCH,c,V(-1,0,0)); });
+XIAO_RIGHT.forEach(([silk,gpio,fn],i)=>{ const c=box(0.0012,XIAO_T+0.0002,0.0016,M.gold); c.userData.name='XIAO '+silk+' / '+gpio+' — '+fn;
+  addPin(xiao,silk,XIAO_W/2-0.0004,Y_XIAO+XIAO_T/2,XZ0+i*XIAO_PITCH,c,V(1,0,0)); });
+reg('K1',xiao,'Seeed XIAO ESP32-S3 — esp-fc flight controller','dsp');
+addLabel(xiao,'XIAO ESP32-S3 · esp-fc','dsp',V(0,0.006,-0.002),true);
+
+// 2.4 GHz FPC antenna on the inside of the front wall — the kit's; unused in flight
+const fpc=part('fpc');
+const fpcS=box(0.0004,0.0075,0.017,M.fpc); fpcS.position.set(-CAN_W/2+0.0016,Y_PLATE_TOP+0.0062,0.0010); fpc.add(fpcS);
+fpcS.userData.name='2.4 GHz FPC antenna (kit) — WiFi is off in flight; the radar sweeps this band';
+addPin(xiao,'UFL',-0.0055,Y_XIAO_TOP+0.0012,0.0093,box(0.0006,0.0006,0.0006,M.tin),V(0,1,0),'U.FL — 2.4 GHz antenna connector');
+addPin(fpc,'FEED',-CAN_W/2+0.0022,Y_PLATE_TOP+0.0062,-0.0062,box(0.0006,0.0006,0.0006,M.tin),V(1,0,0),'FPC antenna feed');
+
+// ---- motors and props -------------------------------------------------------
+// one blade: tapered planform from the hub (r 2 mm) to the tip (r 15 mm), 0.5 mm thick, pitched about its radial axis
+function bladeGeom(){ const s=new THREE.Shape();
+  s.moveTo(0.0020,-0.0014);
+  s.splineThru([V(0.0050,-0.0023),V(0.0095,-0.0021),V(0.0130,-0.0012),V(0.0148,-0.0004),V(0.0150,0),V(0.0148,0.0004),V(0.0130,0.0012),V(0.0095,0.0021),V(0.0050,0.0023),V(0.0020,0.0014)].map(v=>new THREE.Vector2(v.x,v.y)));
+  s.closePath();
+  const g=new THREE.ExtrudeGeometry(s,{depth:0.0005,bevelEnabled:false,curveSegments:12}); g.rotateX(Math.PI/2); g.translate(0,0.00025,0);
+  g.computeBoundingBox(); return g; }
+const motors=part('motors'); const props=part('props'); props.userData.explode.set(0,0.020,0);
+const motorObjs={};
+MOTORS.forEach(([id,pos,sx,sz,dir,gpio,d])=>{
+  const g=new THREE.Group(); g.position.set(sx*MP,0,sz*MP); motors.add(g); motorObjs[id]=g;
+  const canM=cyl(MOTOR_D/2,MOTOR_L-0.002,M.chrome,20); canM.position.y=Y_MOTOR0+MOTOR_L/2; g.add(canM);
+  canM.userData.name=id+' · 615 coreless motor, 6 × 15 mm, ~2 g, 70 000 rpm, '+pos+' — '+dir+' from '+gpio+' ('+d+')';
+  const capT=cyl(MOTOR_D/2,0.001,M.black,20); capT.position.y=Y_MOTOR1-0.0005; g.add(capT);
+  const capB=cyl(MOTOR_D/2,0.001,M.black,20); capB.position.y=Y_MOTOR0+0.0005; g.add(capB);
+  const shaft=cyl(SHAFT_D/2,0.0030,M.steel,8); shaft.position.y=Y_MOTOR1+0.0015; g.add(shaft); shaft.userData.name='0.8 mm shaft';
+  // lead terminals at the bottom cap, on the side facing the centre
+  const wc=dir==='CW'?['red','blue']:['black','white'];
+  [['A',0.0009,wc[0]],['B',-0.0009,wc[1]]].forEach(([n,off,col])=>{
+    const t=box(0.0006,0.0006,0.0006,M.tin);
+    // terminal on the inboard face of the can, just above the bottom cap
+    const ix=-sx*(MOTOR_D/2), iz=-sz*(MOTOR_D/2);
+    addPin(g,n,ix*0.8+(-sz)*off,Y_MOTOR0+0.0012,iz*0.8+(sx)*off,t,V(-sx,0,-sz).normalize(),id+' terminal '+n+' ('+col+' lead)'); });
+  reg('K3',g,id+' — 615 coreless motor, '+pos,'link');
+  addLabel(g,id+' · '+pos+' · '+dir,'link',V(0,Y_MOTOR1+0.006,0));
+  // prop: hub + three blades, colour by direction
+  const p=new THREE.Group(); p.position.set(sx*MP,Y_PROP,sz*MP); props.add(p); p.userData.dir=dir;
+  const pm=dir==='CW'?M.propCW:M.propCCW;
+  const hub=cyl(0.0026,0.0032,pm,18); hub.position.y=0; p.add(hub); hub.userData.name='prop hub, 0.8 mm press-fit bore';
+  const boss=cyl(0.0012,0.0008,M.black,10); boss.position.y=0.0020; p.add(boss);
+  for(let b=0;b<PROP_BLADES;b++){
+    const bl=new THREE.Mesh(bladeGeom(),pm);
+    const piv=new THREE.Group(); piv.rotation.y=b*2*Math.PI/PROP_BLADES; p.add(piv);
+    bl.rotation.x=(dir==='CW'?1:-1)*0.42; piv.add(bl);
+    bl.userData.name='GEMFAN 30 mm tri-blade prop, 0.8 mm shaft — '+dir+' ('+pos+')'; }
+  reg('K4',p,'30 mm tri-blade prop — '+dir+', '+pos,'link');
+});
+addLabel(props,'4 × 30 mm tri-blade · 2 CW · 2 CCW','link',V(0,Y_PROP+0.012,0),true);
+
+// Every P() below reads matrixWorld; nothing has rendered yet, so force it —
+// otherwise every lead is built as if its part sat at the origin.
+drone.updateMatrixWorld(true);
+const uflA=P(xiao,'UFL'), uflB=P(fpc,'FEED');
+const uflW=wire('U.FL pigtail — XIAO to the 2.4 GHz antenna',[uflA.pos,V(uflA.pos.x,uflA.pos.y+0.0026,uflA.pos.z),
+  V(-0.0098,uflA.pos.y+0.0026,uflA.pos.z),V(-0.0098,uflB.pos.y+0.0030,0.0020),V(uflB.pos.x-0.0012,uflB.pos.y,uflB.pos.z),uflB.pos],
+  0.0004,M.black,[xiao,fpc],0.0022); fpc.add(uflW);
+reg('K7',fpc,'2.4 GHz FPC antenna + U.FL pigtail (kit) — unused in flight','link');
+// motor leads: out of the terminal, in along the plate, up to the FC pads
+const leads=part('leads');
+MOTORS.forEach(([id,pos,sx,sz,dir])=>{
+  const g=motorObjs[id], wc=dir==='CW'?['red','blue']:['black','white'];
+  [['A','a',wc[0],0.0009],['B','b',wc[1],-0.0009]].forEach(([tn,pn,col,off])=>{
+    const A=P(g,tn), B=P(fc,id+pn);
+    const inb=V(-sx,0,-sz).normalize();
+    const arm=Y_PLATE_TOP+ARM_T+0.0005;                       // the leads lie along the top of the arm
+    const p0=A.pos.clone().addScaledVector(inb,0.0016); p0.y=A.pos.y;
+    const p1=A.pos.clone().addScaledVector(inb,0.0030); p1.y=arm;
+    const mid=V(sx*0.0125+(-sz)*off*1.4, arm, sz*0.0125+sx*off*1.4);
+    const p3=V(B.pos.x+sx*0.0026, Y_FC_TOP+0.0022, B.pos.z+sz*0.0016);
+    const w=wire(id+' lead '+tn+' ('+col+') → FC pad '+id+pn,[A.pos,p0,p1,mid,p3,B.pos.clone().add(V(0,0.0008,0)),B.pos],0.00032,wireMat[col],[g,fc],0.0010);
+    leads.add(w); });
+});
+// battery leads: JST-PH plug into the FC socket — 2 short wires
+[['B+','BAT+','red'],['B-','BAT-','black']].forEach(([a,b,col])=>{
+  const A=P(bat,a), B=P(fc,b);
+  const w=wire('LiPo '+a+' → JST-PH '+b+' ('+col+')',[A.pos,V(A.pos.x,A.pos.y-0.002,A.pos.z),V(B.pos.x,B.pos.y+0.0018,B.pos.z-0.0010),B.pos],0.0004,wireMat[col],[bat,fc],0.0012);
+  leads.add(w); });
+reg('K8',leads,'motor and battery leads','link');
+
+// ---- the 915 MHz receiver. There is no room on the 22 mm cover and none
+// inside the canopy, so it goes where a 0.7 g nano receiver actually goes on a
+// build this size: taped flat to the canopy's left flank, pads aft, wires in
+// through the loom slot, antenna out the back. The ESP FLY cover stays clear.
+const rx=part('rx'); rx.userData.explode.set(-0.024,0.006,0);
+const RXX=-(CAN_W/2+0.0011), RXY=Y_PLATE_TOP+0.0092, RXZ=0.0008;
+const rxg=new THREE.Group(); rxg.position.set(RXX,RXY,RXZ); rxg.rotation.z=Math.PI/2; rx.add(rxg);
+// built flat, then stood on edge: its 12 mm width becomes the height on the wall
+const rxb=roundedPlate(RX_W,RX_L,RX_T,0.001,M.pcbBlack); rxg.add(rxb);
+rxb.userData.name='BetaFPV ELRS Nano receiver, 915 MHz — 12 × 19 mm, 0.7 g, ESP8285 + SX1276';
+const tape=box(RX_W-0.0012,0.0004,RX_L-0.0030,M.strap); tape.position.y=-0.0004; rxg.add(tape);
+tape.userData.name='double-sided foam tape onto the canopy wall';
+const e85=box(0.005,0.0008,0.005,M.ic); e85.position.set(-0.0022,RX_T+0.0004,0.0030); rxg.add(e85); e85.userData.name='ESP8285 (ELRS receiver MCU)';
+const sx1=box(0.0055,0.0009,0.0055,M.ic); sx1.position.set(0.0020,RX_T+0.00045,-0.0024); rxg.add(sx1); sx1.userData.name='SX1276 LoRa transceiver, 915 MHz';
+const rxled=box(0.0010,0.0005,0.0010,M.ledGreen); rxled.position.set(-0.0042,RX_T+0.00025,-0.0058); rxg.add(rxled); rxled.userData.name='receiver LED — solid = bound';
+const boot=box(0.0016,0.0006,0.0016,M.black); boot.position.set(0.0040,RX_T+0.0003,0.0060); rxg.add(boot); boot.userData.name='BOOT button (flash / bind)';
+const ipex=box(0.0025,0.0012,0.0025,M.tin); ipex.position.set(0.0028,RX_T+0.0006,-0.0072); rxg.add(ipex);
+ipex.userData.name='IPEX MHF antenna connector';
+addPin(rxg,'ANT',0.0028,RX_T+0.0012,-0.0072,box(0.0006,0.0006,0.0006,M.tin),V(0,1,0),'IPEX MHF — the 915 MHz antenna pigtail');
+[['VCC','3.3 V in — from the FC 3V3 pad'],['GND','ground'],['TX','CRSF out → FC RX pad (GPIO9)'],['RX','telemetry in ← FC TX pad (GPIO8)']]
+ .forEach(([n,desc],i)=>{ pad(rxg,n,-0.0036+i*0.0024,RX_T,RX_L/2-0.0014,0.0013,0.0012,'receiver pad '+n+' — '+desc); });
+const shrink=box(RX_W+0.0014,RX_T+0.0026,RX_L-0.0014,M.shrink); shrink.position.y=RX_T/2+0.0008; rxg.add(shrink);
+shrink.userData.name='clear heat-shrink over the receiver';
+rx.userData.pins=rxg.userData.pins;                    // the pads belong to the receiver
+reg('E21',rx,'BetaFPV ELRS Nano 915 MHz receiver — 0.7 g, on the canopy flank','rf');
+addLabel(rx,'ELRS Nano RX · 915 MHz · 0.7 g','rf',V(-0.016,0.004,-0.002),true);
+
+// receiver → FC: four wires aft along the flank, in through the loom slot
+const rxWires=part('rxwires');
+[['VCC','P3V3','red'],['GND','PGND','black'],['TX','PRX','yellow'],['RX','PTX','green']].forEach(([a,b,col],i)=>{
+  const A=P(rx,a), B=P(fc,b), out=A.pos.x-0.0016, lane=0.0126+i*0.0006;
+  const pts=[A.pos, V(out,A.pos.y,A.pos.z), V(out,A.pos.y,lane),
+             V(B.pos.x,0.0205,lane), V(B.pos.x,0.0186,0.0108), V(B.pos.x,B.pos.y+0.0014,B.pos.z), B.pos];
+  const w=wire('receiver '+a+' → FC '+b.slice(1)+' ('+col+')'+(a==='TX'?' — GPIO9':a==='RX'?' — GPIO8':''),pts,0.00032,wireMat[col],[rx,fc],0.0010);
+  rxWires.add(w); });
+reg('E21',rxWires,'receiver wiring — 3V3, GND, TX→GPIO9, RX→GPIO8','rf');
+
+// 915 MHz antenna: the IPEX pigtail runs aft along the flank to a heat-shrunk
+// stub at the tail, then 80 mm of wire streams straight back down the
+// centreline — the one line behind the drone no propeller disc can reach.
+const ant=part('ant'); ant.userData.explode.set(0,0.020,0.006);
+const A0=P(rx,'ANT').pos;
+const ANT_BASE=V(0,Y_DECK_TOP+0.0035,0.0125);
+const pig=wire('IPEX pigtail — receiver to the antenna base',
+  [A0,V(A0.x-0.0014,A0.y,A0.z),V(A0.x-0.0014,0.0262,A0.z+0.0016),V(A0.x-0.0014,0.0262,0.0104),
+   V(-0.0050,0.0282,0.0134),ANT_BASE],0.0005,M.black,[rx],0.0018);
+ant.add(pig);
+const stub=box(0.0024,0.0024,0.0062,mat({color:0x2b3238,roughness:.8})); stub.position.set(0,ANT_BASE.y,0.0146); ant.add(stub);
+stub.userData.name='heat-shrink stub — the antenna base, tied down at the tail';
+const ANT_PTS=[V(0,0.0292,0.0125),V(0,0.0296,0.023),V(0,0.0288,0.037),V(0,0.025,0.0515),V(0,0.0172,0.065),V(0,0.0068,0.0745),V(0,0.0008,0.08)];
+const antW=wire('915 MHz antenna — 80 mm quarter-wave, streaming aft on the centreline',ANT_PTS,0.0004,wireMat.white,[stub],0.006);
+antW.userData.isAntenna=true; ant.add(antW);
+reg('E21b',ant,'915 MHz antenna — 80 mm wire, aft, clear of every prop disc','rf');
+addLabel(antW,'915 MHz antenna · 80 mm tail','rf',V(0,0.004,0.040),true);
+
+drone.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; } });
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(2,2),mat({color:0x11171d,roughness:.95}));
+ground.rotation.x=-Math.PI/2; ground.position.y=-0.0008; ground.receiveShadow=true; scene.add(ground);
+const grid=new THREE.GridHelper(0.6,60,0x25333f,0x18222b); grid.material.opacity=.5; grid.material.transparent=true; grid.position.y=-0.0007; scene.add(grid);
+
+// =====================================================================
+// panel — every part, its number, what it weighs
+// =====================================================================
+const ROWS=[
+ ['Airframe (kit)',[
+  ['K6','3D-printed X-frame, canopy and ESP FLY cover','1',MASS.frame,'46 × 46 × 29 mm, 67 × 67 × 31 with props'],
+  ['K3','615 coreless motor, 6 × 15 mm','4',MASS.motor*4,'70 000 rpm, ~17 g thrust each; 2 CW, 2 CCW, leads pre-attached'],
+  ['K4','30 mm tri-blade prop, 0.8 mm shaft','4',MASS.prop*4,'GEMFAN; CW on rear-right + front-left'],
+  ['K5','1S 3.7 V 250 mAh LiPo, JST-PH','1',MASS.lipo,'under the plate in a zip-tie strap'],
+  ['K8','strap, motor and battery leads','—',MASS.wiring,'']]],
+ ['Electronics (kit)',[
+  ['K1','Seeed XIAO ESP32-S3','1',MASS.xiao,'21 × 17.8 mm; runs esp-fc; USB-C is the only 5 V'],
+  ['K2','flight-controller PCB, 4-layer','1',MASS.fc,'32 × 32 mm; IMU + 4 MOSFET drivers = 1 g'],
+  ['K2a','MPU-6050 6-axis IMU','1','—','I2C: SDA GPIO5, SCL GPIO6'],
+  ['K2c','JST-PH 2-pin battery socket','1','—',''],
+  ['K2d','status LED','1','—','GPIO43'],
+  ['K7','2.4 GHz FPC antenna + U.FL pigtail','1','—','kit part; WiFi is OFF in flight — the radar owns this band']]],
+ ['Control link — added (hardware/BOM.md § E)',[
+  ['E21','BetaFPV ELRS Nano 915 MHz receiver','1',MASS.rx,'0.7 g; 3V3, GND, TX→GPIO9, RX→GPIO8; not the 2.9 g BR1'],
+  ['E21b','915 MHz antenna, 80 mm quarter-wave','1',MASS.ant,'IPEX pigtail; tail out the rear, heat-shrunk to a zip-tie stub']]],
+];
+const bomEl=document.getElementById('bom'); let selRow=null;
+ROWS.forEach(([title,rows])=>{ const h=document.createElement('h2'); h.textContent=title; bomEl.appendChild(h);
+  rows.forEach(([id,name,qty,g,note])=>{ const r=document.createElement('div'); r.className='row'; r.dataset.id=id;
+    r.innerHTML=`<span class="n">${id}</span><span>${name}${note?`<small>${note}</small>`:''}</span><span class="q">${qty} · ${typeof g==='number'?g.toFixed(1)+' g':g}</span>`;
+    r.onclick=()=>selectBom(id,r); bomEl.appendChild(r); }); });
+const mNoLipo=MASS.frame+MASS.fc+MASS.xiao+4*MASS.motor+4*MASS.prop+MASS.wiring;
+const mKit=mNoLipo+MASS.lipo, mAll=mKit+MASS.rx+MASS.ant;
+const tot=document.createElement('div'); tot.className='total';
+tot.innerHTML=`kit, no LiPo ≈ ${mNoLipo.toFixed(1)} g (Seeed: ${KIT_MASS_NO_LIPO} g) · with LiPo ≈ ${mKit.toFixed(1)} g (Seeed: ${KIT_MASS} g)<br>+ 915 MHz link ≈ <b>${mAll.toFixed(1)} g</b> take-off`;
+bomEl.appendChild(tot);
+const pinsEl=document.createElement('div'); pinsEl.className='pins';
+pinsEl.innerHTML='<b>XIAO pin map (esp-fc)</b>'+[...XIAO_LEFT,...XIAO_RIGHT].map(([s,g,f])=>`<div><span>${s} · ${g}</span><span>${f}</span></div>`).join('');
+bomEl.appendChild(pinsEl);
+
+let highlight=[], hlT=0;
+function isShown(o){ let p=o; while(p){ if(!p.visible) return false; p=p.parent; } return true; }
+function selectBom(id,rowEl){
+  if(selRow) selRow.classList.remove('sel'); selRow=rowEl||null; if(rowEl) rowEl.classList.add('sel');
+  highlight.forEach(o=>{ o.material=o.userData.origMat; }); highlight=[];
+  const objs=(registry[id]||[]).filter(isShown);
+  if(!objs.length){ status.textContent=id+' — hidden'; return; }
+  objs.forEach(o=>o.traverse(m=>{ if(m.isMesh){ if(!m.userData.origMat) m.userData.origMat=m.material; m.material=M.glow; highlight.push(m);} }));
+  hlT=performance.now();
+  const bb=new THREE.Box3(); objs.forEach(o=>bb.expandByObject(o));
+  const c=bb.getCenter(new THREE.Vector3()), size=bb.getSize(new THREE.Vector3()).length();
+  flyTo(c,Math.max(0.03,size*2.2),az,Math.max(0.25,el));
+  status.textContent=objs[0].userData.name||id;
+}
+
+// =====================================================================
+// views, exploded view, toggles
+// =====================================================================
+let az=-0.75, el=0.42, dist=0.17, tgt=V(0,0.014,0.004), goal=null;
+function place(){ camera.position.set(tgt.x+dist*Math.cos(el)*Math.sin(az),tgt.y+dist*Math.sin(el),tgt.z+dist*Math.cos(el)*Math.cos(az)); camera.lookAt(tgt); }
+function flyTo(t,d,a,e){ goal={t:t.clone(),d,a:(a!==undefined?a:az),e:(e!==undefined?e:el)}; }
+const views={ over:{t:V(0,0.014,0.004),d:0.17,a:-0.75,e:0.42},
+              top:{t:V(0,0.014,0.002),d:0.15,a:-0.02,e:1.40},
+              under:{t:V(0,0.006,0.002),d:0.15,a:-0.60,e:-0.95},
+              rx:{t:V(-0.011,0.021,0.002),d:0.076,a:-1.95,e:0.38} };
+let viewKey='over';
+function setView(k,snap){ viewKey=k; document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===k));
+  const v=views[k]; if(snap){ tgt.copy(v.t); dist=v.d; az=v.a; el=v.e; goal=null; place(); } else flyTo(v.t,v.d,v.a,v.e); }
+document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>setView(b.dataset.view));
+let exploded=false, explodeK=0;
+document.getElementById('b-explode').onclick=e=>{ exploded=!exploded; e.target.classList.toggle('on',exploded); };
+let showFrame=true, showProps=true, showLabels=true, spin=false;
+const shell3=[frame,canopy,coverG];
+document.getElementById('b-frame').onclick=e=>{ showFrame=!showFrame; e.target.classList.toggle('on',showFrame); shell3.forEach(g=>g.visible=showFrame); };
+document.getElementById('b-props').onclick=e=>{ showProps=!showProps; e.target.classList.toggle('on',showProps); props.visible=showProps; };
+document.getElementById('b-labels').onclick=e=>{ showLabels=!showLabels; e.target.classList.toggle('on',showLabels); };
+document.getElementById('b-spin').onclick=e=>{ spin=!spin; e.target.classList.toggle('on',spin); };
+const status=document.getElementById('status');
+
+// URL: ?view=top|under|rx|over &explode=1 &labels=0 &frame=0 &props=0 — for screenshots
+(function(){ const q=new URLSearchParams(location.search);
+  if(q.get('explode')==='1'){ exploded=true; explodeK=1; document.getElementById('b-explode').classList.add('on'); }
+  if(q.get('labels')==='0'){ showLabels=false; document.getElementById('b-labels').classList.remove('on'); }
+  if(q.get('frame')==='0'){ showFrame=false; shell3.forEach(g=>g.visible=false); document.getElementById('b-frame').classList.remove('on'); }
+  if(q.get('props')==='0'){ showProps=false; props.visible=false; document.getElementById('b-props').classList.remove('on'); }
+  if(views[q.get('view')]) setView(q.get('view'),true); else place(); })();
+
+let drag=false,px=0,py=0,moved=false;
+cv.addEventListener('pointerdown',e=>{drag=true;moved=false;px=e.clientX;py=e.clientY;cv.setPointerCapture(e.pointerId);});
+cv.addEventListener('pointerup',e=>{drag=false; if(!moved) pick(e,true);});
+cv.addEventListener('pointermove',e=>{ if(drag){ const dx=e.clientX-px, dy=e.clientY-py;
+    if(Math.abs(dx)+Math.abs(dy)>2) moved=true; az-=dx*0.008; el=Math.max(-1.2,Math.min(1.5,el+dy*0.006));
+    px=e.clientX;py=e.clientY; goal=null; place(); } else pick(e,false); });
+cv.addEventListener('wheel',e=>{e.preventDefault(); dist=Math.max(0.02,Math.min(1.2,dist*(e.deltaY>0?1.12:0.89))); goal=null; place();},{passive:false});
+const ray=new THREE.Raycaster(), mouse=new THREE.Vector2();
+function pick(e,click){ const r=cv.getBoundingClientRect();
+  mouse.x=((e.clientX-r.left)/r.width)*2-1; mouse.y=-((e.clientY-r.top)/r.height)*2+1; ray.setFromCamera(mouse,camera);
+  const hits=ray.intersectObjects(pickables.filter(isShown),false);
+  if(hits.length){ const o=hits[0].object; tip.textContent=o.userData.name||'';
+    tip.style.left=(e.clientX-r.left)+'px'; tip.style.top=(e.clientY-r.top)+'px'; tip.style.opacity=1; cv.style.cursor='pointer';
+    if(click){ const id=o.userData.bom; const row=document.querySelector(`.row[data-id="${id}"]`); if(row) row.scrollIntoView({block:'nearest'}); selectBom(id,row); } }
+  else { tip.style.opacity=0; cv.style.cursor='grab'; } }
+function resize(){ const w=vp.clientWidth,h=vp.clientHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); place(); }
+window.addEventListener('resize',resize);
+
+const v3=new THREE.Vector3(); const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches; let t0=performance.now();
+function frame_(now){ const dt=Math.min((now-t0)/1000,0.05); t0=now;
+  if(goal){ const k=1-Math.pow(0.001,dt); tgt.lerp(goal.t,k); dist+=(goal.d-dist)*k; az+=(goal.a-az)*k; el+=(goal.e-el)*k;
+    if(Math.abs(dist-goal.d)<1e-4 && tgt.distanceTo(goal.t)<1e-4) goal=null; place(); }
+  explodeK+=((exploded?1:0)-explodeK)*(1-Math.pow(0.002,dt));
+  for(const k in parts){ const g=parts[k]; g.position.copy(g.userData.explode).multiplyScalar(explodeK); }
+  if(spin && !reduced){ drone.rotation.y+=dt*0.5; props.children.forEach(p=>p.rotation.y+=(p.userData.dir==='CW'?-1:1)*dt*22); }
+  if(highlight.length){ M.glow.emissiveIntensity=0.5+0.5*Math.abs(Math.sin((now-hlT)/250));
+    if(now-hlT>4000){ highlight.forEach(o=>o.material=o.userData.origMat); highlight=[]; } }
+  renderer.render(scene,camera);
+  const w=vp.clientWidth,h=vp.clientHeight, closeView=dist<0.09;
+  labels.forEach(L=>{ const vis=showLabels && isShown(L.obj) && (closeView || L.major);
+    if(!vis){L.el.style.opacity=0;return;}
+    L.obj.getWorldPosition(v3); v3.add(L.off); v3.project(camera);
+    if(v3.z>1){L.el.style.opacity=0;return;}
+    L.el.style.left=((v3.x*0.5+0.5)*w)+'px'; L.el.style.top=((-v3.y*0.5+0.5)*h)+'px'; L.el.style.opacity=1; });
+  requestAnimationFrame(frame_);
+}
+
+// =====================================================================
+// self-test over the real scene graph. Reported in the title for verify_drone.py.
+// =====================================================================
+function selfTest(){
+  const problems=[];
+  drone.updateMatrixWorld(true);
+  // 1. props cannot overlap
+  if(MOTOR_PITCH<=PROP_D) problems.push('prop overlap: pitch '+MOTOR_PITCH+' <= diameter '+PROP_D);
+  // 2. the envelope is the kit's: 67 x 67 across the props, ~31 tall with them.
+  //    Blade phase makes a bounding box meaningless, so use hub-to-tip radius;
+  //    and the antenna tail leaves the envelope on purpose, so box it without.
+  const tipR=Math.max(...props.children[0].children.filter(o=>o.isGroup).map(piv=>{ const bl=piv.children[0];
+    bl.geometry.computeBoundingBox(); return Math.abs(bl.position.x)+bl.geometry.boundingBox.max.x; }));
+  if(Math.abs(2*tipR-PROP_D)>PROP_D*0.03) problems.push('prop diameter '+(2*tipR*1e3).toFixed(1)+' mm, want '+(PROP_D*1e3));
+  if(Math.abs(MOTOR_PITCH+2*tipR-OVERALL)>OVERALL*0.05) problems.push('envelope across props '+((MOTOR_PITCH+2*tipR)*1e3).toFixed(1)+' mm, kit says '+(OVERALL*1e3));
+  const fb=new THREE.Box3().setFromObject(frame), fs=fb.getSize(new THREE.Vector3());
+  if(Math.abs(fs.x-BODY)>0.0015||Math.abs(fs.z-BODY)>0.0015) problems.push('body '+(fs.x*1e3).toFixed(1)+' x '+(fs.z*1e3).toFixed(1)+' mm, kit says '+(BODY*1e3));
+  const bb2=new THREE.Box3(); drone.traverse(o=>{ if(o.isMesh){ let p=o, inAnt=false; while(p){ if(p===ant) inAnt=true; p=p.parent; }
+    if(!inAnt) bb2.expandByObject(o); } }); const s2=bb2.getSize(new THREE.Vector3());
+  if(Math.abs(s2.y-H_PROP)>H_PROP*0.15) problems.push('height with props '+(s2.y*1e3).toFixed(1)+' mm, kit says '+(H_PROP*1e3));
+  // 3. the antenna never enters a prop disk (with 2 mm to spare) and is the stated length
+  const discs=MOTORS.map(([id,pos,sx,sz])=>({id,x:sx*MP,z:sz*MP}));
+  const aw=wires.find(w=>w.userData.isAntenna);
+  const apts=aw.userData.curve.getSpacedPoints(120);
+  apts.forEach(p=>{ discs.forEach(d=>{ const r=Math.hypot(p.x-d.x,p.z-d.z);
+    if(r<PROP_D/2+0.002 && p.y>Y_MOTOR1-0.002 && p.y<Y_PROP+0.004) problems.push('antenna inside prop disc '+d.id+' at r='+(r*1e3).toFixed(1)+' mm'); }); });
+  if(Math.abs(aw.userData.len-ANT_LEN)>ANT_LEN*0.10) problems.push('antenna length '+(aw.userData.len*1e3).toFixed(0)+' mm, want '+(ANT_LEN*1e3));
+  // 4. every wire starts and ends within 1.2 mm of a named pad on the parts it claims
+  wires.forEach(w=>{ if(w.userData.isAntenna) return; const pl=w.userData.polyline, ends=[pl[0],pl[pl.length-1]];
+    ends.forEach((e,i)=>{ if(i===1 && (w.userData.name.indexOf('pigtail')>=0)) return;
+      if(i===0 && w.userData.isBatteryLead) return;              // starts inside the pack's own tab, not on a pad
+      let best=1; (w.userData.ends||[]).forEach(comp=>{ const pins=comp.userData.pins||{}; for(const k in pins){ const q=pins[k].getWorldPosition(new THREE.Vector3()); best=Math.min(best,q.distanceTo(e)); } });
+      if(best>0.0012) problems.push('wire end '+(i?'B':'A')+' is '+(best*1e3).toFixed(1)+' mm from any pad: '+w.userData.name); }); });
+  // 5. no lead passes through a motor can, the battery or the module shield
+  const obst=[]; MOTORS.forEach(([id])=>obst.push([id+' motor',motorObjs[id].children[0]])); obst.push(['LiPo',cell],['ESP32-S3 shield',can]);
+  const boxes=obst.map(([n,o])=>({n,box:new THREE.Box3().setFromObject(o).expandByScalar(-0.0003)}));
+  wires.forEach(w=>{ const pts=w.userData.curve.getSpacedPoints(80);
+    boxes.forEach(b=>{ for(const p of pts){ if(b.box.containsPoint(p)){ problems.push('wire through '+b.n+': '+w.userData.name); break; } } }); });
+  // 6. the receiver is wired to the pins the docs say, and the mass adds up to the kit's
+  const names=wires.map(w=>w.userData.name).join(' | ');
+  if(names.indexOf('receiver TX → FC RX')<0 || names.indexOf('GPIO9')<0) problems.push('receiver TX is not wired to the FC RX pad (GPIO9)');
+  if(names.indexOf('receiver RX → FC TX')<0 || names.indexOf('GPIO8')<0) problems.push('receiver RX is not wired to the FC TX pad (GPIO8)');
+  if(Math.abs(mKit-KIT_MASS)>KIT_MASS*0.10) problems.push('mass roll-up '+mKit.toFixed(1)+' g vs kit '+KIT_MASS);
+  return problems;
+}
+try{ const pr=selfTest(); document.title=pr.length?('GEOM FAIL '+pr.join(' ; ')):'GEOM OK'; window.__geom=pr; }
+catch(e){ document.title='GEOM FAIL exception: '+e.message; }
+if(document.title==='GEOM OK') status.textContent='ESP-FLY · X-frame, pods at 37 mm · 25 g take-off + 1 g of 915 MHz link · antenna clear of every disc';
+resize(); requestAnimationFrame(frame_);
+})();
+</script>
