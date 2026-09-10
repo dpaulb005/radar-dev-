@@ -53,6 +53,32 @@ Consequences the software handles for you:
   error of `2π·Δf·τ`, and `τ` is 66.7 ns at 10 m: **15°**. It would matter at
   120 m, where it reaches 180°. This is why a stepped sweep is allowed to stand
   in for a ramp at all, and `test_radar.py`'s `ranging` group holds it.
+- **How much Doppler window you can buy, and what it costs.** `SET steps` and
+  `SET step_us` shorten the PRI and widen the unambiguous velocity, but a
+  shorter chirp means fewer steps in the range profile and less processing
+  gain per bin. Measured against a 0.01 m² drone at 10 m on the 100 MHz sweep:
+
+  | steps × step_us | PRI | unambiguous | dwell | drone at 10 m |
+  |---|---|---|---|---|
+  | 64 × 100 µs *(default)* | 7400 µs | ±4.1 m/s | 474 ms | **46 dB** |
+  | 32 × 100 µs | 3700 µs | ±8.3 m/s | 474 ms | 40 dB |
+  | 16 × 100 µs | 1900 µs | ±16.1 m/s | 486 ms | 35 dB |
+  | **16 × 60 µs** | 1160 µs | **±26.4 m/s** | 297 ms | 23 dB |
+  | 8 × 100 µs | 1000 µs | ±30.6 m/s | 256 ms | **lost** |
+  | 8 × 40 µs | 420 µs | ±72.8 m/s | 108 ms | **lost** |
+
+  **16 steps is the floor.** At 8 the range profile has four usable bins, the
+  leakage fills them, and the target is gone — no threshold recovers it.
+  So the reachable window is **±26 m/s**, six times the default.
+
+  Rotor tips on a 31 mm prop at 40 000 rpm move at 65 m/s (±1061 Hz), so a
+  *clean* micro-Doppler spectrum is out of reach — it needs ±65 m/s and the
+  configs that fast do not hold the target. ±26 m/s still shows the blade
+  return as a broad aliased Doppler spread, which is enough to tell a drone
+  from a person, whose limbs stay inside ±5 m/s. Untested on hardware, and
+  `SynthSource` models a point target with no rotors, so the *requirement*
+  above is measured but the *signature* is not.
+
 - **Set R3 DB23.** The firmware does. It picks the ADF4351's fast band-select
   mode, 20 µs instead of 80 µs. At 80 µs of a 100 µs step the PLL would spend
   most of every step slewing.
