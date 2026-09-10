@@ -205,3 +205,61 @@ static scene, capture two blocks a few seconds apart, and difference them:
 
 Do this the day the RF chain first works, before the horns are even aimed. It
 costs nothing and it tells you whether to trust every other number here.
+
+---
+
+## A small room changes the answer
+
+Worked for a real one: **2.87 × 4.17 m** (9'5" × 13'8"), radar at one end
+looking down the length, walls modelled at 4.17 m behind and ~2.2–2.6 m either
+side. Drone 0.0026 m², closing at 0.5 m/s.
+
+**The room is 1.1 range cells deep at 40 MHz.** Range cannot separate the drone
+from the wall behind it — only Doppler can. That single fact drives everything
+below.
+
+| drone at | 40 MHz (2440–2480) | 83.5 MHz (full ISM) |
+|---|---|---|
+| 1.00 m | **no fix** | +0.17 m |
+| 1.50 m | +0.74 m (3/5) | +0.09 m |
+| 2.00 m | +0.54 m | +0.02 m |
+| 2.50 m | +0.30 m | −0.05 m |
+| 3.00 m | +0.19 m | −0.08 m |
+| 4.00 m | −0.32 m | −0.03 m |
+
+**Bandwidth matters far more indoors than the free-space figures suggest.** In
+open air the two sweeps range a target at 10 m equally well. In a 4 m room the
+40 MHz sweep is 0.2–0.5 m out and blind inside 1.5 m, while 83.5 MHz holds
+0.1 m everywhere. The target sits at FFT bin 0.4–1.1 at 40 MHz — inside the DC
+lobe — and at bin 0.8–2.2 at 83.5.
+
+**Two surprises, both good:**
+
+- **Clutter cancellation stops mattering.** 30 dB is as good as 60 dB here,
+  where 10 m needed 50 dB. The drone is close and the echo goes as R⁻⁴, so
+  being 2.5 m away beats a wall 1.7 m further back by more than enough.
+- **The near wall is not the problem.** The far wall in the same range cell is,
+  and only because it removes the range dimension, not because it is loud.
+
+**One that is not good: the drone must keep moving radially.** Measured, at
+2.5 m with 50 dB cancellation:
+
+| radial speed | fixes |
+|---|---|
+| 0.00 m/s | **0/5** |
+| 0.05 m/s | 3/5 |
+| 0.10 m/s and above | 5/5 |
+
+A pure hover is removed with the room. 0.10 m/s is a low bar — a hand-flown
+whoop drifts more than that constantly — but a drone parked on a shelf is
+invisible, and so is one crossing the beam sideways.
+
+**The beam fills the room.** At 34° azimuth it is 0.92 m across at 1.5 m and
+2.55 m at 4.17 m — 32 % to 89 % of the room's width. So the horn does no
+localising at all here; whatever azimuth you want has to come from the servo
+scan or the second receiver.
+
+**Not modelled, and it matters most in a room this size:** multipath. A
+2.87 × 4.17 m box is a resonant cavity at 2.4 GHz, and wall bounces put ghost
+targets at longer apparent ranges. Nothing here predicts them. Expect to see
+returns that are not the drone.
