@@ -164,3 +164,44 @@ then the 915 MHz fallback (`archive/drone-915.md`).
 Floor marks at 3, 5, 8 m on boresight and tape at the sector edges. Hover
 at each mark: console range within 0.4 m, azimuth within 3°. A 2-minute
 hover with a continuous track and no phone-link glitches is the end state.
+
+---
+
+## Before anything else: measure your clutter cancellation
+
+> **This is the number most likely to decide whether the build works, and it is
+> the one nothing in this repo can predict for you.**
+
+Every SNR figure here — the 71 dB at 10 m above all — is thermal-noise-limited
+and assumes an empty universe. Indoors it is not the limit. A 1 m² patch of
+wall is **26 dB above** a 0.0026 m² drone and shares its 3.75 m range cell. The
+drone survives only because the wall does not move and gets subtracted, so what
+matters is not how strong the echo is but **how well the room cancels**.
+
+Simulated in `test_radar.py` (`ranging` group), with a room at 4, 8 and 11.5 m:
+
+| clutter cancellation | drone is the strongest return |
+|---|---|
+| 55 dB | 5/5 |
+| **50 dB** | **5/5** |
+| 45 dB | 3/5 |
+| 40 dB and below | 1–2/5 — the walls win |
+
+So you need roughly **50 dB**. More sweep bandwidth does *not* rescue this —
+measured, 40 MHz and 83.5 MHz need the same cancellation, because the residue
+is spread across Doppler rather than localised in range. It is a mechanical and
+stability problem: a rigid mount, no fan, no one walking about, and a chain that
+does not drift over the 0.47 s dwell.
+
+**How to measure it, before you ever fly the drone.** Point the radar at a
+static scene, capture two blocks a few seconds apart, and difference them:
+
+1. Record a block. Record another. Subtract the range profiles.
+2. The ratio of the strongest clutter peak to the residue after subtraction
+   **is** your cancellation, in dB.
+3. If it is above 50, the link budget in this repo means something.
+   If it is 30, no amount of DSP will find a 25 g drone at 10 m indoors and the
+   fix is mechanical — tripod, mass, no air currents — not software.
+
+Do this the day the RF chain first works, before the horns are even aimed. It
+costs nothing and it tells you whether to trust every other number here.

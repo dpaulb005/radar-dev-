@@ -244,7 +244,8 @@ class SynthSource:
                  beam_az=0.0, bw_az=36.0, seed=0, isolation_db=35.0,
                  f0=None, bw=None, n_rx=1, baseline_m=interf.DEFAULT_BASELINE_M,
                  cal_rad=0.0, switched=False, marker=True, marker_after=2,
-                 n_steps=None, band_select_us=20.0, lock_tau_us=10.0):
+                 n_steps=None, band_select_us=20.0, lock_tau_us=10.0,
+                 clutter_cancel_db=None):
         self.fs, self.t_chirp, self.n_chirps = fs, t_chirp, n_chirps
         self.targets, self.retrace_s = targets, retrace_s
         self.beam_az, self.bw_az = beam_az, bw_az
@@ -255,6 +256,13 @@ class SynthSource:
         self.switched = bool(switched)
         self.marker, self.marker_after = bool(marker), int(marker_after)
         self.n_steps = None if n_steps is None else int(n_steps)
+        # How well a STATIC target actually cancels chirp to chirp. None means
+        # perfectly, which is what every measurement in this repo assumed until
+        # a room was put in one. Real clutter does not repeat exactly: the mount
+        # flexes, the air moves, the chain drifts. Modelled as a per-chirp gain
+        # wobble at the stated ratio, which is crude but is the difference
+        # between "the room subtracts away" and "the room is the noise floor".
+        self.clutter_cancel_db = clutter_cancel_db
         self.band_select_us = float(band_select_us)
         self.lock_tau_us = float(lock_tau_us)
         self.spec = fmcw_sim.RadarSpec(f0=f0 or F0_HZ, bw=bw or BW_HZ, t_chirp=t_chirp, fs=fs,
@@ -343,6 +351,9 @@ class SynthSource:
                                         + self._rx_phase(rx, az))
                 sig += lk * np.cos(2 * math.pi * s.beat_hz(0.3) * th)
                 sig += noise_amp * self.rng.normal(size=n_up)
+                if self.clutter_cancel_db is not None:
+                    sig = sig * (1.0 + 10 ** (-self.clutter_cancel_db / 20.0)
+                                 * self.rng.normal())
                 beats[j].append(sig)
                 beats[j].append(np.zeros(n_gap))
 

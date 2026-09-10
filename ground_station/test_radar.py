@@ -263,6 +263,35 @@ def test_limits():
 
 
 # ======================================================================
+ROOM = [(4.0, 0.0, 0.0, 1.0), (8.0, 10.0, 0.0, 1.0), (11.5, -12.0, 0.0, 2.0)]
+
+
+def _in_room(cancel_db, seeds=(0, 1, 2, 3, 4), drone_r=10.0, drone_v=-1.8):
+    """Is the drone the STRONGEST return, with a room in the way?
+
+    Every other number in this suite is thermal-noise-limited. Indoors it will
+    not be: a 1 m^2 wall is 26 dB above a 0.0026 m^2 drone and shares its 3.75 m
+    range cell. What saves the drone is that the room does not move -- so what
+    matters is how well the room CANCELS, not how strong the echo is."""
+    hits = 0
+    for seed in seeds:
+        src = R.SynthSource(FS, T_UP, N, [(drone_r, 0.0, drone_v, 0.0026)] + ROOM,
+                            retrace_s=RETRACE, f0=F0, bw=BW, seed=seed,
+                            n_steps=64, clutter_cancel_db=cancel_db)
+        beats, sync = src.read()
+        cube, timing = R.segment_chirps(beats[0], sync, FS, N)
+        if cube is None:
+            continue
+        dets, spec = R.process(cube, FS, timing, N, f0=F0, bw=BW,
+                               min_range=1.5, max_range=30.0)
+        if not dets:
+            continue
+        mid = drone_r + drone_v * (timing[1] * N / 2)
+        if abs(sorted(dets, key=lambda d: -d[3])[0][0] - mid) < 1.0:
+            hits += 1
+    return hits, len(seeds)
+
+
 def _range_err(truth, dc_per_chirp=False, iso=35.0, n_steps=64, seeds=(0, 1, 2, 3)):
     """Mean signed range error for a target at `truth`, straight through the
     real pipeline: SynthSource -> segment_chirps -> process, fix chosen by
@@ -335,6 +364,21 @@ def test_ranging():
           max(abs(_range_err(r, iso=33.0)) for r in (3.0, 10.0)) < 0.5)
     # below the cliff it either finds nothing or finds the leak. Both are
     # "blind"; the first is the better failure, because it abstains.
+    # -- the room. This is the number to measure on day one, and the one most
+    #    likely to decide whether the build works: with 1 m^2 walls the drone
+    #    needs about 40 dB of clutter cancellation to stay the strongest
+    #    return. Measured here: 5/5 at 50 dB of cancellation, 3/5 at 45,
+    #    and it falls apart below that. Thermal SNR is 71 dB and says nothing
+    #    about any of it.
+    good, n = _in_room(50.0)
+    check(g, "drone survives a room when clutter cancels well", good == n,
+          f"{good}/{n} at 50 dB cancellation")
+    bad, n = _in_room(25.0)
+    check(g, "and is lost when it does not", bad < n,
+          f"{bad}/{n} at 25 dB — the walls win")
+    check(g, "so clutter cancellation, not SNR, is the indoor limit",
+          good - bad >= 3, f"{good}/{n} at 50 dB vs {bad}/{n} at 25 dB")
+
     blind = _range_err(10.0, iso=30.0)
     check(g, "goes blind below ~32 dB, as documented",
           math.isnan(blind) or abs(blind) > 2.0,
