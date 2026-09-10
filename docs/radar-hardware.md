@@ -144,7 +144,7 @@ run is short and nothing crosses (the 3-D model is the layout):
 ```
    [VCO/ADF4351] → [att] → [PA] → [splitter] ─┬─► (TX horn, on the mast)
                                               └─► [mixer LO]
-   (RX horn) ──────────────► [LNA] ────────────► [mixer RF]
+   (RX horn) ──► [band-pass] ──► [LNA] ────────► [mixer RF]
                                                   [mixer IF] → breadboard
    ESP32 + A4988 + LM2596s + terminal block along the back edge
 ```
@@ -156,8 +156,11 @@ run is short and nothing crosses (the 3-D model is the layout):
    the mast to the horns. The band-pass (2400–2500 MHz inline SMA) sits at
    the LNA input: the horn is wideband and the SPF5189Z amplifies
    50–4000 MHz, so without it every signal in the building reaches the
-   mixer. It does *not* reject the drone's channel-1 WiFi — that is handled
-   by the drone's AP running at 10 dBm (`drone-software.md` §0). **Torque SMA
+   mixer. It no longer has to reject the drone's own WiFi — the control link
+   moved to 915 MHz ([`drone-link.md`](drone-link.md)) and the sweep took the
+   whole band. Its 3 dB edges are 2380/2500 MHz, so the 2400–2483.5 sweep fits
+   with ~20 MHz to spare at each end, and the 2.7 dB it costs sits in front of
+   the LNA so it lands straight on the noise figure. **Torque SMA
    by hand plus 1/8 turn with a wrench** — finger-tight SMA is a 1 dB loss
    you will chase for an evening.
 3. Mark the modules' **DC feed** direction (SPF5189Z boards and the ADF4351
