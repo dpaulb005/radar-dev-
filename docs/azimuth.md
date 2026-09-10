@@ -170,6 +170,16 @@ per antenna.
 It would probably work. It is more software risk for less money, and the
 simultaneous version has the parts already costed, so start there.
 
+**And on the full 83.5 MHz sweep it has a measured limit the simultaneous
+version does not.** Across 36 bearings and velocities it declines to answer
+twice — both at the beam edge (±16°) at the slowest velocity tested
+(−0.7 m/s). The alternation puts a second Doppler line half a span away, CFAR
+ranks that folded line as the strongest return, and the velocity-fold guard
+refuses to read a bearing off it. It abstains; it is never wrong. On the old
+40 MHz sweep all 36 answered, because CFAR also surfaced the true-velocity peak
+as a separate detection and one usable return survived. Simultaneous mode is
+**36/36 with a worst error of 0.00°** on the same grid.
+
 ---
 
 ## What this gives up
