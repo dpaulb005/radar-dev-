@@ -45,6 +45,8 @@ moving on.
 4. **[`docs/drone-hardware.md`](docs/drone-hardware.md)** — build the kit exactly per its guide; the one thing to leave off.
 5. **[`docs/drone-software.md`](docs/drone-software.md)** — esp-fc on the XIAO, a 915 MHz ELRS link, and the two checks that replace the old coexistence test. See also [`docs/drone-link.md`](docs/drone-link.md) and [`docs/drone-link-espfc.md`](docs/drone-link-espfc.md).
 
+Ordering: **[`hardware/ORDER.md`](hardware/ORDER.md)** — every part with a link and a price checked September 2026, in the order to buy them. [`hardware/BOM.md`](hardware/BOM.md) is why each part was chosen.
+
 Breadboard build sheet: [`hardware/breadboard/`](hardware/breadboard/) — every lead and jumper by hole (`WIRING.md`), verified against the netlist, with an interactive `breadboard.html`.
 
 Schematics: [`hardware/kicad/`](hardware/kicad/) — `radar_flow.kicad_sch` (**start here**: every part wired to every part it touches, in signal order, with the level on each connection), `radar_breadboard.kicad_sch` (the breadboard at component level) and `radar_multisim.kicad_sch` (every value on the page, one frame per test). All render in KiCad 7/8; PNGs alongside.

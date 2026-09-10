@@ -1,4 +1,10 @@
-# Bill of Materials — horn-fed FMCW radar (drone: stock ESP-FLY, flown by phone)
+# Bill of Materials — horn-fed FMCW radar (drone: stock ESP-FLY on a 915 MHz link)
+
+> **To actually order, use [`ORDER.md`](ORDER.md)** — the same list with links
+> and prices re-checked 10 September 2026. Three have moved: the ZX05 mixer is
+> $79 and scarce, the UMC404HD is $139 not $100, and the GPIO Labs filter comes
+> in SMA *and* RP-SMA (you need SMA). This page is the reasoning; that one is
+> the shopping.
 
 Researched September 2026 (Mini-Circuits store checked directly; Amazon /
 FPV retailers for the rest). Prices are US street, rounded. Order in the
@@ -39,11 +45,11 @@ Dimensions: aperture 263.8 × 193.1 mm, WR-340 throat 86.4 × 43.2 mm, flare
 91.5 mm, probe 43.7 mm from the back wall. Cut list in
 [`../docs/radar-hardware.md`](../docs/radar-hardware.md) §2.
 
-## C. Baseband, control, power — ~$83 (~$53 if you skip the UCA202, see Totals)
+## C. Baseband, control, power — ~$192
 
 | # | item | qty | ~$ | notes |
 |---|---|---|---|---|
-| 13 | **Behringer UCA202** USB audio interface | 1 | 30 | the ADC: L = beat, R = sync; 44.1/48 kHz 16-bit |
+| 13 | **Behringer UMC404HD** 4-input USB interface | 1 | 139 | the ADC. Four inputs and 192 kHz: stage 2 needs both, and two UCA202s cannot measure phase. Was priced at $100; re-checked Sept 2026 |
 | 14 | ESP32 devkit (WROOM-32) | 1 | 10 | runs `firmware/radar_ctl` |
 | 15 | TL072 ×2, breadboard, resistors/capacitors kit | 1 | 25 | video amp (`radar-hardware.md` §5) |
 | 16 | 12 V 3 A supply + LM2596 buck ×2 | 1 | 18 | 12 V for the op-amp/stepper, 5 V for RF modules + ESP32 |
@@ -85,7 +91,7 @@ skip section H entirely** and fly from the phone on WiFi channel 1 with a
 fraction of a large scene. It is only a bedroom that makes this $122 worth
 spending.
 
-## F. Stage 2 — azimuth interferometer — ~$251
+## F. Stage 2 — azimuth interferometer — ~$151
 
 Bearing from the phase difference between two receivers, in one 0.47 s dwell,
 which is the only way to get it on a *moving* drone. See
@@ -97,7 +103,7 @@ which is the only way to get it on a *moving* drone. See
 | 23 | second 2-way splitter (LO to both mixers) | 1 | 13 | |
 | 24 | second 2400–2500 band-pass filter | 1 | 29 | in front of the second LNA; same part as row 7b |
 | 25 | third horn — materials already in B | — | 0 | **beside** the first RX at 193 mm centres, all three horns rotated 90° |
-| 26 | **4-input USB audio interface** (Behringer UMC404HD) | 1 | 100 | beat A, beat B, sync on one sample clock. Two UCA202s cannot do phase — independent clocks |
+| 26 | 4-input USB interface — **already bought in row 13** | — | 0 | beat A, beat B, sync on one sample clock. This is why row 13 is the UMC404HD and not a UCA202: two UCA202s have independent clocks and cannot measure phase |
 | 27 | third + fourth TL072, second passives set, second breadboard | 1 | 18 | row 15's two TL072 are fully used by U1A/U1B/U2B/U2A; a second video amp needs three more channels |
 | 28 | second LNA (SPF5189Z 4-pack, row 3) | — | 0 | |
 | 29 | 2 more SMA jumper 3-packs | 2 | 18 | the second receive chain adds four coax runs. Buy them together: the two RX chains must be phase-matched, and identical cables from one batch is the cheap way to do it |
@@ -141,8 +147,8 @@ worth of chain, and buys nothing you will have to replace.
 | ESP32 devkit | 10 |
 | **two** TL072, breadboard, passives kit | 25 |
 | 12 V 3 A supply + LM2596 ×2 | 18 |
-| **UMC404HD 4-input interface** — not the UCA202 | 100 |
-| | **394** |
+| **UMC404HD 4-input interface** — not the UCA202 | 139 |
+| | **433** |
 
 **Order 1b — the drone's control link, $122.** Only if you are flying in a
 small room; see § E. RadioMaster Pocket 65, Bandit Nano 915 40, BetaFPV ELRS
@@ -158,9 +164,10 @@ Nano 915 RX 17. Skip it outdoors and fly from the phone on a 40 MHz sweep.
 | two more TL072, second passives set, second breadboard | 18 |
 | | **70** |
 
-**$464 of parts, about $500 delivered** — plus **$122** for the 915 MHz link if
-you need it, so $586 for the indoor build. Drop the SMA adapter assortment from
-order 1 until you find you need it and it is $489.
+**$507 of parts, about $545 delivered** — plus **$122** for the 915 MHz link if
+you are flying indoors, so **~$667** for the full indoor build. Drop the SMA
+adapter assortment and the turntable and it is ~$630. Live prices and links are
+in [`ORDER.md`](ORDER.md).
 
 Nothing in order 1 becomes redundant. The interface, the LNA 4-pack, the horn
 count, the frame and the second TL072 are all sized for the finished radar.
