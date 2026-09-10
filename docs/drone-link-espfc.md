@@ -56,6 +56,30 @@ switch for **ANGLE** mode.
 **Checkpoint 2:** Lua shows the module *connected*, LQ 100, and the
 receiver's RSSI around −40…−60 dBm at bench distance.
 
+## 2b. The ESP-FLY pin map esp-fc uses
+
+From the published esp-fc / XIAO ESP-FLY guide, and what `hardware/3d/drone.html`
+draws. Every XIAO pin has a job:
+
+| XIAO | GPIO | function |
+|---|---|---|
+| D0 | 1 | motor 4 — front-left |
+| D1 | 2 | battery voltage (ADC) |
+| D2 | 3 | motor 3 — rear-left |
+| D3 | 4 | motor 1 — rear-right |
+| D4 | 5 | I2C SDA → MPU-6050 |
+| D5 | 6 | I2C SCL → MPU-6050 |
+| D6 | 43 | status LED |
+| D7 | 44 | spare (UART0 RX) |
+| D8 | 7 | motor 2 — front-right |
+| **D9** | **8** | **UART2 TX → receiver RX** (telemetry) |
+| **D10** | **9** | **UART2 RX ← receiver TX** (CRSF) |
+| 3V3 | — | **receiver power.** The drone has no 5 V rail in flight — the XIAO's 5 V pin is USB VBUS — so the published guide powers the receiver from 3V3, and so does this build |
+| 5V | — | USB only |
+
+Motor order is Betaflight's (1 rear-right, 2 front-right, 3 rear-left,
+4 front-left), props-in: rear-right and front-left CW, the other two CCW.
+
 ## 3. esp-fc — Configurator part
 
 Connect the drone by USB, open **Betaflight Configurator 10.10** (esp-fc

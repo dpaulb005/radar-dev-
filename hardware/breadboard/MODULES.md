@@ -96,13 +96,20 @@ The eBay/Amazon boards share these pin NAMES but not their order on the header �
 | LD | → J10 pin 5 (lock detect) | a56 |
 | MUX | leave open |  |
 
-## Behringer UCA202 (rear panel)
+## Behringer UMC404HD (front panel)
 
-Both breadboard audio outputs go to the RCA INPUT pair. Input switch to LINE. Monitor off. 48 kHz / 16-bit in the OS, every 'enhancement' off.
+Both breadboard audio outputs go into the **front-panel combo jacks** on
+¼" TS plugs (tip = signal, sleeve = ground). Inputs 1 and 3 in stage 1, so
+that input 2 is free for the second beat channel in stage 2 — beat A, beat B
+and sync then sit on **one sample clock**, which is the whole reason this is a
+UMC404HD and not two UCA202s. PAD in, gain fully down, phantom OFF, LINE.
+48 kHz/24-bit in the OS is plenty; 192 kHz is there if you want it.
 
-| pin | goes to | hole |
+| jack | goes to | hole |
 |---|---|---|
-| INPUT L (white) | ← J2 pin 1 AUDIO_L (beat signal) | f36 |
-| INPUT L shell | ← J2 pin 2 GND | f37 |
-| INPUT R (red) | ← J12 pin 1 AUDIO_R (0.3 V sync) | d63 |
-| INPUT R shell | ← J12 pin 2 GND | d62 |
+| INPUT 1 tip | ← J2 pin 1 AUDIO_L (beat signal) | f36 |
+| INPUT 1 sleeve | ← J2 pin 2 GND | f37 |
+| INPUT 3 tip | ← J12 pin 1 AUDIO_R (0.3 V sync) | d63 |
+| INPUT 3 sleeve | ← J12 pin 2 GND stub | d62 |
+| INPUT 2 | reserved: beat B (stage 2, second video amp) | — |
+| USB-B (rear) | → laptop | — |

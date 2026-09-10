@@ -248,9 +248,9 @@ Already owned, not counted: the laptop, the phone, and the ESP-FLY drone.
 
 | | | running |
 |---|---|---|
-| Stage 1 — range and velocity (A + B + C, but buy the UMC404HD not the UCA202) | 453 | 453 |
-| + Stage 2 — azimuth (F, less the interface already bought) | 151 | 604 |
-| + optional turntable (D) | 53 | 657 |
+| Stage 1 — range and velocity (A + B + C, the UMC404HD included) | 492 | 492 |
+| + Stage 2 — azimuth (F, the interface already bought) | 151 | 643 |
+| + optional turntable (D) | 53 | 696 |
 
 
 Staged this way nothing is wasted and nothing is rebuilt: stage 1 buys the

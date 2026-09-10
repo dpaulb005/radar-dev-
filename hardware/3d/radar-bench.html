@@ -63,7 +63,7 @@
 <div id="app">
   <header>
     <div><div class="eyebrow">horn-fed FMCW radar · every BOM row · the breadboard, hole by hole</div><h1>Radar Bench Model</h1></div>
-    <div class="sub">Drag to orbit · scroll to zoom · click a BOM row to fly to the part · hover anything for its name or pin.</div>
+    <div class="sub">Drag to orbit · scroll to zoom · click a BOM row to fly to the part · hover anything for its name or pin. · The target itself: <a href="drone.html">drone.html</a></div>
   </header>
   <section id="vp">
     <canvas id="cv"></canvas>
@@ -742,7 +742,7 @@ function esp32Devkit(){
   });
   return g;
 }
-const esp=esp32Devkit(); esp.position.set(0.100,TOP+0.0075,0.152); bench.add(esp);
+const esp=esp32Devkit(); esp.position.set(0.096,TOP+0.0075,0.152); bench.add(esp);
 // female header strips: the devkit plugs into these, which is what lifts its
 // pins clear of the plywood so a lead can actually reach them
 [-0.01143,0.01143].forEach(x=>{ const s=box(0.0064,0.0075,15*PITCH,M.pcbBlack);
@@ -788,7 +788,7 @@ function lm2596(){
     addPin(g,n,x,0.0019,z,p); p.userData.name='LM2596 '+n; });
   return g;
 }
-const buck=lm2596(); buck.position.set(0.058,TOP,0.152); bench.add(buck);
+const buck=lm2596(); buck.position.set(0.051,TOP,0.152); bench.add(buck);
 reg('C16b',buck,'LM2596 buck → 5.00 V','pow'); addLabel(buck,'LM2596','pow');
 
 // screw terminal block — the star ground and 12 V distribution
@@ -824,30 +824,6 @@ psuAc.userData.pinOut=0.014; psuAc.userData.name='12 V supply - mains inlet';
 psu.add(at(box(0.040,0.0008,0.028,mat({color:0xcfd6dd,roughness:.8})),0,0.0325,0));
 reg('C16a',psu,'12 V 3 A supply','pow'); addLabel(psu,'12 V 3 A supply','pow',new THREE.Vector3(0,0.03,0));
 
-// Behringer UCA202 — 4 RCA on the rear, headphone + level on the front, captive USB
-function uca202(){
-  const g=new THREE.Group(), W=0.096, H=0.021, D=0.070;
-  g.add(at(box(W,H,D,mat({color:0x33383e,roughness:.55})),0,H/2,0));
-  g.add(at(box(W-0.004,0.0012,D-0.004,mat({color:0x22262b,roughness:.6})),0,H,0));
-  const rca=(x,c,name,label)=>{ const j=new THREE.Group(); j.position.set(x,H*0.55,-D/2);
-    j.add(at(cyl(0.0055,0.0060,mat({color:c,roughness:.55}),16),0,0,-0.0030));
-    const b=j.children[0]; b.rotation.x=Math.PI/2;
-    j.add(at(cyl(0.0011,0.0070,M.gold,10),0,0,-0.0035)); j.children[1].rotation.x=Math.PI/2;
-    const p=box(0.001,0.001,0.001,M.gold); addPin(g,name,x,H*0.55,-D/2-0.007,p,new THREE.Vector3(0,0,-1));
-    p.userData.name='UCA202 '+label; g.add(j); };
-  rca(-0.034,0xe8e8e8,'IN_L','INPUT L (white) ← J2 AUDIO_L');
-  rca(-0.020,0xd03028,'IN_R','INPUT R (red) ← J12 AUDIO_R');
-  rca( 0.020,0xe8e8e8,'OUT_L','OUTPUT L (white)');
-  rca( 0.034,0xd03028,'OUT_R','OUTPUT R (red)');
-  g.add(at(cyl(0.0055,0.0090,M.black,16),0.030,H*0.55,D/2)); g.children[g.children.length-1].rotation.x=Math.PI/2;
-  g.add(at(cyl(0.0060,0.0055,mat({color:0x1a1d21,roughness:.6}),18),-0.028,H*0.6,D/2-0.002));
-  g.children[g.children.length-1].rotation.x=Math.PI/2;
-  g.add(at(box(0.0080,0.0040,0.0030,M.black),0.002,H*0.6,D/2));                       // MONITOR switch
-  const usb=box(0.002,0.002,0.002,M.black); addPin(g,'USB',0.048,H*0.5,0.010,usb);
-  return g;
-}
-const uca=uca202(); uca.position.set(0.335,0,0.150); world.add(uca);
-reg('C13',uca,'Behringer UCA202 — the ADC','dsp'); addLabel(uca,'UCA202 sound card','dsp',new THREE.Vector3(0,0.03,0));
 
 // laptop, with a keyboard field and trackpad
 const lap=new THREE.Group(); lap.position.set(0.66,0,0.21); lap.rotation.y=-0.62; world.add(lap);
@@ -856,7 +832,7 @@ lap.add(at(box(0.276,0.0012,0.104,mat({color:0x16191d,roughness:.7})),0,0.0122,-
 for(let r=0;r<5;r++) for(let c=0;c<15;c++)
   lap.add(at(box(0.0150,0.0012,0.0150,mat({color:0x24282d,roughness:.65})),-0.132+c*0.0189,0.0129,-0.070+r*0.0195));
 lap.add(at(box(0.090,0.0010,0.058,mat({color:0x3a4046,roughness:.5})),0,0.0125,0.062));
-// three USB-A sockets on the left flank: ESP32, UCA202, and the UMC404HD later
+// three USB-A sockets on the left flank: ESP32, the UMC404HD, one spare
 ['USB1','USB2','USB3'].forEach(function(n,i){
   lap.add(at(box(0.004,0.0065,0.014,mat({color:0x8f979e,metalness:.7,roughness:.35})),-0.160,0.0062,0.010+i*0.022));
   const u=box(0.002,0.005,0.011,M.dark);
@@ -867,19 +843,58 @@ const lid=box(0.32,0.21,0.008,M.brick); lid.position.set(0,0.115,-0.105); lid.ro
 const scr=box(0.292,0.181,0.002,M.screen); scr.position.set(0,0.115,-0.0985); scr.rotation.x=-0.25; lap.add(scr);
 reg('C13b',lap,'laptop — radar_acquire.py + console','dsp'); addLabel(lap,'laptop · console','dsp',new THREE.Vector3(0,0.24,0),true);
 
-const umc=new THREE.Group(); umc.position.set(0.36,0,0.31); world.add(umc);
-umc.add(at(box(0.20,0.045,0.12,mat({color:0x2a2d31,roughness:.5})),0,0.0225,0));
-for(let i=0;i<4;i++){ umc.add(at(cyl(0.0090,0.0140,M.black,18),-0.070+i*0.030,0.026,-0.058));
-  umc.children[umc.children.length-1].rotation.x=Math.PI/2;
-  umc.add(at(cyl(0.0055,0.0060,mat({color:0xd8d8d8,roughness:.5}),14),-0.070+i*0.030,0.045,-0.020)); }
-umc.add(at(box(0.010,0.008,0.004,mat({color:0x8f979e,metalness:.7,roughness:.35})),0.086,0.030,0.058));
-const umcUsb=box(0.006,0.005,0.002,M.dark);
-addPin(umc,'USB',0.086,0.030,0.061,umcUsb,new THREE.Vector3(0,0,1));
-umcUsb.userData.pinOut=0.012; umcUsb.userData.name='UMC404HD USB-B to the laptop';
-['IN1','IN2','IN3'].forEach((n,i)=>{ const p=cyl(0.0030,0.004,M.gold,12); p.rotation.x=Math.PI/2;
-  addPin(umc,n,-0.070+i*0.030,0.026,-0.066,p,new THREE.Vector3(0,0,-1));
-  p.userData.name='UMC404HD '+n+' (combo jack)'; });
-reg('F26',umc,'Behringer UMC404HD — 4 inputs, one clock (stage 2)','dsp'); addLabel(umc,'UMC404HD (stage 2)','dsp',new THREE.Vector3(0,0.04,0));
+// Behringer UMC404HD — 292 x 46 x 130 mm. Four combo XLR/TRS inputs on the FRONT
+// (gain knob, PAD button and signal/clip LED above each), USB-B and the line outs
+// on the rear. It stands facing the bench so the TS plugs from the video amp are
+// in plain view: IN1 = beat A and IN3 = sync from stage 1, IN2 = beat B in stage 2.
+// One sample clock under all of them is the reason it is this and not two UCA202s.
+function umc404hd(){
+  const g=new THREE.Group(), W=0.292, H=0.0458, D=0.130;
+  const bodyG=new THREE.Group(); g.add(bodyG); g.userData.body=bodyG;   // the chassis: the obstacle; plugs are not
+  const body=box(W,H,D,mat({color:0x2a2d31,roughness:.5})); body.position.y=H/2; bodyG.add(body);
+  bodyG.add(at(box(W-0.006,0.0012,D-0.006,mat({color:0x1f2226,roughness:.6})),0,H,0));
+  const face=mat({color:0x35393e,roughness:.45}), knobM=mat({color:0x1a1d21,roughness:.5});
+  bodyG.add(at(box(W,H-0.004,0.0015,face),0,H/2,D/2+0.0007));
+  g.add(at(box(0.060,0.006,0.0006,mat({color:0xc9ced3,metalness:.6,roughness:.35})),0.058,0.0085,D/2+0.0018));   // nameplate
+  const plugs2=[];
+  const jackAt=(x,n,label,plugged)=>{
+    const ring=cyl(0.0118,0.004,mat({color:0x111316,roughness:.5}),24); ring.rotation.x=Math.PI/2; ring.position.set(x,0.017,D/2+0.0025); g.add(ring);
+    const trs=cyl(0.0034,0.005,M.gold,16); trs.rotation.x=Math.PI/2; trs.position.set(x,0.017,D/2+0.003); g.add(trs);
+    [0,1,2].forEach(k=>{ const h=cyl(0.0011,0.003,M.black,8); h.rotation.x=Math.PI/2;
+      h.position.set(x+Math.sin(k*2.094+0.5)*0.0072,0.017+Math.cos(k*2.094+0.5)*0.0072,D/2+0.004); g.add(h); });   // XLR pins
+    const knob=cyl(0.0055,0.007,knobM,16); knob.rotation.x=Math.PI/2; knob.position.set(x,0.037,D/2+0.004); g.add(knob);
+    g.add(at(box(0.0015,0.0015,0.001,M.ledBlue),x+0.011,0.030,D/2+0.002));
+    g.add(at(box(0.005,0.003,0.0015,M.black),x-0.012,0.030,D/2+0.002));                                            // PAD
+    let p;
+    if(plugged){  // a 1/4" TS plug seated in the jack: tip in, body out, cable off the tail
+      const tip=cyl(0.0031,0.014,M.tin,12); tip.rotation.x=Math.PI/2; tip.position.set(x,0.017,D/2+0.009); g.add(tip);
+      const bodyP=cyl(0.0048,0.026,M.black,14); bodyP.rotation.x=Math.PI/2; bodyP.position.set(x,0.017,D/2+0.028); g.add(bodyP);
+      const relief=cyl(0.0028,0.010,M.boot,10); relief.rotation.x=Math.PI/2; relief.position.set(x,0.017,D/2+0.045); g.add(relief);
+      p=box(0.001,0.001,0.001,M.black); addPin(g,n,x,0.017,D/2+0.050,p,new THREE.Vector3(0,0,1)); p.userData.pinOut=0.006;
+      if(plugged!==true) plugged.push(tip,bodyP,relief);
+    } else { p=box(0.001,0.001,0.001,M.gold); addPin(g,n,x,0.017,D/2+0.004,p,new THREE.Vector3(0,0,1)); p.userData.pinOut=0.030; }
+    p.userData.name='UMC404HD '+n+' — '+label;
+  };
+  jackAt(-0.120,'IN1','combo jack, ¼" TS plug: beat A ← J2 AUDIO_L',true);
+  jackAt(-0.086,'IN2','combo jack, ¼" TS plug: beat B ← 2nd video amp (stage 2)',plugs2);
+  jackAt(-0.052,'IN3','combo jack, ¼" TS plug: sync ← J12 AUDIO_R',true);
+  jackAt(-0.018,'IN4','combo jack — spare',null);
+  [[0.080,'MIX'],[0.112,'MAIN OUT']].forEach(([x,n])=>{ const k=cyl(0.0090,0.008,knobM,20); k.rotation.x=Math.PI/2; k.position.set(x,0.028,D/2+0.0045); g.add(k); k.userData.name='UMC404HD '+n; });
+  const ph=cyl(0.0040,0.004,M.black,14); ph.rotation.x=Math.PI/2; ph.position.set(0.138,0.012,D/2+0.002); g.add(ph); ph.userData.name='UMC404HD phones';
+  g.add(at(box(0.0015,0.0015,0.001,M.ledRed),0.138,0.030,D/2+0.002));
+  // rear: USB-B to the laptop, four TRS line outs, two XLR outs, MIDI
+  const usbSock=box(0.012,0.011,0.004,mat({color:0x8f979e,metalness:.7,roughness:.35})); usbSock.position.set(0.120,0.018,-D/2-0.0005); g.add(usbSock);
+  const usb=box(0.006,0.005,0.002,M.dark); addPin(g,'USB',0.120,0.018,-D/2-0.003,usb,new THREE.Vector3(0,0,-1));
+  usb.userData.pinOut=0.012; usb.userData.name='UMC404HD USB-B → laptop';
+  [-0.110,-0.082,-0.054,-0.026].forEach((x,i)=>{ const r=cyl(0.0045,0.004,M.black,14); r.rotation.x=Math.PI/2; r.position.set(x,0.018,-D/2-0.001); g.add(r); r.userData.name='UMC404HD line out '+(i+1)+' (TRS)'; });
+  [0.010,0.045].forEach((x,i)=>{ const r=cyl(0.0110,0.004,mat({color:0x111316,roughness:.5}),20); r.rotation.x=Math.PI/2; r.position.set(x,0.020,-D/2-0.001); g.add(r); r.userData.name='UMC404HD main out '+(i?'R':'L')+' (XLR)'; });
+  [0.075,0.095].forEach((x,i)=>{ const r=cyl(0.0075,0.004,M.black,16); r.rotation.x=Math.PI/2; r.position.set(x,0.020,-D/2-0.001); g.add(r); r.userData.name='UMC404HD MIDI '+(i?'out':'in'); });
+  g.add(at(box(0.008,0.006,0.003,M.black),0.138,0.030,-D/2-0.001));                                                // power switch
+  g.userData.plugs2=plugs2; return g;
+}
+const umc=umc404hd(); umc.position.set(0.30,0,0.33); umc.rotation.y=Math.PI; world.add(umc);
+reg('C13',umc,'Behringer UMC404HD — beat A + sync on one sample clock now, beat B into IN2 in stage 2','dsp');
+addLabel(umc,'UMC404HD · 4-in interface','dsp',new THREE.Vector3(0,0.075,0),true);
 
 // stage-3 second receive chain: RX B → band-pass → LNA → mixer, mirroring the first
 const bpf2=rfBarrel(0.042,0.0065,M.alu,[{name:'out',side:'l'},{name:'in',side:'r'}]);
@@ -891,7 +906,7 @@ putRF(mix2,-0.045,ZRX2); bench.add(mix2); reg('F22',mix2,'2nd mixer ZX05-43MH-S+
 const spl2=mcCase(0.032,0.014,0.024,[{name:'s',side:'l'},{name:'o1',side:'f',off:-0.008},{name:'o2',side:'f',off:0.008}]);
 putRF(spl2,-0.120,-0.112); bench.add(spl2); reg('F23',spl2,'2nd splitter — LO to both mixers (stage 2)','rf');
 addLabel(bpf2,'band-pass 2','rf'); addLabel(lna2,'LNA 2','rf'); addLabel(mix2,'mixer 2','rf'); addLabel(spl2,'splitter 2','rf');
-const stage2Only=[bpf2,lna2,mix2,spl2,umc];
+const stage2Only=[bpf2,lna2,mix2,spl2,...umc.userData.plugs2];
 
 // =====================================================================
 // the harness — every wire runs between two real pins
@@ -979,59 +994,88 @@ function sideToSide(A,B,corr){
   return pts.concat(arrival(B,corr&&corr.length?corr[corr.length-1]:null));
 }
 
-// ---- ESP32 -> J9 (row j). Lane band sits clear of both the devkit and board.
+// =====================================================================
+// the harness. Every run is planned so that wires only cross where the two
+// pin orders force it: header wires from one face nest (the northern pin's
+// jumper takes the longer stub so it clears the southern pins), bundles that
+// wrap a module keep their ribbon order, and the ADF4351 bundle takes the
+// side of the board that lands CLK..CE on J10 in pin order. What is left is
+// physics: the ESP32 devkit's pin order is the reverse of J9's, so those ten
+// jumpers are plugged in as jumpers really are — arched over the gap.
+// =====================================================================
+// nested stub fans: pinOut grows with the pin's distance from the board
+[['D25',0.004],['D26',0.005],['D27',0.006],['D14',0.007],['GND',0.008],
+ ['D23',0.004],['D19',0.005],['D18',0.006],['D5',0.007],['3V3',0.008]]
+ .forEach(([n,o])=>{ esp.userData.pins[n].userData.pinOut=o; });
+[['ENABLE',0.004],['STEP',0.0052],['DIR',0.0064],['GND_L',0.004],['VDD',0.006]]
+ .forEach(([n,o])=>{ a49.userData.pins[n].userData.pinOut=o; });
+
+// ---- ESP32 -> J9 (row j): ten Dupont jumpers, arched from the devkit's side
+// pins over the harness lanes and down onto the header from above.
 [['GND','1','black'],['D18','2','blue'],['D23','3','blue'],['D5','4','blue'],['D19','5','blue'],
  ['D25','6','grey'],['D26','7','white'],['D27','8','white'],['D14','9','white'],['3V3','10','yellow']
-].forEach(function(e,i){
-  const A=P(esp,e[0]), B=P(bbParts.J9,e[1]), lane=0.1205+i*0.0012;
+].forEach(function(e){
+  const A=P(esp,e[0]), B=P(bbParts.J9,e[1]), a1=stub(A);
   link('ESP32 '+e[0]+' -> J9 pin '+e[1]+' ('+JNETS.J9[+e[1]-1]+')',A,B,e[2],
-       toHeader(A,B,[[stub(A).x,lane]]));
+       [A.pos.clone(),a1,V(a1.x,BBUP-0.004,a1.z),V(B.pos.x,BBUP,BBFRONT),V(B.pos.x,BBUP,B.pos.z),stub(B),B.pos.clone()],
+       wireG,undefined,0.008);
 });
 
-// ---- A4988 -> J11 (row j) -------------------------------------------------
-[['GND_L','1','black'],['VDD','2','yellow'],['STEP','3','white'],['DIR','4','white'],['ENABLE','5','white']
-].forEach(function(e,i){
-  const A=P(a49,e[0]), B=P(bbParts.J11,e[1]), lane=0.1185+i*0.0011;
-  link('A4988 '+e[0]+' -> J11 pin '+e[1]+' ('+JNETS.J11[+e[1]-1]+')',A,B,e[2],
-       toHeader(A,B,[[stub(A).x,lane]]));
+// ---- A4988 -> J11 (row j). ENABLE/STEP/DIR leave the west face and nest;
+// VDD and GND_L leave the east face and wrap round the north end so they
+// never cut across the six motor-supply and coil wires below them.
+[['ENABLE','5','white',[[0.1517,0.1185]]],
+ ['DIR','4','white',[[0.1493,0.1196]]],
+ ['STEP','3','white',[[0.1505,0.1207]]],
+ ['VDD','2','yellow',[[0.1743,0.152],[0.1425,0.152],[0.1425,0.1218]]],
+ ['GND_L','1','black',[[0.1723,0.150],[0.1445,0.150],[0.1445,0.1229]]]
+].forEach(function(e){
+  const A=P(a49,e[0]), B=P(bbParts.J11,e[1]);
+  link('A4988 '+e[0]+' -> J11 pin '+e[1]+' ('+JNETS.J11[+e[1]-1]+')',A,B,e[2],toHeader(A,B,e[3]));
 });
 
-// ---- A4988 motor supply, straight off the terminal block -------------------
-[['VMOT','T1','red'],['GND_M','T2','black']].forEach(function(e,i){
-  const A=P(a49,e[0]), B=P(term,e[1]), lane=0.180+i*0.004;
-  link('A4988 '+e[0]+' <- terminal block '+e[1],A,B,e[2],
-       sideToSide(A,B,[[FAR+i*0.004,stub(A).z],[FAR+i*0.004,lane],[-0.086+i*0.004,lane]]));
-});
+// ---- A4988 motor supply from the terminal block: along the foot of the
+// breadboard, under the header climbs, round the west end of the block.
+link('A4988 VMOT <- terminal block T1',P(a49,'VMOT'),P(term,'T1'),'red',
+     sideToSide(P(a49,'VMOT'),P(term,'T1'),[[0.176,0.1261],[0.176,0.1115],[-0.120,0.1115],[-0.120,0.164],[-0.1113,0.164]]));
+link('A4988 GND_M <- terminal block T2',P(a49,'GND_M'),P(term,'T2'),'black',
+     sideToSide(P(a49,'GND_M'),P(term,'T2'),[[0.178,0.1287],[0.178,0.110],[-0.1225,0.110],[-0.1225,0.168],[-0.1027,0.168]]));
 
-// ---- A4988 -> NEMA-17, down the right edge and in behind the motor ---------
+// ---- A4988 -> NEMA-17, down the east edge and in behind the motor ---------
 [['1A','M1','red'],['1B','M2','blue'],['2A','M3','green'],['2B','M4','black']].forEach(function(e,i){
-  const A=P(a49,e[0]), B=P(nema,e[1]), lane=FAR+0.010+i*0.0032, back=-0.104-i*0.0032;
+  const A=P(a49,e[0]), B=P(nema,e[1]), lane=FAR+0.014+i*0.0032, back=-0.104-i*0.0032;
   link('A4988 '+e[0]+' -> NEMA-17 '+e[1]+' (coil '+(e[0][0]==='1'?'A':'B')+')',A,B,e[2],
        sideToSide(A,B,[[lane,stub(A).z],[lane,back],[stub(B).x,back]]),stepWireG,0.0007);
 });
 
-// ---- ADF4351 -> J10 (row a) and J6 (row d) --------------------------------
-[['CLK','2','blue'],['DATA','3','blue'],['LE','4','blue'],['LD','5','blue'],['CE','6','violet']
+// ---- ADF4351 -> J10 (row a): out of the header, east along the front of
+// the board, round its east end, along the back of the bench, up the gap
+// between LNA and band-pass, and west along the back edge to J10. Going this
+// way round is what puts CLK on pin 2 and CE on pin 6 without a twist.
+[['CLK','2','blue',   -0.1147,-0.1329,-0.1760,0.1405],
+ ['DATA','3','blue',  -0.1169,-0.1343,-0.1782,0.1417],
+ ['LE','4','blue',    -0.1191,-0.1357,-0.1804,0.1429],
+ ['CE','6','violet',  -0.1213,-0.1371,-0.1826,0.1441],
+ ['LD','5','blue',    -0.1235,-0.1385,-0.1848,0.1453]
 ].forEach(function(e,i){
-  const A=P(adf,e[0]), B=P(bbParts.J10,e[1]), lane=-0.184+i*0.0022, col=0.1405+i*0.0014;
+  const A=P(adf,e[0]), B=P(bbParts.J10,e[1]), lane=e[3], colE=e[4], back=e[5], trunk=e[6];
+  const endz=BBBACK-0.012-(4-i)*0.0022;                 // LD nearest the board, CLK farthest
   link('ADF4351 '+e[0]+' -> J10 pin '+e[1]+' ('+JNETS.J10[+e[1]-1]+')',A,B,e[2],
-       toHeader(A,B,[[stub(A).x,lane],[col,lane],[col,BBBACK-0.012-i*0.0022]]));
+       toHeader(A,B,[[stub(A).x,lane],[colE,lane],[colE,back],[trunk,back],[trunk,endz]]));
 });
-[['VCC','1','red'],['GND','2','black']].forEach(function(e,i){
-  const A=P(adf,e[0]), B=P(bbParts.J6,e[1]), lane=-0.179-i*0.0032, col=0.0645+i*0.0022;
-  link('ADF4351 '+e[0]+' -> J6 pin '+e[1],A,B,e[2],
-       toHeader(A,B,[[stub(A).x,lane],[col,lane],[col,BBBACK-0.012-i*0.0026]]));
-});
-
-// ---- 5 V to the two amplifier modules -------------------------------------
-[[pa,'J7','PA',0],[lna,'J8','LNA',1]].forEach(function(m){
-  [['5V','1','red'],['GND','2','black']].forEach(function(e,i){
-    const A=P(m[0],e[0]), B=P(bbParts[m[1]],e[1]);
-    const col=0.0605+m[3]*0.0042+i*0.0021;
-    link(m[2]+' '+e[0]+' -> '+m[1]+' pin '+e[1],A,B,e[2],
-         toHeader(A,B,[[stub(A).x,-0.115-m[3]*0.004],[col,-0.115-m[3]*0.004],
-                       [col,BBBACK-0.012-i*0.0026]]));
-  });
+// ---- power to the ADF4351 (J6), PA (J7) and LNA (J8): one trunk up the gap
+// between mixer and LNA, then east along the back edge in pin order.
+[[adf,'VCC','J6','1','red',   -0.1076,0.0570,0],
+ [adf,'GND','J6','2','black', -0.1092,0.0590,1],
+ [pa, '5V', 'J7','1','red',   -0.1108,0.0610,2],
+ [pa, 'GND','J7','2','black', -0.1124,0.0630,3],
+ [lna,'5V', 'J8','1','red',   -0.1036,0.0650,4],
+ [lna,'GND','J8','2','black', -0.1020,0.0670,5]
+].forEach(function(e){
+  const A=P(e[0],e[1]), B=P(bbParts[e[2]],e[3]), lane=e[5], trunk=e[6], endz=BBBACK-0.012-e[7]*0.0022;
+  const who=e[0]===adf?'ADF4351':e[0]===pa?'PA':'LNA';
+  link(who+' '+e[1]+' -> '+e[2]+' pin '+e[3],A,B,e[4],
+       toHeader(A,B,[[stub(A).x,lane],[trunk,lane],[trunk,endz]]));
 });
 
 // ---- power in: brick -> terminal block -> J3, J4 -> buck, buck -> J5 -------
@@ -1043,33 +1087,48 @@ link('12 V supply -> terminal block T3',P(psu,'OUT'),P(term,'T3'),'brown',
   link('terminal block '+e[0]+' -> J3 pin '+e[1],A,B,e[2],
        toHeader(A,B,[[stub(A).x,lane],[B.pos.x,lane]]));
 });
-[['1','IN+','red'],['2','IN-','black']].forEach(function(e,i){
-  const A=P(bbParts.J4,e[0]), B=P(buck,e[1]), lane=0.1235+i*0.0028;
-  link('J4 pin '+e[0]+' -> LM2596 '+e[1],A,B,e[2],
-       fromHeader(A,B,[[A.pos.x,lane],[stub(B).x,lane]]));
-});
-[['OUT+','1','red'],['OUT-','2','black']].forEach(function(e,i){
-  const A=P(buck,e[0]), B=P(bbParts.J5,e[1]), lane=0.1300+i*0.0028;
-  link('LM2596 '+e[0]+' -> J5 pin '+e[1],A,B,e[2],
-       toHeader(A,B,[[stub(A).x,lane]]));
-});
+// the buck's IN pins are approached from the west, 9 mm out; OUT+ ducks under
+// the south edge and OUT- goes over the north edge, both coming back to J5
+// through the slot between the buck and the header climbs.
+{
+  const inX=P(buck,'IN+').pos.x, outX=P(buck,'OUT+').pos.x, zP=P(buck,'IN+').pos.z, zN=P(buck,'IN-').pos.z;
+  const hop=inX-0.009;
+  link('J4 pin 1 -> LM2596 IN+',P(bbParts.J4,'1'),P(buck,'IN+'),'red',
+       fromHeader(P(bbParts.J4,'1'),P(buck,'IN+'),[[P(bbParts.J4,'1').pos.x,0.1240],[hop,0.1240],[hop,zP]]));
+  link('J4 pin 2 -> LM2596 IN-',P(bbParts.J4,'2'),P(buck,'IN-'),'black',
+       fromHeader(P(bbParts.J4,'2'),P(buck,'IN-'),[[P(bbParts.J4,'2').pos.x,0.1255],[hop-0.002,0.1255],[hop-0.002,zN],[hop,zN]]));
+  link('LM2596 OUT+ -> J5 pin 1',P(buck,'OUT+'),P(bbParts.J5,'1'),'red',
+       toHeader(P(buck,'OUT+'),P(bbParts.J5,'1'),[[outX,zP-0.009],[0.033,zP-0.009],[0.033,0.1205]]));
+  link('LM2596 OUT- -> J5 pin 2',P(buck,'OUT-'),P(bbParts.J5,'2'),'black',
+       toHeader(P(buck,'OUT-'),P(bbParts.J5,'2'),[[outX,zN+0.009],[outX,0.170],[0.031,0.170],[0.031,0.1220]]));
+}
 
-// ---- audio out: J2 -> UCA202 INPUT L, J12 -> INPUT R ----------------------
-link('J2 pin 1 AUDIO_L -> UCA202 INPUT L',P(bbParts.J2,'1'),P(uca,'IN_L'),'white',
-     fromHeader(P(bbParts.J2,'1'),P(uca,'IN_L'),
-                [[0.070,0.1265],[0.205,0.1265],[0.205,0.092],[0.290,0.092]]),
-     wireG,0.0011);
-link('J12 pin 1 AUDIO_R -> UCA202 INPUT R',P(bbParts.J12,'1'),P(uca,'IN_R'),'red',
-     fromHeader(P(bbParts.J12,'1'),P(uca,'IN_R'),
-                [[0.145,BBBACK-0.014],[RIGHT+0.020,BBBACK-0.014],[RIGHT+0.020,0.084],[0.300,0.084]]),
-     wireG,0.0011);
+// ---- audio out on 1/4" TS plugs. Both leads come off the front edge, run
+// along the foot of the board and go north through the one slot between the
+// ESP32's jumpers and J11. Beat A (J2 -> IN1, the far jack) drops to the
+// table and runs in front of the bench; sync (J12 -> IN3) stays on the bench.
+{
+  const A2=P(bbParts.J2,'1'), B1=P(umc,'IN1'), s1=stub(B1);
+  const p2=[A2.pos.clone(),stub(A2),V(A2.pos.x,BBUP,A2.pos.z),V(A2.pos.x,BBUP,BBFRONT),V(A2.pos.x,WY,0.1145),
+            V(0.1178,WY,0.1145),V(0.1178,WY,0.1905),V(0.1178,0.0011,0.199),V(s1.x,0.0011,0.199),V(s1.x,0.011,0.206),s1,B1.pos.clone()];
+  link('J2 pin 1 AUDIO_L -> UMC404HD IN1 (TS tip, beat A)',A2,B1,'white',p2,wireG,0.0011);
+  const A12=P(bbParts.J12,'1'), B3=P(umc,'IN3'), s3=stub(B3);
+  const edge12=[A12.pos.clone(),stub(A12),V(A12.pos.x,BBUP,A12.pos.z),V(A12.pos.x,BBUP,BBFRONT),V(A12.pos.x,WY,0.113),
+                V(0.1204,WY,0.113),V(0.1204,WY,0.187),V(s3.x,WY,0.187),V(s3.x,WY,0.1905),s3,B3.pos.clone()];
+  link('J12 pin 1 AUDIO_R -> UMC404HD IN3 (TS tip, sync)',A12,B3,'red',edge12,wireG,0.0011);
+}
 
 // ---- USB and mains: without these the bench does not actually run ---------
-link('ESP32 micro-USB -> laptop USB1 (power + serial)',P(esp,'USB'),P(lap,'USB1'),'black',
-     sideToSide(P(esp,'USB'),P(lap,'USB1'),[[0.100,0.200],[0.330,0.216],[0.440,0.226]]),
-     wireG,0.0013);
-link('UCA202 -> laptop USB2',P(uca,'USB'),P(lap,'USB2'),'black',
-     sideToSide(P(uca,'USB'),P(lap,'USB2'),[[0.404,0.180],[0.455,0.206]]),wireG,0.0013);
+{
+  const A=P(esp,'USB'), B=P(lap,'USB1'), a1=stub(A), b1=stub(B);
+  link('ESP32 micro-USB -> laptop USB1 (power + serial)',A,B,'black',
+       [A.pos.clone(),a1,V(a1.x,a1.y,0.1905),V(a1.x,0.0016,0.205),V(0.437,0.0016,0.205),V(0.437,0.0016,b1.z),b1,B.pos.clone()],
+       wireG,0.0013);
+  const C=P(umc,'USB'), D=P(lap,'USB2'), c1=stub(C), d1=stub(D);
+  link('UMC404HD USB-B -> laptop USB2',C,D,'black',
+       [C.pos.clone(),c1,V(c1.x,0.0016,0.425),V(0.455,0.0016,0.425),V(0.455,0.0016,0.130),V(0.485,0.0016,0.130),d1,D.pos.clone()],
+       wireG,0.0016);
+}
 link('12 V supply -> mains',P(psu,'AC'),PV(V(-0.560,0.004,0.010),1,0,0),'black',
      sideToSide(P(psu,'AC'),PV(V(-0.560,0.004,0.010),1,0,0),[[-0.440,0.100],[-0.500,0.040]]),
      wireG,0.0016);
@@ -1149,10 +1208,10 @@ function buildCoax(stage){
     const t3=pathCoax(bpf2,'in',[V(0.228,TOP+0.044,0.024),V(0.140,TOP+0.052,-0.012),cRB],M.coaxRx);
     reg('A6',t3,'SMA RG316 jumper - RX B to 2nd band-pass','ok'); coaxG.add(t3);
     up(hRXB,mRXB,M.coaxRx,cRB,'SMA RG316 jumper - RX B to 2nd band-pass','ok');
-    const umcIn=P(umc,'IN1');
-    const if2=pathCoax(mix2,'if',[V(0.100,TOP+0.014,0.055),V(0.180,TOP+0.014,0.115),
-      V(0.270,0.026,0.200),umcIn.pos.clone().addScaledVector(umcIn.dir,0.012),umcIn.pos],M.rubber,R_WIRE);
-    reg('A7',if2,'IF 2 to the UMC404HD (stage 2)'); coaxG.add(if2);
+    const umcIn=P(umc,'IN2');
+    const if2=pathCoax(mix2,'if',[V(0.100,TOP+0.014,0.055),V(0.200,TOP+0.014,0.120),
+      V(0.386,0.020,0.185),umcIn.pos.clone().addScaledVector(umcIn.dir,0.006),umcIn.pos],M.rubber,R_WIRE);
+    reg('A7',if2,'IF 2 → second video amp → UMC404HD IN2 (stage 2)'); coaxG.add(if2);
   }
   rotG.rotation.y=savedRot;
 }
@@ -1181,13 +1240,30 @@ drone.add(at(box(0.030,0.0075,0.019,mat({color:0x23252b,roughness:.6})),0,-0.004
   const p=cyl(0.0150,0.0006,mat({color:0x8aa0b2,transparent:true,opacity:.45,roughness:.4}),20);
   p.position.set(x,0.0140,z); drone.add(p);
 });
-reg('E',drone,'ESP-FLY — stock kit, ESP-Drone on ch 1 at 10 dBm','link');
-addLabel(drone,'ESP-FLY · 3 m out','link',new THREE.Vector3(0,0.06,0),true);
-const phone=new THREE.Group(); phone.position.set(0.5,1.2,0.9); phone.rotation.x=-0.30; world.add(phone);
-phone.add(at(box(0.072,0.150,0.008,M.black),0,0,0));
-phone.add(at(box(0.066,0.140,0.001,M.screen),0,0,0.0045));
-reg('E',phone,'your phone — ESP-Drone app, behind the horns','link');
-addLabel(phone,'phone (operator, behind the horns)','link',new THREE.Vector3(0,0.1,0),true);
+// the 915 MHz receiver taped to the deck, and its 80 mm tail — see drone.html for every pad
+drone.add(at(box(0.012,0.0012,0.019,M.pcbBlack),0,0.0035,0.012));
+const tail=run([V(0.0008,0.0045,0.024),V(0.0008,0.0046,0.036),V(0.0008,0.0022,0.054),V(0.0008,-0.004,0.072),V(0.0008,-0.014,0.086),V(0.0008,-0.0265,0.096)],0.0005,wireMat.white,undefined,0.004);
+drone.add(tail);
+reg('E21',drone,'ESP-FLY — stock kit on a 915 MHz ELRS link (0.7 g nano RX, 80 mm tail) — drone.html','link');
+addLabel(drone,'ESP-FLY · 3 m out · 915 MHz link','link',new THREE.Vector3(0,0.06,0),true);
+// the operator's handset, behind the horns: RadioMaster Pocket with the Bandit Nano 915 MHz module in its bay
+const handset=new THREE.Group(); handset.position.set(0.5,1.2,0.9); handset.rotation.x=-0.55; world.add(handset);
+const hsBody=box(0.155,0.040,0.095,mat({color:0x2b2f34,roughness:.6})); handset.add(hsBody);
+handset.add(at(box(0.040,0.0015,0.018,M.screen),0,0.0205,-0.028));                                   // LCD
+[[-0.045,'left gimbal — throttle / yaw'],[0.045,'right gimbal — pitch / roll']].forEach(([x,n])=>{
+  const base=cyl(0.016,0.006,M.black,20); base.position.set(x,0.023,0.010); handset.add(base);
+  const stick=cyl(0.0035,0.026,mat({color:0x8f979e,metalness:.6,roughness:.4}),10); stick.position.set(x,0.036,0.010); handset.add(stick);
+  const knob=cyl(0.0060,0.006,M.black,14); knob.position.set(x,0.051,0.010); handset.add(knob); knob.userData.name=n; });
+[[-0.062,-0.040],[-0.062,-0.010],[0.062,-0.040],[0.062,-0.010]].forEach(([x,z])=>{ const sw=box(0.006,0.010,0.006,M.black); sw.position.set(x,0.023,z); handset.add(sw); sw.userData.name='switch — ARM / ANGLE'; });
+reg('E19',handset,'RadioMaster Pocket — EdgeTX; internal 2.4 GHz OFF, external CRSF','link');
+addLabel(handset,'operator · RadioMaster Pocket · 915 MHz','link',new THREE.Vector3(0,0.09,0),true);
+const bandit=new THREE.Group(); bandit.position.set(0,0.005,0.062); handset.add(bandit);           // in the Nano bay on the back
+bandit.add(at(box(0.0685,0.027,0.041,M.black),0,0,0));
+bandit.add(at(box(0.020,0.010,0.001,M.screen),-0.015,0.004,0.0208));                                  // its OLED
+const antT=strut(V(0.024,0.010,0.012),V(0.024,0.075,0.012),0.0025,M.black,8); bandit.add(antT);
+bandit.add(at(box(0.050,0.008,0.004,M.black),0.024,0.079,0.012));                                     // the 915 MHz "T"
+reg('E20',bandit,'Bandit Nano — 915 MHz ExpressLRS module, 25 mW indoors, FCC915','link');
+addLabel(bandit,'Bandit Nano 915 module','link',new THREE.Vector3(0,0.03,0.03));
 
 world.traverse(o=>{ if(o.isMesh && o!==table){ o.castShadow=true; o.receiveShadow=true; } });
 beams.forEach(b=>{ b.castShadow=false; b.receiveShadow=false; });
@@ -1198,28 +1274,31 @@ holes.castShadow=false;
 // =====================================================================
 const BOM=[
  ['A · RF chain',[
-  ['A1','ZX05-43MH-S+ mixer','1','$73','Mini-Circuits — order first'],['A2','ADF4351 PLL board','1','$27'],
+  ['A1','ZX05-43MH-S+ mixer','1','$79','DigiKey / Mouser — scarce; order first'],['A2','ADF4351 PLL board','1','$27'],
   ['A3a','SPF5189Z module — PA role','1','—','from the 4-pack'],['A3b','SPF5189Z module — LNA role','1','$24','4-pack; chip is EOL, buy spares'],
   ['A4','2-way SMA splitter 800–2500 MHz','1','$13'],['A5','SMA 3 dB attenuator','1','$9'],['A6','SMA M-M RG316 jumpers','6','$18'],
-  ['A7','SMA adapter assortment · IF pigtail','1','$12'],['A7b','2.4 GHz band-pass filter, SMA inline','1','$20']]],
+  ['A7','SMA adapter assortment · IF pigtail','1','$12'],['A7b','2.4 GHz band-pass, SMA, 2380–2500 MHz','1','$29','GPIO Labs — in front of the LNA']]],
  ['B · Horns',[
   ['B8','Copper sheet 24 ga 12" × 24"','2','$45','= the horns'],['B9','SMA female 4-hole flange, solder cup','10','$12','the feed on each horn'],
   ['B10','Brass rod 1/16"','1','$5','the 28 mm probe'],['B11','60/40 solder + paste flux','1','$15','consumable'],['B12','Aviation snips','1','$18','tool']]],
  ['C · Baseband, control, power',[
-  ['C13','Behringer UCA202 USB sound card','1','$30','staging only — buy the UMC404HD up front instead'],['C13b','Laptop','1','—','you have it'],['C14','ESP32 devkit (WROOM-32)','1','$10','30-pin DOIT pinout'],
+  ['C13','Behringer UMC404HD 4-in interface','1','$139','beat A + sync now, beat B in stage 2 — one sample clock'],['C13b','Laptop','1','—','you have it'],['C14','ESP32 devkit (WROOM-32)','1','$10','30-pin DOIT pinout'],
   ['C15a','830-point breadboard','1','—','in the kit'],['C15b','TL072 ×2 + passives, headers, jumper wire','1','$25','every part and wire from WIRING.md'],
   ['C16a','12 V 3 A supply','1','$18'],['C16b','LM2596 buck ×2','1','—','one shown']]],
  ['D · Mechanical — frame, turntable optional',[
   ['D17','Plywood 18" × 15", masts, saddles, terminal block','1','$28'],['D18a','NEMA-17 stepper','1','$25','with the A4988'],
   ['D18b','Lazy-susan bearing 150 mm','1','—'],['D18c','A4988 driver','1','—','1/16 microstep']]],
- ['E · Drone',[
-  ['E','Stock ESP-FLY kit, phone-flown — $0 added','1','$0','ESP-Drone on WiFi ch 1, 10 dBm']]],
+ ['E · Drone and its 915 MHz control link',[
+  ['E19','RadioMaster Pocket (EdgeTX, Nano bay)','1','$65','internal 2.4 GHz OFF — the radar owns that band'],
+  ['E20','Bandit Nano 915 MHz ELRS module','1','$40','in the Pocket\'s bay; 25 mW indoors'],
+  ['E21','BetaFPV ELRS Nano 915 RX on the drone','1','$17','0.7 g; 3V3, GND, TX→GPIO9, RX→GPIO8 — see drone.html'],
+  ['E21b','915 MHz receiver antenna (80 mm wire tail)','1','$0–5','usually included with the RX; the white tail on the drone']]],
  ['F · Stage 2 — azimuth interferometer',[
-  ['F22','2nd ZX05-43MH-S+ mixer','1','$73','second receive channel — critical path'],
+  ['F22','2nd ZX05-43MH-S+ mixer','1','$79','second receive channel — critical path'],
   ['F23','2nd 2-way splitter','1','$13','LO to both mixers'],
   ['F24','2nd 2400–2500 band-pass','1','$29','in front of the second LNA'],
   ['F25','3rd horn (materials in B)','1','$0','beside RX A at 193 mm centres, all three rolled 90°'],
-  ['F26','Behringer UMC404HD 4-in interface','1','$100','beat A, beat B, sync on one sample clock'],
+  ['F26','4-in interface — already bought as C13','1','$0','its IN2 takes beat B'],
   ['F27','3rd + 4th TL072, 2nd passives set, 2nd breadboard','1','$18','U1/U2 are fully used; a 2nd video amp needs three more channels'],
   ['F28','2nd LNA (SPF5189Z 4-pack)','1','$0','from row A3b'],
   ['F29','2 more SMA jumper 3-packs','2','$18','the two RX chains must be phase-matched — buy one batch']]],
@@ -1236,7 +1315,7 @@ BOM.forEach(([title,rows])=>{ const h=document.createElement('h2'); h.textConten
     r.innerHTML=`<span class="n">${id}</span><span>${name}${note?`<small>${note}</small>`:''}</span><span class="q">${qty} · ${price}</span>`;
     if(!NOTMODELLED.has(id)) r.onclick=()=>selectBom(id,r); bomEl.appendChild(r); }); });
 const tot=document.createElement('div'); tot.className='total';
-tot.innerHTML='Stage 1 ≈ $453 · + stage 2 ≈ $604 · + turntable ≈ $657<br><span class="legend"><span class="sw" style="background:#c2622a"></span>RF <span class="sw" style="background:#2f77b0"></span>baseband/ADC <span class="sw" style="background:#2c9c68"></span>control <span class="sw" style="background:#b8860b"></span>power <span class="sw" style="background:#6a4fbf"></span>drone</span>';
+tot.innerHTML='Stage 1 ≈ $492 · + stage 2 ≈ $643 · + turntable ≈ $696<br><span class="legend"><span class="sw" style="background:#c2622a"></span>RF <span class="sw" style="background:#2f77b0"></span>baseband/ADC <span class="sw" style="background:#2c9c68"></span>control <span class="sw" style="background:#b8860b"></span>power <span class="sw" style="background:#6a4fbf"></span>drone</span>';
 bomEl.appendChild(tot);
 
 let highlight=[], hlT=0;
@@ -1277,11 +1356,24 @@ function place(){ camera.position.set(tgt.x+dist*Math.cos(el)*Math.sin(az),tgt.y
 function flyTo(t,d,a,e){ goal={t:t.clone(),d,a:(a!==undefined?a:az),e:(e!==undefined?e:el)}; }
 const views={ bench:{t:new THREE.Vector3(0.00,0.30,-0.06),d:1.62,a:-0.68,e:0.28},
               bb:{t:new THREE.Vector3(BBX,TOP+0.01,BBZ),d:0.20,a:-0.15,e:0.90},
-              room:{t:new THREE.Vector3(0.08,0.62,-1.45),d:4.3,a:-0.42,e:0.20} };
+              room:{t:new THREE.Vector3(0.08,0.62,-1.45),d:4.3,a:-0.42,e:0.20},
+              // screenshot-only views (no button): plan of the whole bench, the ADF corner, the desk in front
+              top:{t:new THREE.Vector3(0.02,TOP,0.00),d:0.62,a:0.00,e:1.52},
+              back:{t:new THREE.Vector3(-0.10,TOP,-0.13),d:0.26,a:2.60,e:0.75},
+              desk:{t:new THREE.Vector3(0.28,0.01,0.19),d:0.36,a:-0.35,e:0.62} };
 let viewKey='bench';
 function setView(k){ viewKey=k; ['bench','bb','room'].forEach(v=>document.getElementById('b-'+v).classList.toggle('on',v===k));
   const v=views[k]; flyTo(v.t,v.d,v.a,v.e); beams.forEach((b,i)=>b.visible=(k==='room') && ((i===0)===(stage===1))); }
 ['bench','bb','room'].forEach(k=>document.getElementById('b-'+k).onclick=()=>setView(k));
+// ?view=bench|bb|room &stage=1|2 &turntable=1 &labels=0 &coax=0 &wires=0 — applied after
+// the page has finished building, so a screenshot starts exactly where it says
+setTimeout(()=>{ const q=new URLSearchParams(location.search);
+  if(q.get('stage')==='2') setStage(2);
+  if(q.get('turntable')==='1') document.getElementById('b-turn').click();
+  if(q.get('labels')==='0') document.getElementById('b-labels').click();
+  if(q.get('coax')==='0') document.getElementById('b-coax').click();
+  if(q.get('wires')==='0') document.getElementById('b-wires').click();
+  const k=q.get('view'); if(views[k]){ setView(k); const v=views[k]; tgt.copy(v.t); dist=v.d; az=v.a; el=v.e; goal=null; place(); } },0);
 
 let showLabels=true;
 document.getElementById('b-labels').onclick=e=>{showLabels=!showLabels;e.target.classList.toggle('on',showLabels);};
@@ -1337,7 +1429,7 @@ function frame(now){ const dt=Math.min((now-t0)/1000,0.05); t0=now;
 // than a wire can actually take. Both are checked here against the real scene
 // graph, and verify_model.py --render reads the result.
 const OBSTACLES=[['ESP32',esp],['A4988',a49],['LM2596',buck],['terminal block',term],
-  ['UCA202',uca],['UMC404HD',umc],['NEMA-17',nema],['ADF4351',adf],['PA',pa],['LNA',lna],
+  ['UMC404HD',umc.userData.body],['NEMA-17',nema],['ADF4351',adf],['PA',pa],['LNA',lna],
   ['mixer',mix],['splitter',spl],['band-pass',bpf],['3 dB pad',att],['breadboard',bbBody],
   ['12 V supply',psu],['laptop',lap],['turntable plate',plate],['lazy susan',susan],
   ['band-pass 2',bpf2],['LNA 2',lna2],['mixer 2',mix2],['splitter 2',spl2]];

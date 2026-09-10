@@ -250,12 +250,12 @@ def check_harness():
         "buck": {"IN+", "IN-", "OUT+", "OUT-"},
         "term": {"T%d" % i for i in range(1, 7)},
         "psu": {"OUT", "AC"},
-        "uca": {"IN_L", "IN_R", "OUT_L", "OUT_R", "USB"},
+
         "pa": {"5V", "GND"},
         "lna": {"5V", "GND"},
         "nema": {"M1", "M2", "M3", "M4"},
         "lap": {"USB1", "USB2", "USB3"},
-        "umc": {"IN1", "IN2", "IN3", "USB"},
+        "umc": {"IN1", "IN2", "IN3", "IN4", "USB"},
     }
     defined["esp"] = defined["esp"] | {"USB"}      # micro-USB to the laptop
     # literal P(comp,'PIN') refs are checked by name; P(comp, someVar) ones can
@@ -300,20 +300,11 @@ def check_bom_totals():
 
 
 def check_bom_rows():
-    """Every BOM.md line item is represented in the panel.
-
-    The 915 MHz control link (section E) is deliberately absent: the model draws
-    the radar bench, and the link lives on the drone and in the operator's hand
-    rather than adding
-    to it. Everything else must appear.
-    """
+    """Every BOM.md line item is represented in the panel — including the
+    915 MHz control link (section E): the handset (rows 19, 20) stands in the
+    room beside the operator, and the receiver (row 21) is on the drone."""
     text = read(BOM)
-    fallback = ""
-    if "### The 915 MHz ELRS link" in text:
-        fallback = text.split("### The 915 MHz ELRS link", 1)[1].split("\n## ", 1)[0]
-    fallback_rows = set(re.findall(r"^\|\s*(\d+[a-z]?)\s*\|", fallback, re.M))
-
-    doc = set(re.findall(r"^\|\s*(\d+[a-z]?)\s*\|", text, re.M)) - fallback_rows
+    doc = set(re.findall(r"^\|\s*(\d+[a-z]?)\s*\|", text, re.M))
     # panel ids are section letter + BOM row, with an optional a/b role suffix
     # (A3a and A3b are the PA and LNA roles of the one 4-pack, row 3)
     shown = set()
@@ -324,54 +315,31 @@ def check_bom_rows():
             shown.add(num[:-1])
     check(doc <= shown,
           "BOM.md rows missing from the panel: %s" % sorted(doc - shown))
-    check(fallback_rows and fallback_rows.isdisjoint(shown),
-          "915 MHz link rows leaked into the bench panel: %s"
-          % sorted(fallback_rows & shown))
+    for row in ("19", "20", "21"):
+        check(row in shown, "915 MHz link row %s is not in the panel" % row)
 
 
 # ------------------------------------------------------------------- render ---
-ERROR_HOOK = (
-    "<script>window.__err=[];"
-    "window.addEventListener('error',function(e){window.__err.push(String(e.message));"
-    "document.title='JSERROR: '+window.__err.join(' | ');});"
-    "window.addEventListener('unhandledrejection',function(e){"
-    "window.__err.push(String(e.reason));"
-    "document.title='JSERROR: '+window.__err.join(' | ');});</script>"
-)
-
-
-def find_browser():
-    for p in (r"C:\Program Files\Google\Chrome\Application\chrome.exe",
-              r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
-              "/usr/bin/google-chrome", "/usr/bin/chromium"):
-        if pathlib.Path(p).exists():
-            return p
-    return None
+import _headless as H
 
 
 def check_render():
-    browser = find_browser()
+    browser = H.find_browser()
     if not browser:
-        print("  render: skipped (no Chrome/Edge found)")
+        print("  render: skipped (no Chrome/Edge/Chromium found)")
         return
     tmp = pathlib.Path(tempfile.mkdtemp())
-    page = tmp / "probe.html"
-    page.write_text(HTML_SRC.replace("<script src=", ERROR_HOOK + "\n<script src=", 1),
-                    encoding="utf-8")
+    page, local = H.probe_copy(HTML, tmp)
+    if not local:
+        print("  render: three.js could not be cached locally; relying on the CDN")
     try:
         # no --virtual-time-budget: the render loop never idles, so virtual time
         # never advances and Chrome hangs. The page runs its self-test during
         # load, so a plain --dump-dom already has the verdict.
-        out = subprocess.run(
-            [browser, "--headless=new", "--disable-gpu", "--use-gl=swiftshader",
-             "--enable-unsafe-swiftshader", "--user-data-dir=%s" % (tmp / "p"),
-             "--dump-dom", page.as_uri()],
-            capture_output=True, text=True, timeout=300,
-            encoding="utf-8", errors="replace").stdout or ""
+        title, out = H.dump_title(browser, page.as_uri(), tmp)
     except subprocess.TimeoutExpired:
         check(False, "headless render timed out")
         return
-    title = out.split("</title>")[0].split("<title>")[-1]
     check("JSERROR" not in title,
           "page threw: " + title.split("JSERROR: ")[-1][:400])
     check("<canvas" in out, "page rendered no canvas")

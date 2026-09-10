@@ -62,9 +62,10 @@ CRSF** protocol, so:
    XIAO guide it is **GPIO 9 = serial 2 RX**, with **GPIO 8 = serial 2 TX**;
    yours may differ — the wire tells you, and `get pin` in the esp-fc CLI
    confirms it).
-3. Solder the 915 receiver to the **same four pads**: power to the same rail
-   the RP1 V2 used, GND, its TX to the XIAO pin the old TX used, its RX to
-   the old RX pin.
+3. Solder the 915 receiver to the **same four pads**: power to **3V3** (the
+   drone has no 5 V rail in flight — the XIAO's 5 V pin is USB VBUS — and the
+   published guide runs the receiver from 3V3), GND, its TX to the XIAO pin
+   the old TX used (GPIO 9), its RX to the old RX pin (GPIO 8).
 4. Shrink-wrap the receiver, tape it to the top plate away from the motors.
 
 **Checkpoint 3:** power the drone on USB; the receiver's LED blinks slowly
