@@ -66,7 +66,11 @@ INPUT 3 of the UMC404HD.
 **Stages.** One **three-horn frame** (`radar-hardware.md` §7), not three rigs.
 All three horns are rolled 90° so the 193.1 mm side is horizontal; TX sits
 centred 290 mm above the receive row, which keeps the leakage path equal into
-both receivers.
+both receivers. There is no base plate under the frame and no pedestal: each
+mast and each diagonal brace stands on its own foot, bolted through the plywood,
+which puts the horn row the 300 mm above the board the hardware doc asks for and
+leaves the whole RF chain in plain sight. The base plate exists only with the
+turntable fitted, because then the frame has to bolt to something that turns.
 
 | button | what the model shows |
 |---|---|

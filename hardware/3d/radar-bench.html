@@ -437,15 +437,13 @@ const susan=cyl(0.072,0.006,M.alu,44); susan.position.set(0,TOP+0.051,ZCLAMP); t
 for(let i=0;i<24;i++){ const a=i*Math.PI/12;
   susan.add(at(cyl(0.0022,0.0064,M.steel,8),Math.cos(a)*0.063,0,Math.sin(a)*0.063)); }
 reg('D18b',susan,'lazy-susan bearing 150 mm - the rotating race','ok');
-const pedestal=new THREE.Group(); bench.add(pedestal);
-pedestal.add(at(box(0.17,0.010,0.11,M.aluDark),0,TOP+0.005,ZCLAMP));
-[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>
-  pedestal.add(at(cyl(0.002,0.003,M.sma,6),a*0.072,TOP+0.011,ZCLAMP+b*0.042)));
-reg('D17',pedestal,'fixed frame base (no turntable)');
-
-// the frame: two uprights, a cross beam under each horn row, diagonal braces
+// The frame: two uprights, a cross beam under each horn row, diagonal braces.
+// Without the turntable there is no base plate and no pedestal under any of it
+// — each mast foot bolts straight through the plywood, which is what keeps the
+// whole RF chain in view. The plate comes back only when the turntable does,
+// because then the frame has to bolt to something that turns.
 const plate=box(2*UPX+0.050,0.006,0.070,M.wood); plate.position.y=0.003; rotG.add(plate);
-reg('D17',plate,'frame base plate - bolts to the turntable, or to the fixed pedestal');
+reg('D17',plate,'frame base plate - only with the turntable; it bolts to the bearing');
 // the hub turns with the frame: it is what actually couples the shaft to it
 const hubG=new THREE.Group(); rotG.add(hubG);
 hubG.add(at(cyl(0.015,0.012,M.pcbRed,20),0,0.012,0));
@@ -453,14 +451,23 @@ hubG.add(at(cyl(0.0062,0.006,M.aluDark,16),0,0.021,0));
 [0,1,2,3].forEach(i=>{ const a=i*Math.PI/2+Math.PI/4;
   hubG.add(at(cyl(0.0014,0.010,M.sma,6),Math.cos(a)*0.0105,0.011,Math.sin(a)*0.0105)); });
 reg('D18b',hubG,'printed hub - clamps the D-shaft to the frame base plate','ok');
+function bolted(x,z,w,d,name){                     // a foot, and the four screws through it
+  const f=box(w,0.006,d,M.alu); f.position.set(x,0.003,z); rotG.add(f); f.userData.name=name;
+  [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>{
+    const h=cyl(0.0022,0.0016,M.sma,8); h.position.set(x+a*(w/2-0.005),0.0068,z+b*(d/2-0.006)); rotG.add(h);
+    h.userData.name='M4 screw - foot into the plywood'; });
+  return f;
+}
 [-1,1].forEach(s=>{
-  rotG.add(at(box(0.030,0.006,0.050,M.alu),s*UPX,0.003,0));
+  bolted(s*UPX,0,0.030,0.050,'mast foot - bolts through the plywood');
   rotG.add(at(box(0.018,BEAM_TX+0.006,0.018,M.alu),s*UPX,(BEAM_TX+0.006)/2,0));
   [[0.0091,0],[-0.0091,0],[0,0.0091],[0,-0.0091]].forEach(([gx,gz])=>
     rotG.add(at(box(gx?0.0007:0.007,BEAM_TX-0.004,gz?0.0007:0.007,M.aluDark),
               s*UPX+gx,(BEAM_TX+0.006)/2,gz)));
+  // the brace now lands on a foot of its own instead of stopping in mid-air
+  bolted(s*(UPX-0.085),0,0.026,0.040,'brace foot - bolts through the plywood');
   rotG.add(strut(new THREE.Vector3(s*UPX,BEAM_RX-0.02,0),
-                 new THREE.Vector3(s*(UPX-0.085),0.014,0),0.005,M.aluDark,6));
+                 new THREE.Vector3(s*(UPX-0.085),0.006,0),0.005,M.aluDark,6));
 });
 const beamRX=box(2*UPX+0.018,0.012,0.032,M.alu); beamRX.position.set(0,BEAM_RX,0); rotG.add(beamRX);
 const beamTX=box(2*UPX+0.018,0.012,0.032,M.alu); beamTX.position.set(0,BEAM_TX,0); rotG.add(beamTX);
@@ -496,8 +503,11 @@ reg('D17',scrG,'foil-on-card screen behind the horns');
 // stage 1 leaves the RX B position empty; the turntable is optional at any stage
 function layoutHorns(s){ mRXB.visible=(s>=2); }
 function setTurntable(on){
-  turnG.visible=on; pedestal.visible=!on; hubG.visible=on;
-  rotG.position.set(0,TOP+(on?0.054:0.010),ZCLAMP);   // plate lands on the bearing, or on the pedestal
+  turnG.visible=on; hubG.visible=on; plate.visible=on;
+  // with the turntable the plate lands on the bearing; without it the feet land
+  // on the plywood itself, so the horn row sits the 300 mm above the board the
+  // hardware doc asks for rather than 310
+  rotG.position.set(0,TOP+(on?0.054:0),ZCLAMP);
   if(!on) rotG.rotation.y=0;
 }
 
