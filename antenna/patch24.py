@@ -283,7 +283,7 @@ def link(b, t_up=T_UP, retrace=T_RETRACE, fs=FS, n_chirps=64,
 
     Velocity is computed from the PRI, not the up-chirp: the retrace is dead
     time but the Doppler axis still samples on it. That is the same distinction
-    signal-chain.md draws for the 6.4 ms / 7.4 ms pair.
+    radar-software.md draws for the 6.4 ms / 7.4 ms pair.
     """
     from fmcw_sim import RadarSpec
 

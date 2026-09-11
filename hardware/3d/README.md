@@ -75,7 +75,7 @@ both receivers.
 | Turntable | optional at either stage: motor on the board shaft **up**, four standoffs carrying the bearing's fixed race at shaft height, a printed hub clamping the D-shaft to the frame — direct 1:1, which is what `STEPS_PER_DEG 8.889` assumes |
 
 The roll is what makes the baseline legal, per
-[`../../docs/azimuth.md`](../../docs/azimuth.md): side by side *unrolled* the
+[`../../docs/radar-hardware.md`](../../docs/radar-hardware.md) § 7: side by side *unrolled* the
 phase centres would be 263.8 mm apart, past the 209 mm ambiguity limit, and the
 bearing would wrap at ±13.4° — inside the 17° half-beam. Rolled, the horns
 touch at 193 mm and stay unambiguous to ±18.4°. Both receive runs leave their
@@ -105,8 +105,7 @@ inside — with its four wires running aft and in through the canopy's loom slot
 to the FC's receiver pads, and 80 mm of antenna streaming straight back down the
 centreline, the one line behind the drone that no propeller disc can reach.
 Which pad is which, and why the receiver runs on 3V3 and not 5 V, is in
-[`../../docs/drone-link.md`](../../docs/drone-link.md) and
-[`../../docs/drone-link-espfc.md`](../../docs/drone-link-espfc.md) §2b.
+[`../../docs/drone-hardware.md`](../../docs/drone-hardware.md) §§ 2–3.
 
 Buttons: Overview / Top / Underside / Receiver, Exploded, Frame (hides the
 X-frame, canopy and cover so the wiring shows), Props, Labels, Spin.
@@ -160,8 +159,8 @@ exist, the horn frame's geometry against `radar-hardware.md`, and the panel's
 rows and stage totals against `BOM.md`.
 
 `verify_drone.py` — 101 checks: every XIAO pad's GPIO and job against
-`drone-link-espfc.md` §2b, the receiver's TX→GPIO9 / RX→GPIO8 / 3V3 against
-`drone-link.md`, the Betaflight motor order and the props-in pattern, the
+`drone-hardware.md` § 3, the receiver's TX→GPIO9 / RX→GPIO8 / 3V3 against
+§ 2 of the same file, the Betaflight motor order and the props-in pattern, the
 airframe's parts and its 24 / 37 / 46 / 29 / 31 mm against
 `drone-hardware.md`, the drone rows of `BOM.md` §E, that `radar-bench.html`'s
 drone says the same thing, and that the mass roll-up lands on Seeed's 18 g and

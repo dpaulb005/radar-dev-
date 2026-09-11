@@ -14,7 +14,7 @@ the amplitude across beam positions. That is NOT how the built radar measures
 bearing any more, and it cannot be: a scan takes seconds, and the centroid
 assumes every beam saw the target at one bearing, so at 10 m with a 2.5 deg
 budget a 4.3 s scan needs the drone slower than 0.10 m/s. Measured in
-docs/signal-chain.md section "stage 10".
+docs/radar-software.md § 1.
 
 Bearing now comes from the phase between TWO receivers inside a single 0.47 s
 dwell: see interferometer.py, and radar_acquire.py --interferometer. The code

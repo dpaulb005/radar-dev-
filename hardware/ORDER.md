@@ -104,7 +104,7 @@ Second mixer, second splitter, second band-pass, second LNA (already in the
 
 **Buy none of it.** A NanoVNA-H4 stops at 1.5 GHz and cannot see a 2.44 GHz
 antenna. The horn is tuned against detection SNR instead — see
-[`../docs/testing.md`](../docs/testing.md).
+[`../docs/radar-software.md`](../docs/radar-software.md) § 8.
 
 ---
 

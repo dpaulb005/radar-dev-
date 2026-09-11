@@ -12,9 +12,9 @@ own. This script reads both and fails loudly on any disagreement.
                                       # page's own geometry self-test
 
 Checked:
-  pin map      every XIAO pad's GPIO and job against docs/drone-link-espfc.md § 2b
-  receiver     TX -> GPIO9, RX -> GPIO8, power from 3V3, against docs/drone-link.md
-  motors       Betaflight order and the CW/CCW pattern against § 2b
+  pin map      every XIAO pad's GPIO and job against docs/drone-hardware.md § 3
+  receiver     TX -> GPIO9, RX -> GPIO8, power from 3V3, against docs/drone-hardware.md
+  motors       Betaflight order and the CW/CCW pattern against § 3
   the kit      615 motors, 30 mm props, 80 mm antenna, 0.7 g receiver against
                docs/drone-hardware.md; the drone rows of hardware/BOM.md § E
   airframe     the X-frame's parts and its 24 / 37 / 46 / 29 / 31 mm against
@@ -34,9 +34,10 @@ HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 HTML = HERE / "drone.html"
 BENCH = HERE / "radar-bench.html"
-ESPFC = ROOT / "docs/drone-link-espfc.md"
-LINK = ROOT / "docs/drone-link.md"
 HW = ROOT / "docs/drone-hardware.md"
+ESPFC = HW          # the pin map and the motor order live in § 3
+LINK = HW           # so does the receiver wiring
+PINMAP = "## 3. The XIAO pin map"
 BOM = ROOT / "hardware/BOM.md"
 
 try:
@@ -110,8 +111,8 @@ def panel_rows():
 
 # ------------------------------------------------------------- the docs ---
 def espfc_pin_table():
-    """{silk: (gpio, function)} from docs/drone-link-espfc.md § 2b."""
-    text = read(ESPFC).split("## 2b.", 1)[1]
+    """{silk: (gpio, function)} from docs/drone-hardware.md § 3."""
+    text = read(ESPFC).split(PINMAP, 1)[1]
     out = {}
     for line in text.splitlines():
         cells = [c.strip().strip("*") for c in line.strip().strip("|").split("|")]
@@ -125,16 +126,16 @@ def check_pin_map():
     model = {}
     for silk, gpio, fn in js_table("XIAO_LEFT") + js_table("XIAO_RIGHT"):
         model[silk] = (gpio, fn)
-    check(len(doc) >= 12, "drone-link-espfc.md § 2b: pin table not found or short")
+    check(len(doc) >= 12, "drone-hardware.md § 3: pin table not found or short")
     for silk, (gpio, fn) in doc.items():
         if gpio.isdigit():
             check(silk in model and model[silk][0] == "GPIO" + gpio,
-                  "XIAO %s: model says %s, § 2b says GPIO%s" % (silk, model.get(silk, ("?",))[0], gpio))
+                  "XIAO %s: model says %s, § 3 says GPIO%s" % (silk, model.get(silk, ("?",))[0], gpio))
         # the job: the first word of the doc's description must appear in the model's
         key = re.split(r"[ —(]", fn)[0].lower()
         if silk in model:
             check(key in model[silk][1].lower(),
-                  "XIAO %s: model job '%s' vs § 2b '%s'" % (silk, model[silk][1], fn))
+                  "XIAO %s: model job '%s' vs § 3 '%s'" % (silk, model[silk][1], fn))
     # the receiver pins, both ways round
     check(model.get("D10", ("",))[0] == "GPIO9" and "receiver TX" in model["D10"][1],
           "D10 must be GPIO9, UART2 RX from the receiver's TX")
@@ -145,8 +146,8 @@ def check_pin_map():
 def check_receiver_wiring():
     link = read(LINK)
     check("GPIO 9 = serial 2 RX" in link and "GPIO 8 = serial 2 TX" in link,
-          "drone-link.md no longer states GPIO 9 = serial 2 RX / GPIO 8 = serial 2 TX")
-    check(re.search(r"power to \*\*3V3\*\*", link) is not None, "drone-link.md no longer powers the receiver from 3V3")
+          "drone-hardware.md no longer states GPIO 9 = serial 2 RX / GPIO 8 = serial 2 TX")
+    check(re.search(r"power to \*\*3V3\*\*", link) is not None, "drone-hardware.md no longer powers the receiver from 3V3")
     pads = dict((n, d) for n, s, d in js_table("RXPADS"))
     check("GPIO9" in pads.get("PRX", ""), "FC RX pad is not described as GPIO9")
     check("GPIO8" in pads.get("PTX", ""), "FC TX pad is not described as GPIO8")
@@ -158,13 +159,13 @@ def check_receiver_wiring():
 
 
 def check_motors():
-    text = read(ESPFC).split("## 2b.", 1)[1]
+    text = read(ESPFC).split(PINMAP, 1)[1]
     m = re.search(r"Motor order is Betaflight's \((.*?)\)", text, re.S)
-    check(m is not None, "§ 2b no longer states the motor order")
+    check(m is not None, "§ 3 no longer states the motor order")
     order = dict(re.findall(r"(\d) ([a-z]+-[a-z]+)", m.group(1))) if m else {}
     model = {mid[1]: pos for mid, pos, *_ in js_table("MOTORS")}
     for k, pos in order.items():
-        check(model.get(k) == pos, "motor %s: model '%s', § 2b '%s'" % (k, model.get(k), pos))
+        check(model.get(k) == pos, "motor %s: model '%s', § 3 '%s'" % (k, model.get(k), pos))
     cw = {pos: d for mid, pos, sx, sz, d, *_ in js_table("MOTORS")}
     check(cw.get("rear-right") == "CW" and cw.get("front-left") == "CW"
           and cw.get("front-right") == "CCW" and cw.get("rear-left") == "CCW",
@@ -308,7 +309,7 @@ def main():
         for f in FAILURES:
             print("  - " + f)
         return 1
-    print("DRONE MODEL VERIFIED — matches drone-link.md, drone-link-espfc.md, drone-hardware.md and BOM.md")
+    print("DRONE MODEL VERIFIED — matches drone-hardware.md and BOM.md")
     return 0
 
 

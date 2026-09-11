@@ -3,7 +3,7 @@
 
 Scanning the horns and comparing amplitudes across beam positions cannot give
 the bearing of a drone that is flying: the scan takes seconds and the bearing
-moves while it runs (measured in docs/signal-chain.md § stage 10). This module
+moves while it runs (measured in docs/radar-software.md § 1). This module
 measures bearing across *space* instead of across time.
 
     Δφ = 2π · d · sin(θ) / λ            θ = asin( Δφ · λ / (2π · d) )

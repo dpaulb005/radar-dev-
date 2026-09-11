@@ -270,7 +270,7 @@ def range_doppler(cube, s: RadarSpec, bg_subtract=False, complex_out=False,
     finely, and the sub-bin parabola in cfar_detect is fitted to SAMPLES of
     that lobe. Below about two bins from DC the lobe is clipped by the DC edge
     and the three-point fit is badly biased: measured, a 3 m target at 40 MHz
-    (bin 0.80) reads 1.13 m long. Padding is the fix; see docs/signal-chain.md
+    (bin 0.80) reads 1.13 m long. Padding is the fix; see docs/radar-software.md § 1
     stage 8a.
     """
     c = cube.copy()

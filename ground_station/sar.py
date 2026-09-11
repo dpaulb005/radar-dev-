@@ -16,7 +16,7 @@ Two ways to move it, and the processing is identical:
 
 The only thing that changes between them is how well you know where the radar
 was, and that is the whole difficulty of the airborne version -- see
-nav_tolerance() and docs/sar.md. It is NOT resolution, and it is NOT payload.
+nav_tolerance() below. It is NOT resolution, and it is NOT payload.
 
 This is the one capability that needs no second receiver, which is why it comes
 before azimuth rather than after it.
@@ -162,7 +162,7 @@ def range_profiles(cubes, t_up, fs, f0=F0_SAR, bw=BW_SAR, pad=8,
     averaging them coherently is the matched filter for a static target and
     buys sqrt(n_chirps) of SNR. There is no Doppler processing here and no
     per-chirp mean removal -- that notch is what used to cost a metre at 3 m
-    (docs/signal-chain.md stage 7).
+    (docs/radar-software.md § 1, stage 7).
 
     The mixer is single-ended, so the beat is real and its spectrum carries a
     mirror image at -f. hilbert() builds the analytic signal before the range
@@ -390,7 +390,7 @@ def selftest():
           f"{20*math.log10(bad.max()/good.max()):.1f} dB")
 
     # -- static removal must not move the target, unlike the bin-0 notch it
-    #    superficially resembles (docs/signal-chain.md stage 7)
+    #    superficially resembles (docs/radar-software.md § 1, stage 7)
     #    A short aperture barely migrates the target in RANGE (83 mm here,
     #    against a 1.5 m cell), so it is fair to ask whether the mean profile
     #    takes some of the target with it. It does not, because the target's

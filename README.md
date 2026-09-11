@@ -1,95 +1,131 @@
 # radar-dev — a horn-fed FMCW radar that tracks a small drone
 
-An MIT "coffee-can" style 2.4 GHz FMCW radar, rebuilt with hand-made
-pyramidal horns, that finds a 25 g quadcopter (Seeed ESP-FLY) at 3–10 m
-indoors by its **reflection** — the drone carries nothing and cooperates with
-nothing. The drone is flown from a phone over its own WiFi; the radar shares
-the band by sweeping above the WiFi channel.
+A 2.4 GHz FMCW radar in the MIT "coffee-can" tradition, fed by pyramidal horns
+you cut and solder yourself, that finds a 25 g quadcopter at 3–10 m indoors by
+its **reflection**. The drone carries nothing and cooperates with nothing: no
+beacon, no transponder, no telemetry. It is a target.
 
-**[`docs/goal.md`](docs/goal.md) — what this project is for, and the three
-tests every change is judged against.** Read it first. It is why azimuth comes
-from two receivers rather than a scan, why elevation was dropped, and why the
-cheaper higher-band modules were rejected despite being better radars.
+> **Build a radar where I design the antenna, and get azimuth on a small drone.**
+
+That sentence is the whole specification, and every decision in this repo is
+judged against three tests taken from it:
+
+| test | means |
+|---|---|
+| **Is the antenna mine?** | I cut, tune and characterise it. Not a patch array someone else laid out, and certainly not one baked into a chip package. |
+| **Does it give azimuth on a drone that is *flying*?** | Not a hovering one. Bearing has to survive the target moving. |
+| **Is the target a small drone?** | 25 g quadcopter, 3–10 m, indoors, carrying nothing. |
+
+Those tests are why azimuth comes from two receivers rather than a mechanical
+scan, why elevation was dropped, why the drone's control link moved to 915 MHz,
+and why the cheaper 24 GHz modules were rejected despite being better radars.
 
 ## How it works
 
 ```
- phone ──WiFi ch 1──► drone                       (control plane)
+ handset ──915 MHz ELRS──► drone                        (control plane, off the radar's band)
 
  ESP32 steps an ADF4351 PLL 2400→2483.5 MHz in 64 steps / 6.4 ms
-   → 3 dB pad → PA → splitter ─┬─► TX horn ─── echo off the drone ──► RX horn
+   → 3 dB pad → PA → splitter ─┬─► TX horn ─── echo off the drone ──► RX horn ×2
                                └─► mixer LO ◄──────── LNA ◄── band-pass ◄──┘
- mixer IF = beat tone, pitch ∝ range (417 Hz at 10 m)
-   → video amp (TL072, 60 dB, 159 Hz HP ×2, 15.9 kHz LP) → USB sound card
-   → laptop: range FFT · Doppler FFT · CFAR · phase difference between two receivers → azimuth
-   → Kalman tracker → web console                 (sensing plane)
+ mixer IF = beat tone, pitch ∝ range (870 Hz at 10 m)
+   → video amp (TL072, 61 dB, 159 Hz HP ×2, 15.9 kHz LP) → USB interface
+   → laptop: range FFT · Doppler FFT · CFAR · phase difference between the two receivers
+   → Kalman tracker → web console                       (sensing plane)
 ```
 
 | | |
 |---|---|
-| sweep | 2400–2483.5 MHz (83.5 MHz), 6.4 ms up-chirp, 7.4 ms PRI — the whole band, because the drone's control link is on 915 MHz |
-| range cell / accuracy | **1.80 m** / 0.04 m mean, 0.10 m worst measured 3–20 m on the real stepped waveform |
-| azimuth | phase between two RX horns 193 mm apart → 0.18° rms, in one 0.47 s dwell |
-| drone echo at 10 m | −74 dBm, 71 dB SNR after 64 chirps |
-| phone link margin | ~20 dB at the drone's receiver; AP at 10 dBm, band-pass and operator placement protect the radar |
+| sweep | 2400–2483.5 MHz (83.5 MHz), 6.4 ms up-chirp, 7.4 ms PRI — the whole ISM band, because the drone's link is on 915 MHz |
+| range cell / accuracy | **1.80 m** / 0.04 m mean, 0.10 m worst, measured 3–20 m on the real stepped waveform |
+| velocity | 0.13 m/s resolution, unambiguous to ±4.12 m/s, reachable to ±26 m/s |
+| azimuth | phase between two RX horns 193 mm apart → **0.18° rms in one 0.47 s dwell**, unambiguous to ±18.4° |
+| drone echo at 10 m | −74 dBm, 71 dB SNR after 64 chirps — in free space |
+| what actually decides it | clutter cancellation. You need ~55 dB at 10 m, and nothing in this repo can predict yours |
 | stages | 1 range + velocity · 2 second RX horn → azimuth · turntable optional, coverage only |
 
-## Implement
+**What it does not do.** Elevation: one baseline measures one angle and it is
+spent on azimuth, so a fix is a 2-D track on the floor plane. A target with
+exactly zero radial velocity: background subtraction removes it with the room,
+and worse, nothing abstains — 0.05 m/s of drift is enough, but a drone parked on
+a shelf is invisible. Multipath in a small room is not modelled at all.
 
-Read in this order. Each step ends with a checkpoint you can verify before
-moving on.
+## Build it
 
-1. **[`hardware/BOM.md`](hardware/BOM.md)** — every part, priced and stock-checked (Sept 2026). Order the mixer first.
-2. **[`docs/radar-hardware.md`](docs/radar-hardware.md)** — horns (cut list, all three at once), the three-horn frame, RF chain in MIT order, the breadboard video amp, sync, power, and the seven decisions that make stage 1 upgrade to azimuth without a rebuild.
-3. **[`docs/radar-software.md`](docs/radar-software.md)** — flash `firmware/radar_ctl`, run `ground_station/radar_acquire.py`, feed the console.
-4. **[`docs/drone-hardware.md`](docs/drone-hardware.md)** — build the kit exactly per its guide; the one thing to leave off.
-5. **[`docs/drone-software.md`](docs/drone-software.md)** — esp-fc on the XIAO, a 915 MHz ELRS link, and the two checks that replace the old coexistence test. See also [`docs/drone-link.md`](docs/drone-link.md) and [`docs/drone-link-espfc.md`](docs/drone-link-espfc.md).
+Four documents, in this order. Each one ends its steps with a checkpoint you can
+verify before moving on.
 
-Ordering: **[`hardware/ORDER.md`](hardware/ORDER.md)** — every part with a link and a price checked September 2026, in the order to buy them. [`hardware/BOM.md`](hardware/BOM.md) is why each part was chosen.
+1. **[`hardware/BOM.md`](hardware/BOM.md)** — every part and why it was chosen,
+   priced and stock-checked. **[`hardware/ORDER.md`](hardware/ORDER.md)** is the
+   same list with links, in buying order. Order the mixer first; it is the
+   critical path.
+2. **[`docs/radar-hardware.md`](docs/radar-hardware.md)** — the horns (cut list,
+   all three in one session), the three-horn frame, the RF chain in MIT order,
+   the breadboard video amp, sync, power, and the seven decisions that make
+   stage 1 upgrade to azimuth without a rebuild.
+3. **[`docs/radar-software.md`](docs/radar-software.md)** — what the signal
+   actually is at every point, flashing `firmware/radar_ctl`, running
+   `ground_station/radar_acquire.py`, and the three measurements that decide
+   whether it works in your room.
+4. **[`docs/drone-hardware.md`](docs/drone-hardware.md)** — build the ESP-FLY
+   kit to its own guide, then the one change that is not in that guide: the
+   915 MHz receiver, its four pads and its antenna.
+5. **[`docs/drone-software.md`](docs/drone-software.md)** — esp-fc on the XIAO,
+   the ELRS bind, and the checks that prove the link and the sweep ignore each
+   other.
 
-Breadboard build sheet: [`hardware/breadboard/`](hardware/breadboard/) — every lead and jumper by hole (`WIRING.md`), verified against the netlist, with an interactive `breadboard.html`.
+Alongside them:
 
-3-D models: [`hardware/3d/`](hardware/3d/) — `radar-bench.html` is the whole radar on its plywood bench, every BOM row as an object and every wire routed pin to pin; `drone.html` is the ESP-FLY target with the 915 MHz receiver fitted, every part, pad and lead labelled with what it weighs. Both are checked against the documents they draw by `verify_model.py` and `verify_drone.py`, geometry included.
+- **[`hardware/breadboard/`](hardware/breadboard/)** — the video amp hole by
+  hole. `WIRING.md` lists every lead and jumper by hole, generated by
+  `layout.py`, which proves the placement against the KiCad netlist before it
+  writes anything. `breadboard.html` is the interactive version.
+- **[`hardware/3d/`](hardware/3d/)** — `radar-bench.html` is the whole radar on
+  its plywood bench, every BOM row an object and every wire routed pin to pin;
+  `drone.html` is the target, every part, pad and lead labelled with what it
+  weighs. Both are checked against the documents they draw.
+- **[`hardware/kicad/`](hardware/kicad/)** — `radar_flow.kicad_sch` is the one
+  to start with: every part wired to every part it touches, in signal order,
+  with the level on each connection. Also the breadboard at component level and
+  a simulation sheet with every value on the page.
+- **[`hardware/spice/`](hardware/spice/)** — one test card per block: values,
+  stimulus, expected reading. Simulate before you solder.
 
-Schematics: [`hardware/kicad/`](hardware/kicad/) — `radar_flow.kicad_sch` (**start here**: every part wired to every part it touches, in signal order, with the level on each connection), `radar_breadboard.kicad_sch` (the breadboard at component level) and `radar_multisim.kicad_sch` (every value on the page, one frame per test). All render in KiCad 7/8; PNGs alongside.
-
-## Test
-
-**[`docs/higher-bands.md`](docs/higher-bands.md)** — what moving to 24 or 60 GHz would cost and buy, and why every off-the-shelf module fails the antenna test despite being the better radar. Kevin's suggestion, costed and then re-judged.
-
-**[`docs/24ghz/`](docs/24ghz/README.md)** — the 24 GHz build, drafted and costed: one board carrying a BGT24LTR22, an ADF4159 ramp PLL and three printed patch columns you lay out yourself. A **0.60 m range cell** instead of 1.80 m, and an interferometer **unambiguous to ±90°** instead of ±18.4°, for $205–720 that reuses the whole back end. Design numbers from [`antenna/patch24.py`](antenna/patch24.py).
-
-**[`docs/azimuth.md`](docs/azimuth.md)** — how bearing is actually measured: two receivers, one dwell, 0.18° rms. Scanning cannot do it on a moving target.
-
-**[`docs/sar.md`](docs/sar.md)** — synthetic aperture imaging: fly the radar and the flight path becomes the antenna. One TX, one RX, no second receiver. 1.50 m range cells and 0.10 m cross-range, and the hard part is knowing where the radar was to **5 mm line-of-sight** — the first argument in this repo for *staying* at 2.4 GHz. [`ground_station/sar.py`](ground_station/sar.py), 25 assertions.
-
-**[`docs/signal-chain.md`](docs/signal-chain.md)** — what the signal actually is at every point, from the frequency staircase leaving the antenna to the 100-byte fix, with every figure generated from the running code. Read this to understand *how it works*.
-
-**[`docs/testing.md`](docs/testing.md)** — every test in run order: the DSP with no hardware, each breadboard block in ngspice or Multisim (`hardware/spice/`, `hardware/spice/multisim/`), the horns on a NanoVNA, the RF chain by its leakage tone, the walking-person test, the phone-link ping test with the sweep on, and tracking against floor marks.
+## Run it
 
 ```bash
 cd ground_station && pip install -r requirements.txt
-python radar_acquire.py --selftest            # the live DSP on a synthetic drone: PASS
-python radar_acquire.py --device 3 --ctl /dev/ttyUSB0 --server http://localhost:8080
-python server.py                              # console at http://localhost:8080
+python radar_acquire.py --selftest                      # the live DSP on a synthetic drone
+python radar_acquire.py --device 3 --ctl /dev/ttyUSB0 --range-only   # stage 1
+python radar_acquire.py --interferometer --ctl /dev/ttyUSB0          # stage 2, azimuth
+python server.py                                        # console at http://localhost:8080
 ```
+
+Everything that can be checked without hardware, is:
+
+```bash
+cd ground_station && python test_radar.py               # 45 cases
+cd ../hardware/breadboard && python layout.py           # placement vs the netlist
+cd ../3d && python verify_model.py --render             # bench model vs WIRING/MODULES/BOM
+                 python verify_drone.py --render        # drone model vs the drone docs
+```
+
+The two model verifiers re-derive the drawings from the documents, so they fail
+if either side moves without the other — geometry included: no lead may pass
+through a part it is not connected to, no bend may exceed 95°, and every wire
+end must land on a pad that exists.
 
 ## Code
 
 | | |
 |---|---|
 | `firmware/radar_ctl/` | radar ESP32: ADF4351 sweep, sync line, serial protocol, the stage-2 RF switch (`SWMODE`), optional turntable; boots RF-off |
+| `firmware/espfly-915/` | the drone's flight-controller config for the 915 MHz link |
 | `ground_station/radar_acquire.py` | sound card → chirps → range-Doppler → CFAR → azimuth → console; `--selftest`, `--replay` |
-| `ground_station/interferometer.py` | azimuth from the phase between two receivers, in one dwell: geometry, calibration, switched-mode parity and the refusals |
-| `ground_station/test_radar.py` | the regression suite, 45 cases, no hardware or network needed |
-| `ground_station/server.py` + `web/` | the console (PPI scope, tracker, `/api/radar`) |
-| `ground_station/fmcw_sim.py`, `radar_twin.py`, `scan_design.py`, `tracker.py` | simulator, digital twin, scan sizing, Kalman filter |
-| `antenna/horn.py` | the horn design (optimum pyramidal, WR-340 feed) |
-| `hardware/kicad/`, `hardware/spice/` | schematics (generated), simulation netlists and test cards |
-| `hardware/3d/` | the bench and drone models, their screenshot renderer and their two verifiers |
-
-## Archive
-
-Design history, the passive-RF system this replaced, analyses behind the
-numbers (scanning, antenna, tracking, interference), the 915 MHz fallback and
-external design reviews: [`docs/archive/`](docs/archive/).
+| `ground_station/interferometer.py` | azimuth from the phase between two receivers, in one dwell: geometry, calibration, switched-mode parity, and the three refusals |
+| `ground_station/fmcw_sim.py`, `radar_twin.py` | the simulator and the digital twin the live DSP is shared with |
+| `ground_station/test_radar.py` | the regression suite, 45 cases, no hardware or network |
+| `ground_station/server.py` + `web/` | the console: PPI scope, tracker, `/api/radar` |
+| `ground_station/tracker.py`, `scan_design.py` | Kalman filter, scan sizing |
+| `antenna/horn.py` | the horn design — optimum pyramidal on a WR-340 feed |
+| `hardware/3d/` | both models, their screenshot renderer and their two verifiers |

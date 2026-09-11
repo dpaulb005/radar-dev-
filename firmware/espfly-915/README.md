@@ -9,9 +9,9 @@ ELRS/CRSF receiver, if the phone link and the radar turn out not to coexist:
 - `espfly-915.cli` — the esp-fc CLI settings (receiver pins, serial RX,
   failsafe). Paste into the Configurator's CLI tab.
 
-Step-by-step: [`../../docs/drone-hardware.md`](../../../docs/drone-hardware.md)
+Step-by-step: [`../../docs/drone-hardware.md`](../../docs/drone-hardware.md)
 (receiver swap, antenna, radio) and
-[`../../docs/drone-software.md`](../../../docs/drone-software.md) (ELRS flash,
+[`../../docs/drone-software.md`](../../docs/drone-software.md) (ELRS flash,
 EdgeTX model, esp-fc Ports/Receiver/Modes, failsafe test, first flights).
 
 Building esp-fc yourself (only if you are not using the ESP-FLY's supplied

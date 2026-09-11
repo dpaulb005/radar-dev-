@@ -69,7 +69,9 @@ The drone is a **stock Seeed ESP-FLY**, built to its own guide, flown on a
 instead of squeezing into 40 MHz above the drone's WiFi. Do not buy or fit the
 kit's 2.4 GHz radio option (ESP-NOW transmitter or RP1 V2) — it hops across the
 radar's sweep. Why this is worth $130 is measured in
-[`../docs/testing.md`](../docs/testing.md) § a small room changes the answer.
+[`../docs/radar-software.md`](../docs/radar-software.md) § 8: in a 4 m room the
+40 MHz coexistence sweep is 0.2–0.5 m out and blind inside 1.5 m, while the full
+band holds 0.1 m everywhere.
 
 ### The 915 MHz ELRS link
 
@@ -83,8 +85,8 @@ radar's sweep. Why this is worth $130 is measured in
 Both ends must be the **same ExpressLRS major version** and the **same
 regulatory domain (FCC915)**. Alternatives: any EdgeTX radio with a JR bay
 (Boxer, TX12) plus a Bandit Micro; HappyModel ES900TX instead of the Bandit
-Nano. Procedure in [`../docs/drone-link.md`](../docs/drone-link.md), firmware in
-[`../docs/drone-link-espfc.md`](../docs/drone-link-espfc.md).
+Procedure in [`../docs/drone-hardware.md`](../docs/drone-hardware.md), firmware
+and binding in [`../docs/drone-software.md`](../docs/drone-software.md).
 
 **If you are flying outdoors or in a space where 5–10 m is available, you can
 skip section H entirely** and fly from the phone on WiFi channel 1 with a
@@ -96,7 +98,7 @@ spending.
 
 Bearing from the phase difference between two receivers, in one 0.47 s dwell,
 which is the only way to get it on a *moving* drone. See
-[`../docs/azimuth.md`](../docs/azimuth.md).
+[`../docs/radar-hardware.md`](../docs/radar-hardware.md) § 8.
 
 | # | item | qty | ~$ | notes |
 |---|---|---|---|---|
@@ -113,7 +115,7 @@ which is the only way to get it on a *moving* drone. See
 
 | # | item | qty | ~$ | notes |
 |---|---|---|---|---|
-| 30 | VNA reaching 2.5 GHz | 0 | 0 | **not required.** The link has 54 dB of margin, so a badly tuned horn costs 2.5 dB of it. Tune the probe against the radar's own detection SNR instead — `docs/testing.md` §3. Borrow one if you want the real numbers |
+| 30 | VNA reaching 2.5 GHz | 0 | 0 | **not required.** The link has 54 dB of margin, so a badly tuned horn costs 2.5 dB of it. Tune the probe against the radar's own detection SNR instead — `docs/radar-hardware.md` § 2c. Borrow one if you want the real numbers |
 | 31 | RTL-SDR v4 + 30 dB SMA pad | 0 | 0 | optional. The leakage tone at checkpoint 7 already proves the whole chain is alive |
 
 **Do not buy a NanoVNA-H4.** It stops at 1.5 GHz and cannot see a 2.44 GHz horn
@@ -261,9 +263,10 @@ purely additive.
 
 One RF switch in front of a single receive chain instead of a whole second
 chain. Section F's $251 becomes about $40, and the UCA202 is enough because
-there is still only one beat channel. See `../docs/azimuth.md` for the
-trade: the two antennas are then sampled 7.4 ms apart, so the target's motion
-phase has to be corrected from the measured velocity.
+there is still only one beat channel. See
+[`../docs/radar-hardware.md`](../docs/radar-hardware.md) § 8 for the trade: the
+two antennas are then sampled 7.4 ms apart, so the target's motion phase has to
+be corrected from the measured velocity, and the unambiguous velocity halves.
 
 | | |
 |---|---|
@@ -281,71 +284,4 @@ phase has to be corrected from the measured velocity.
 
 Not needed: external LNAs beyond the two, any 2.4 GHz sniffer boards,
 a UWB kit. An RF switch is the cheaper single-chain alternative to section F;
-`docs/azimuth.md` explains why it is not the first choice.
-
----
-
-<details>
-<summary>Archived — passive RSSI/FTM localisation BOM (superseded)</summary>
-
-
-Target: locate your own ESP32-equipped drone within a 5–10 m area, budget < $150.
-Prices are typical US street prices (AliExpress / Amazon, mid-2026).
-
-> **ESP-BLAST builders:** see `docs/archive/espblast.md`. Your drone-side cost is $0
-> (one-line esp-fc patch) or ~$3 (row 6, piggyback beacon board). Upgrade A
-> (FTM) does **not** apply — the ESP-BLAST's WROOM-32 lacks FTM support.
-
-## Core system — RSSI multilateration (~$55)
-
-| # | Item | Qty | Unit | Total | Notes |
-|---|------|-----|------|-------|-------|
-| 1 | ESP32-S3 (or ESP32-C3) dev board | 4 | $6 | $24 | 3 sniffer nodes + 1 hub. S3/C3/C6 also support FTM for the upgrade path. Boards with an IPEX connector + external antenna give steadier RSSI than PCB-antenna boards. |
-| 2 | 2.4 GHz dipole antenna, IPEX/u.FL | 3 | $2 | $6 | Only if you chose IPEX boards. Keep all node antennas vertical (same polarization). |
-| 3 | USB-C cables | 4 | $2 | $8 | One per board for flashing; hub stays connected to the laptop. |
-| 4 | USB power banks (any small 5 V) | 3 | $5 | $15 | Powers the sniffer nodes in the field. Reuse phone banks if you have them. |
-| 5 | Tripods / stakes / zip ties | 3 | ~$1 | $3 | Get node antennas ~1 m off the ground and note each node's (x, y, z). |
-
-| 6 | ESP32-C3 Super Mini (optional piggyback beacon) | 0–1 | $3 | $0–3 | Only if you can't/won't patch the drone's own firmware. ~2.5 g, powered from the drone's 5 V rail. |
-
-**Subtotal: ~$56–59.** The drone-side ESP32 you already have — it either gets
-the one-line firmware patch or carries the piggyback beacon.
-
-## Accuracy upgrade A — WiFi FTM time-of-flight (+$0–18)
-
-| # | Item | Qty | Unit | Total | Notes |
-|---|------|-----|------|-------|-------|
-| 7 | ESP32-S3/C3/C6 boards | 0–3 | $6 | $0–18 | If you already bought S3/C3 boards in row 1, this upgrade is **free** — it's just different firmware (`rx_node_ftm`). Original-ESP32 (non-S/C) chips do **not** support FTM — this rules out the ESP-BLAST's WROOM-32 as the responder. |
-
-FTM gives ~0.5–2 m ranging without any RSSI calibration. Recommended: buy
-S3 or C6 boards up front so both modes work.
-
-## Accuracy upgrade B — UWB, sub-30 cm (+$100, still ≤ $150 total if it replaces A)
-
-| # | Item | Qty | Unit | Total | Notes |
-|---|------|-----|------|-------|-------|
-| 8 | DW3000/DWM3000 UWB module (e.g. Makerfabs ESP32 UWB DW3000) | 4 | $25–30 | $100–120 | 3 anchors + 1 tag on the drone. Centimeter-class two-way ranging. This is the "do it properly" path if RSSI accuracy disappoints. Weight check first: a UWB tag module is ~5–10 g — significant on a mini quad like the ESP-BLAST. |
-
-## Alternative for a bone-stock drone — 5.8 GHz VTX tracking (~$45)
-
-| # | Item | Qty | Unit | Total | Notes |
-|---|------|-----|------|-------|-------|
-| 9 | RX5808 5.8 GHz receiver module | 3 | $10 | $30 | Analog RSSI output read by an ESP32 ADC; tracks the FPV video carrier with zero drone modifications. Coarser than 2.4 GHz sniffing; see the note in `docs/archive/espblast.md` and the RotorHazard project for the reference design. |
-
-## Explicitly NOT needed
-
-- **SDRs** (RTL-SDR, KrakenSDR, HackRF) — required only for true
-  reflection-based passive radar, which doesn't work at this range/budget
-  (see `docs/archive/feasibility.md`).
-- Directional antennas, LNAs, RF switches.
-
-## Placement guidance
-
-- Spread the 3 sniffer nodes in a triangle **around** the flight area
-  (baseline ≥ 6 m). Geometry inside the triangle is much better than outside.
-- Add a 4th sniffer node (one more $6 board) for 3D fixes and robustness —
-  the solver in `ground_station/` uses as many nodes as report in.
-- Measure node positions with a tape measure to ~10 cm; position error of the
-  anchors goes straight into the solution.
-
-</details>
+`docs/radar-hardware.md` § 8 explains why it is not the first choice.

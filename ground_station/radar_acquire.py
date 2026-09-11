@@ -531,7 +531,7 @@ def run(args):
     if ctl:
         ctl.sweep(True)                      # the ESP32 boots with RF off
     # The beam-scan centroid is legacy: it only works on a nearly stationary
-    # target (docs/signal-chain.md § stage 10). It is never used in azimuth mode.
+    # target (docs/radar-software.md § 1). It is never used in azimuth mode.
     scan_mode = (not interf_mode) and (
         (bool(ctl) and not args.range_only) or (args.selftest and not args.st_range_only))
     radar = ScanningRadar(sector=args.sector) if scan_mode else None
