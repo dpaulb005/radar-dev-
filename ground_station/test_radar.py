@@ -162,7 +162,7 @@ def test_azimuth():
         # folded line strongest, and the velocity-fold guard refuses to read a
         # bearing off it. At 40 MHz CFAR also surfaced the true-velocity peak, so
         # a usable detection survived. This is switched mode's documented limit
-        # (radar-software.md 9) with the boundary moved, not a new failure -- and
+        # (radar-software.md § 6) with the boundary moved, not a new failure -- and
         # it is one more reason the simultaneous build is the one to make.
         allowed = 0 if mode == "--interferometer" else 2
         check(g, f"{tag}: 36 bearings across the beam", bad <= allowed,

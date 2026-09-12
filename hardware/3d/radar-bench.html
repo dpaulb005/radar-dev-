@@ -963,8 +963,15 @@ const mix2=mcCase(0.022,0.014,0.020,[{name:'lo',side:'b'},{name:'rf',side:'r'},{
 putRF(mix2,-0.045,ZRX2); bench.add(mix2); reg('F22',mix2,'2nd mixer ZX05-43MH-S+ (stage 2)','rf');
 const spl2=mcCase(0.032,0.014,0.024,[{name:'s',side:'l'},{name:'o1',side:'f',off:-0.008},{name:'o2',side:'f',off:0.008}]);
 putRF(spl2,-0.005,-0.030); bench.add(spl2);   // between the two mixers it feeds, and clear of the ADF loom reg('F23',spl2,'2nd splitter — LO to both mixers (stage 2)','rf');
+// 6 dB SMA pad, stage 2 only and only with the ZX05 mixer: it protects the
+// spare SPF5189Z used as the LO amplifier from being driven past its +18 dBm
+// P1dB once the LO is split two ways. BOM row 23b.
+const pad6=rfBarrel(0.026,0.0055,M.aluDark,[{name:'in',side:'l'},{name:'out',side:'r'}]);
+putRF(pad6,-0.068,-0.030); bench.add(pad6);
+reg('F23b',pad6,'6 dB SMA pad — ahead of the LO amplifier (stage 2, ZX05 build)','rf');
 addLabel(bpf2,'band-pass 2','rf'); addLabel(lna2,'LNA 2','rf'); addLabel(mix2,'mixer 2','rf'); addLabel(spl2,'splitter 2','rf');
-const stage2Only=[bpf2,lna2,mix2,spl2,umc,...umc.userData.plugs2];
+addLabel(pad6,'6 dB pad','rf');
+const stage2Only=[bpf2,lna2,mix2,spl2,pad6,umc,...umc.userData.plugs2];
 const stage1Only=[xen];        // the two-input interface stage 2 replaces
 
 // =====================================================================
@@ -1371,6 +1378,7 @@ const BOM=[
  ['F · Stage 2 — azimuth interferometer',[
   ['F22','2nd ZX05-43MH-S+ mixer','1','$79','second receive channel — critical path'],
   ['F23','2nd 2-way splitter','1','$13','LO to both mixers'],
+  ['F23b','6 dB SMA pad','1','$9','only with the ZX05 mixer: ahead of the spare SPF5189Z used as the LO amplifier, so it is not driven past its +18 dBm P1dB'],
   ['F24','2nd 2400–2500 band-pass','1','$29','in front of the second LNA'],
   ['F25','3rd horn (materials in B)','1','$0','beside RX A at 193 mm centres, all three rolled 90°'],
   ['F26','Behringer UMC404HD 4-in interface','1','$139','the part stage 2 replaces C13 with: beat A, beat B and sync on one sample clock'],
@@ -1390,7 +1398,7 @@ BOM.forEach(([title,rows])=>{ const h=document.createElement('h2'); h.textConten
     r.innerHTML=`<span class="n">${id}</span><span>${name}${note?`<small>${note}</small>`:''}</span><span class="q">${qty} · ${price}</span>`;
     if(!NOTMODELLED.has(id)) r.onclick=()=>selectBom(id,r); bomEl.appendChild(r); }); });
 const tot=document.createElement('div'); tot.className='total';
-tot.innerHTML='Stage 1 ≈ $343 · + stage 2 ≈ $633 · + turntable ≈ $686<br><span class="legend"><span class="sw" style="background:#c2622a"></span>RF <span class="sw" style="background:#2f77b0"></span>baseband/ADC <span class="sw" style="background:#2c9c68"></span>control <span class="sw" style="background:#b8860b"></span>power <span class="sw" style="background:#6a4fbf"></span>drone</span>';
+tot.innerHTML='Stage 1 ≈ $343 · + stage 2 ≈ $642 · + turntable ≈ $695<br><span class="legend"><span class="sw" style="background:#c2622a"></span>RF <span class="sw" style="background:#2f77b0"></span>baseband/ADC <span class="sw" style="background:#2c9c68"></span>control <span class="sw" style="background:#b8860b"></span>power <span class="sw" style="background:#6a4fbf"></span>drone</span>';
 bomEl.appendChild(tot);
 
 let highlight=[], hlT=0;

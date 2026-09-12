@@ -37,8 +37,8 @@ Props OFF for everything until § 8.
 | target FFT bin at 3 m | 0.80 — inside the DC lobe | **1.67** |
 | in a 4.17 m room, error at 2 m | +0.54 m | **+0.02 m** |
 | in a 4.17 m room, at 1.0 m | no fix | +0.17 m |
-| interference between radar and link | ~20 dB of margin, tested per session | **none — 1.5 GHz apart** |
-| cost | $0 | ~$130 and a firmware change |
+| interference between radar and link | radar arrives ~20 dB **above** the control signal; you are relying on LoRa's processing gain, re-tested per room | **none — 1.5 GHz apart** |
+| cost | $0 | ~$122 and a firmware change |
 
 The coexistence build was not *broken* — outdoors at 5–10 m a 3.75 m cell is a
 small fraction of the scene and 40 MHz is fine. It falls apart in a room 4 m
@@ -221,8 +221,13 @@ sweep) and **Component config → PHY → Max WiFi TX power → 10** dBm. Then s
 `SET f0_mhz 2440 / SET bw_mhz 40` above it. The two systems now share the band,
 so the link test in § 7 comes back in its long form: fly the drone in the beam
 at 1 m with `SWEEP 1` running and confirm the phone holds control and the
-console still tracks. The margin is about 20 dB and it has to be re-measured in
-every room.
+console still tracks. Be clear about which way the 20 dB points: the radar
+arrives at the drone's receiver about **20 dB stronger than its own control
+signal** ([`drone-hardware.md`](drone-hardware.md) § 0), so the link survives on
+the spread-spectrum processing gain and on the sweep spending most of its time
+outside the link's channel — not on 20 dB of headroom. That is a margin nobody
+here has measured, it has to be re-tested in every room, and it is the reason
+this is the fallback build and not the recommended one.
 
 Take it if you are flying outdoors or in a large space. Do not take it in a
 bedroom: 40 MHz gives a 3.75 m range cell, and a 4 m room is one cell deep.

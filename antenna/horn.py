@@ -128,9 +128,11 @@ def report(f_ghz=2.45, wg="WR-340", gain_dbi=13.4, eps_ap=0.51):
     print("  is impossible. Quote it in your log like this ->")
     print(f"    \"predicted {g_dbi:.1f} dBi, aperture bound {10*math.log10(bound):.1f} dBi,")
     print(f"     {g_lin/bound*100:.0f}% efficiency, plausible for an optimum pyramidal horn\"")
-    print(f"\n  Build note: that is a {a1*1000:.0f} x {b1*1000:.0f} mm aperture, TWICE")
-    print("  (one TX, one RX). If unwieldy, --gain 11 shrinks it; record the")
-    print("  trade in your log rather than silently picking small.\n")
+    print(f"\n  Build note: that is a {a1*1000:.0f} x {b1*1000:.0f} mm aperture, THREE TIMES")
+    print("  (one TX, two RX -- the pair feeds the interferometer and wants to be")
+    print("  twins, so cut all three in one session). If unwieldy, --gain 11")
+    print("  shrinks it; record the trade in your log rather than silently")
+    print("  picking small.\n")
     return dict(a1=a1, b1=b1, pe=pe, ph=ph, gain=g_dbi, bound=10*math.log10(bound))
 
 

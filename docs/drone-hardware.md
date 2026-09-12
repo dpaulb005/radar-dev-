@@ -66,10 +66,11 @@ built-in 2.4 GHz module (SX1281), 2.400–2.480 GHz, and **no external module
 bay** — there is no 900 MHz variant of it. So both ends get replaced. Keep the
 T8L; it is still the right tool for any flight with the radar off.
 
-The cost is **≈ $130** and a firmware change: you stop flying from a phone and
-start flying with sticks.
+The cost is **≈ $122** (§ 1, and [`../hardware/BOM.md`](../hardware/BOM.md) § E)
+and a firmware change: you stop flying from a phone and start flying with
+sticks.
 
-## 1. What to buy (≈ $130)
+## 1. What to buy (≈ $122)
 
 | item | ~$ | why this one |
 |---|---|---|
@@ -186,9 +187,12 @@ not running or WiFi is still enabled — fix that before flying near the radar.
 
 ## 6. Make the drone a good radar target (optional, free)
 
-A 25 g quad's radar cross-section is small (**~0.01 m² is assumed in every link
-budget in this repo and has been measured by nobody** — it could be several times
-lower). At 10 m the thermal margin is large enough that it does not need help.
+A 25 g quad's radar cross-section is small, and **it has been measured by
+nobody**. Two values are in use: the link-budget tables assume **0.01 m²**, and
+the room and ranging simulations assume **0.0026 m²** — 5.9 dB apart, with the
+pessimistic one treated as the design case
+([`radar-software.md`](radar-software.md) § 1). It could be lower still. At 10 m
+the margin is large enough either way that it does not need help.
 If you want more echo, a 30 mm square of copper tape laid flat on the top plate
 roughly doubles it. Free, and worth doing for the first flights.
 

@@ -35,7 +35,7 @@ table order — the mixer is the critical path.
 | 5 | SMA 3 dB attenuator, DC–6 GHz | 1 | 9 | Amazon | replaces VAT-3+ |
 | 6 | SMA M-M RG316 jumpers, 20 cm, 3-pack | 2 | 18 | Amazon | 6 runs in the chain |
 | 7 | SMA adapter assortment (M-M barrels, F-F) | 1 | 12 | Amazon | |
-| 7b | **2.4 GHz band-pass filter**, 2400–2500 MHz, SMA inline | 1 | 29 | GPIO Labs (2450 MHz ISM BPF, $29.10, >40 dB at 2.2/2.8 GHz, 2.7 dB loss) or Data Alliance (BandPass2450, $13.70, no rejection spec published). The same FBP-2400-style module is listed on Amazon (ASIN B0C3BL74VN, B0C8269CGF) and AliExpress (~$25); Amazon prices were not verifiable from here. Mini-Circuits VBF-2435+ is $57.50 at DigiKey; ZFBP-2400-S+ (50 dB rejection, 2.2 dB loss) is the lab-grade option | between RX horn and LNA — keeps out-of-band signals off the wideband SPF5189Z (it cannot reject WiFi ch 1; the drone's AP power is turned down for that) |
+| 7b | **2.4 GHz band-pass filter**, 2400–2500 MHz, SMA inline | 1 | 29 | GPIO Labs (2450 MHz ISM BPF, $29.10, >40 dB at 2.2/2.8 GHz, 2.7 dB loss) or Data Alliance (BandPass2450, $13.70, no rejection spec published). The same FBP-2400-style module is listed on Amazon (ASIN B0C3BL74VN, B0C8269CGF) and AliExpress (~$25); Amazon prices were not verifiable from here. Mini-Circuits VBF-2435+ is $57.50 at DigiKey; ZFBP-2400-S+ (50 dB rejection, 2.2 dB loss) is the lab-grade option | between RX horn and LNA — keeps out-of-band signals off the wideband SPF5189Z, which amplifies 50–4000 MHz, so without it every signal in the building reaches the mixer. It no longer has to reject the drone's own WiFi: the control link moved to 915 MHz and the sweep took the whole band |
 
 ## B. Horns — ~$95 (materials for three)
 
@@ -74,7 +74,7 @@ The drone is a **stock Seeed ESP-FLY**, built to its own guide, flown on a
 **915 MHz ELRS link** so the radar can sweep the whole 2400–2483.5 MHz band
 instead of squeezing into 40 MHz above the drone's WiFi. Do not buy or fit the
 kit's 2.4 GHz radio option (ESP-NOW transmitter or RP1 V2) — it hops across the
-radar's sweep. Why this is worth $130 is measured in
+radar's sweep. Why this is worth $122 is measured in
 [`../docs/radar-software.md`](../docs/radar-software.md) § 8: in a 4 m room the
 40 MHz coexistence sweep is 0.2–0.5 m out and blind inside 1.5 m, while the full
 band holds 0.1 m everywhere.
@@ -100,7 +100,7 @@ skip section H entirely** and fly from the phone on WiFi channel 1 with a
 fraction of a large scene. It is only a bedroom that makes this $122 worth
 spending.
 
-## F. Stage 2 — azimuth interferometer — ~$290
+## F. Stage 2 — azimuth interferometer — ~$299
 
 Bearing from the phase difference between two receivers, in one 0.47 s dwell,
 which is the only way to get it on a *moving* drone. See
@@ -110,6 +110,7 @@ which is the only way to get it on a *moving* drone. See
 |---|---|---|---|---|
 | 22 | second ZX05-43MH-S+ mixer | 1 | 73 | second receive channel. Critical path — order first |
 | 23 | second 2-way splitter (LO to both mixers) | 1 | 13 | |
+| 23b | **6 dB SMA pad** | 1 | 9 | **only with the ZX05 mixer.** Splitting the LO again leaves +7 dBm per mixer, 6 dB under the ZX05's +13 dBm rating, so the spare SPF5189Z from row 3 goes in as an LO amplifier — and it needs this pad in front of it or it is driven past its +18 dBm P1dB. The $25 generic modules are level-7 parts that take +7 dBm directly: skip this row. [`../docs/radar-hardware.md`](../docs/radar-hardware.md) § 8 has the budget |
 | 24 | second 2400–2500 band-pass filter | 1 | 29 | in front of the second LNA; same part as row 7b |
 | 25 | third horn — materials already in B | — | 0 | **beside** the first RX at 193 mm centres, all three horns rotated 90° |
 | 26 | **Behringer UMC404HD** 4-input USB interface | 1 | 139 | the one part stage 2 forces you to replace. It needs beat A, beat B and sync on **one sample clock**: two 2-in interfaces have independent clocks and a phase measurement between independently clocked converters means nothing. Nothing else in the baseband section changes |
@@ -139,7 +140,14 @@ publishes rejection figures). The `~$` column in every table is the line total.
 This is the list. It puts up the three-horn frame, builds two of the horns'
 worth of chain, and buys nothing you will have to replace.
 
-**Order 1 — stage 1, $394**
+**Order 1 — stage 1, $317**
+
+This list builds the horns the way [`../docs/radar-hardware.md`](../docs/radar-hardware.md)
+§ 2 documents them: cut from 0.021" copper sheet, seams soldered, continuity
+checked panel to panel. 3D-printing the shells and lining them with copper tape
+saves about $40 (see *Ways to spend less*), but there is no cut list, no probe
+mounting detail and no seam-continuity checkpoint written for that version — so
+it is a substitution you are making yourself, not a documented build.
 
 | item | $ |
 |---|---|
@@ -151,13 +159,13 @@ worth of chain, and buys nothing you will have to replace.
 | SMA jumpers, 3 packs, **one order** so the cables match | 27 |
 | SMA adapter assortment | 12 |
 | band-pass filter | 14 |
-| three horns: filament, copper tape, SMA flange 10-pack, brass rod, solder | 62 |
+| three horns: copper sheet ×2, SMA flange 10-pack, brass rod, solder, snips | 95 |
 | frame: plywood, L-brackets, M3 hardware, standoffs | 28 |
 | ESP32 devkit | 10 |
 | **two** TL072, breadboard, passives kit | 25 |
 | LM2596 ×2 (12 V supply already owned) | 8 |
 | USB audio interface — **already owned**, any 2-in does stage 1 | 0 |
-| | **284** |
+| | **317** |
 
 **Order 1b — the drone's control link, $122.** Only if you are flying in a
 small room; see § E. RadioMaster Pocket 65, Bandit Nano 915 40, BetaFPV ELRS
@@ -173,10 +181,11 @@ Nano 915 RX 17. Skip it outdoors and fly from the phone on a 40 MHz sweep.
 | two more TL072, second passives set, second breadboard | 18 |
 | | **70** |
 
-**$507 of parts, about $545 delivered** — plus **$122** for the 915 MHz link if
-you are flying indoors, so **~$667** for the full indoor build. Drop the SMA
-adapter assortment and the turntable and it is ~$630. Live prices and links are
-in [`ORDER.md`](ORDER.md).
+**$387 of parts** (order 1 at $317 plus order 2 at $70), **about $416
+delivered** — plus **$122** for the 915 MHz link if you are flying indoors, so
+**~$538** for the full indoor build. Add the $139 four-input interface when you
+commit to stage 2 and it is **~$677**. Print the horns instead of cutting them
+and take $40 off. Live prices and links are in [`ORDER.md`](ORDER.md).
 
 Nothing in order 1 becomes redundant. The interface, the LNA 4-pack, the horn
 count, the frame and the second TL072 are all sized for the finished radar.
@@ -245,11 +254,11 @@ touches. That is the single change from buying in stages.
 | B. Horns, materials for all three | 95 | 300 |
 | C. Baseband, control, power | 43 | 343 |
 | D. Turntable | 53 | 396 |
-| F. Second receiver and interferometer (UMC404HD included) | 290 | **686** |
-| G. Test gear (buy none) | 0 | 686 |
-| shipping (Mini-Circuits direct) + 6 % tax | ~55 | **~741** |
+| F. Second receiver and interferometer (UMC404HD included) | 299 | **695** |
+| G. Test gear (buy none) | 0 | 695 |
+| shipping (Mini-Circuits direct) + 6 % tax | ~56 | **~751** |
 
-**Parts only: ~$686. Delivered: ~$741.**
+**Parts only: ~$695. Delivered: ~$751.**
 
 Already owned and priced at zero above: the laptop, the 12 V supply, and a
 two-input USB interface (a Behringer Xenyx 302USB). Also the ESP-FLY drone.
@@ -259,8 +268,8 @@ two-input USB interface (a Behringer Xenyx 302USB). Also the ESP-FLY drone.
 | | | running |
 |---|---|---|
 | Stage 1 — range and velocity (A + B + C) | 343 | 343 |
-| + Stage 2 — azimuth (F, including the 4-input interface it forces) | 290 | 633 |
-| + optional turntable (D) | 53 | 686 |
+| + Stage 2 — azimuth (F, including the 4-input interface it forces) | 299 | 642 |
+| + optional turntable (D) | 53 | 695 |
 
 
 Staged this way nothing is rebuilt: stage 1 puts up the three-horn frame and
@@ -272,8 +281,9 @@ spend $139 up front on a capability you have not decided to build.
 ### The cheaper azimuth path
 
 One RF switch in front of a single receive chain instead of a whole second
-chain. Section F's $251 becomes about $40, and the UCA202 is enough because
-there is still only one beat channel. See
+chain. Section F's $160 of receive hardware (the $299 above, less the $139
+interface) becomes about $40, and a two-input interface is enough because there
+is still only one beat channel. See
 [`../docs/radar-hardware.md`](../docs/radar-hardware.md) § 8 for the trade: the
 two antennas are then sampled 7.4 ms apart, so the target's motion phase has to
 be corrected from the measured velocity, and the unambiguous velocity halves.

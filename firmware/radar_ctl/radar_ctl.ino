@@ -48,21 +48,32 @@
 #define F_REF_HZ        25000000ULL   // the board's TCXO; check yours (25 MHz is usual)
 #define ISM_LO_HZ       2400000000ULL // 2.4 GHz ISM band edges: the sweep never leaves them
 #define ISM_HI_HZ       2483500000ULL
-// Default sweep: 2400-2480 MHz. The top 3.5 MHz of the ISM band is left as
-// an emission-mask margin (a CW tone parked at 2483.5 has no allowance for
-// phase noise or spurs). If the drone is flown over its own WiFi AP (phone
-// control), park the AP on channel 1 and sweep ABOVE it with a guard band:
-//   SET f0_mhz 2440  /  SET bw_mhz 40      (docs/drone-software.md)
+// Default sweep: 2400-2483.5 MHz, the whole ISM band, because the drone's
+// control link lives at 915 MHz (docs/drone-hardware.md).
 // The last step sits at f_start + bw - bw/N_STEPS, so the slope is exactly
-// bw / T_up and the software's beat->range scale needs no N/(N-1) fudge.
+// bw / T_up and the software's beat->range scale needs no N/(N-1) fudge. That
+// also means the HIGHEST FREQUENCY ACTUALLY EMITTED is one step below the
+// nominal top: 2482.195 MHz at the default 64 steps, which is where the
+// emission-mask margin comes from. The guard below therefore validates the
+// top EMITTED step, not the nominal sweep top -- validating the nominal top
+// against a 3.5 MHz margin is what used to make `SET bw_mhz 83.5` fail while
+// the compiled default was already 83.5.
+// Note the interaction: more steps put the top step closer to the nominal top,
+// so `SET steps 256` then `SET bw_mhz 83.5` is refused (326 kHz of step margin
+// against the 1 MHz required). Set the bandwidth first, or lower the margin if
+// you are satisfied with the synthesiser's spur performance at the band edge.
+// If the drone is flown over its own WiFi AP (phone control), park the AP on
+// channel 1 and sweep ABOVE it with a guard band:
+//   SET f0_mhz 2440  /  SET bw_mhz 40      (docs/drone-software.md)
 #define F_START_HZ      2400000000ULL
 #define SWEEP_BW_HZ     83500000ULL
-#define ISM_MARGIN_HZ   3500000ULL    // sweep top must stay <= 2483.5 - this
+#define ISM_MARGIN_HZ   1000000ULL    // top EMITTED step must stay <= 2483.5 - this
 #define MOD_DEFAULT     4000          // fractional modulus -> 6.25 kHz resolution
 
 #define AZ_MODE_STEPPER 1             // 1 = A4988 stepper, 0 = hobby servo
 #define STEPS_PER_DEG   8.889f        // 200 steps x 16 microsteps / 360 = 8.889 (1:1 turntable)
-#define AZ_LIMIT_DEG    90.0f
+#define AZ_LIMIT_DEG    45.0f        // docs/radar-hardware.md § 9 sizes the coax
+                                     // slack for +/-45 deg. Raise both together.
 #define STEP_PULSE_US   400           // stepper speed; ~280 deg/s at 8.9 steps/deg
 
 // pins
@@ -163,6 +174,10 @@ static void adf_init() {
 
 // ---------------- azimuth ----------------
 #if !AZ_MODE_STEPPER
+// NOTE: ledcSetup/ledcAttachPin/ledcWrite(channel,..) below are the esp32 core
+// 2.x LEDC API. Core 3.x removed them in favour of ledcAttach(pin, freq, bits)
+// and ledcWrite(pin, duty), so the SERVO build compiles on core 2.x only.
+// The stepper build (the default) is fine on either core.
 static void servo_write_deg(float deg) {
   // 50 Hz, 1000..2000 us over -90..+90
   uint32_t us = (uint32_t)(1500.0f + deg * (500.0f / 90.0f));
@@ -286,8 +301,11 @@ static void handle(String line) {
       uint64_t f0 = f_start, bw = sweep_bw;
       if (key == "f0_mhz") f0 = (uint64_t)(val.toFloat() * 1e6);
       else                 bw = (uint64_t)(val.toFloat() * 1e6);
-      if (f0 < ISM_LO_HZ || f0 + bw > ISM_HI_HZ - ISM_MARGIN_HZ || bw < 10000000ULL) {
-        Serial.println("ERR sweep must stay within 2400-2480 MHz (3.5 MHz top margin), bw >= 10"); return;
+      // the top step emitted is f0 + bw - bw/n_steps, and that is what has to
+      // stay inside the band -- see the note at ISM_MARGIN_HZ
+      const uint64_t f_top = f0 + bw - bw / (uint64_t)n_steps;
+      if (f0 < ISM_LO_HZ || f_top > ISM_HI_HZ - ISM_MARGIN_HZ || bw < 10000000ULL) {
+        Serial.println("ERR sweep must stay within 2400-2483.5 MHz (1 MHz margin on the top step), bw >= 10"); return;
       }
       f_start = f0; sweep_bw = bw; adf_tune(f_start);
       Serial.printf("OK SET %s %.1f\n", key.c_str(), key == "f0_mhz" ? f0 / 1e6 : bw / 1e6); return;

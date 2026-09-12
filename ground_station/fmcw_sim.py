@@ -7,7 +7,8 @@ real signal chain of the MIT "coffee can" radar (RES.LL-003) and answers the
 questions that decide whether the build is worth it:
 
   * what range resolution and max range do I get for a given sweep?
-  * how far can it actually see a small drone (RCS ~0.01 m^2)?
+  * how far can it actually see a small drone (RCS ~0.01 m^2 -- see the note
+    on RCS in budget() below; the room simulations use 0.0026 m^2)?
   * what does the TX->RX leakage do to me at 5-10 m, and does background
     subtraction rescue it?
 
@@ -47,12 +48,27 @@ T0 = 290.0
 
 # ----------------------------------------------------------------------
 class RadarSpec:
-    """The MIT coffee-can radar as built, with everything overridable."""
+    """The MIT coffee-can radar as MIT published it, with everything overridable.
+
+    These defaults are MIT's reference design, NOT the radar in this repo, and
+    several callers (radar_twin.ScanningRadar, antenna/patch24.py's comparison
+    column) depend on them staying put. For the build documented in docs/, use
+    as_built() below -- which is what the command line now does, because with
+    MIT's defaults `fmcw_sim.py --budget` printed a 1.07 m range cell and a
+    +/-1.5 m/s Doppler window, contradicting every figure in docs/ and quoting a
+    sweep the firmware refuses (2360-2395 MHz is licensed aeronautical
+    telemetry).
+    """
 
     def __init__(self, **kw):
         self.f0 = 2.36e9          # sweep start (Hz)   measured 2.36-2.50 GHz
         self.bw = 140e6           # sweep bandwidth (Hz)
         self.t_chirp = 20e-3      # sweep period (s)   MIT default ~20 ms
+        # Retrace is the park-back time between chirps. MIT's analog triangle
+        # sweep has none, so it defaults to 0 and pri == t_chirp, exactly as
+        # every existing caller assumed. This radar's stepped PLL parks for 1 ms
+        # (as_built sets it), and then they are different numbers -- see pri().
+        self.retrace = 0.0
         self.fs = 44_100.0        # sound-card sample rate (Hz)
         self.pt_dbm = 13.0        # transmit power (+13 dBm ~ 20 mW)
         self.gt_dbi = 9.0         # TX antenna gain (coffee can ~9, Vivaldi ~8-10)
@@ -64,6 +80,7 @@ class RadarSpec:
         self.isolation_db = 35.0  # TX->RX antenna isolation (separate cans)
         self.adc_bits = 16        # laptop sound card
         self.adc_derate_db = 12.0 # real SFDR falls short of 6.02*bits
+        self.label = "MIT coffee-can reference (NOT this build -- see as_built)"
         self.__dict__.update(kw)
 
     # ---- derived ----
@@ -85,13 +102,26 @@ class RadarSpec:
         return C * self.t_chirp * (self.fs / 2) / (2 * self.bw)
 
     @property
+    def pri(self):
+        """Chirp to chirp: the up-chirp PLUS the retrace.
+
+        This is NOT t_chirp, and the difference is not cosmetic. Range comes
+        from the beat frequency during the up-chirp, so it scales with t_chirp;
+        Doppler comes from the phase advance from one chirp to the NEXT, so it
+        scales with the PRI. Using t_chirp for both is a 16 % velocity error at
+        the 6.4 ms / 1 ms this radar runs, and it is the single easiest bug to
+        reintroduce here (docs/radar-software.md § 3, lesson 1).
+        """
+        return self.t_chirp + self.retrace
+
+    @property
     def v_max(self):
         """Unambiguous velocity from chirp-to-chirp phase (+/-)."""
-        return self.lam / (4 * self.t_chirp)
+        return self.lam / (4 * self.pri)
 
     @property
     def v_res(self):
-        return self.lam / (2 * self.n_chirps * self.t_chirp)
+        return self.lam / (2 * self.n_chirps * self.pri)
 
     def beat_hz(self, r):
         return 2 * self.bw * r / (C * self.t_chirp)
@@ -159,10 +189,25 @@ class RadarSpec:
         return 10 ** ((num_db - mds) / 40)
 
 
+def as_built(**kw) -> "RadarSpec":
+    """The radar this repo actually documents and builds.
+
+    Sweep 2400-2483.5 MHz (the whole ISM band, because the drone's control link
+    lives at 915 MHz), 64 ADF4351 steps of 100 us, 1 ms retrace, ~+10 dBm at the
+    TX horn into 13.4 dBi optimum pyramidal horns, 48 kHz sound card. Keep these
+    in step with firmware/radar_ctl/radar_ctl.ino and docs/radar-software.md § 1.
+    """
+    spec = dict(f0=2.400e9, bw=83.5e6, t_chirp=6.4e-3, retrace=1.0e-3,
+                fs=48_000.0, pt_dbm=10.0, gt_dbi=13.4, gr_dbi=13.4,
+                label="horn-fed 2.4 GHz FMCW, as built in this repo")
+    spec.update(kw)
+    return RadarSpec(**spec)
+
+
 # ----------------------------------------------------------------------
 def spec_sheet(s: RadarSpec):
     print("=" * 70)
-    print("  FMCW RADAR SPEC — MIT coffee-can architecture")
+    print(f"  FMCW RADAR SPEC — {s.label}")
     print("=" * 70)
     print(f"  carrier            : {s.fc/1e9:.3f} GHz  (sweep {s.f0/1e9:.2f}"
           f"-{(s.f0+s.bw)/1e9:.2f} GHz)")
@@ -176,14 +221,14 @@ def spec_sheet(s: RadarSpec):
     print(f"  max unambig. range : {s.r_max:.0f} m       <- set by sound-card Nyquist")
     print(f"  velocity window    : +/-{s.v_max:.1f} m/s")
     print(f"  velocity resolution: {s.v_res:.2f} m/s   ({s.n_chirps} chirps"
-          f" = {s.n_chirps*s.t_chirp:.2f} s dwell)")
+          f" = {s.n_chirps*s.pri:.2f} s dwell)")
     print(f"  noise floor / bin  : {s.noise_floor_dbm():.1f} dBm")
     print(f"  beat freq @ 10 m   : {s.beat_hz(10):.0f} Hz")
     print("=" * 70)
 
 
 TARGETS = [
-    ("small quad drone (ESP-BLAST class)", 0.01),
+    ("small quad drone (ESP-FLY class)", 0.01),
     ("larger quad (DJI Phantom class)", 0.10),
     ("human", 1.0),
     ("car", 10.0),
@@ -409,7 +454,8 @@ def main():
     if args.chirp_ms: kw["t_chirp"] = args.chirp_ms * 1e-3
     if args.gain is not None: kw["gt_dbi"] = kw["gr_dbi"] = args.gain
     if args.fs: kw["fs"] = args.fs
-    s = RadarSpec(**kw)
+    # the CLI describes THIS build, not MIT's reference numbers
+    s = as_built(**kw)
 
     if args.microdoppler:
         spec_sheet(s); micro_doppler(s, rpm=args.rpm)

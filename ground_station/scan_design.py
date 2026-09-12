@@ -14,7 +14,7 @@ WHICH ONE THIS PROJECT BUILT, and why the other two are here for reference:
 the answer is the two-receiver interferometer. Mechanical scanning was the
 plan and was dropped after measurement -- it cannot give the bearing of a
 drone that is flying, because the scan takes seconds and the bearing moves
-while it runs (docs/radar-software.md § 1). The interferometer reads
+while it runs (docs/radar-hardware.md § 8). The interferometer reads
 bearing inside one 0.47 s dwell at 0.09 deg rms, against 1.5 deg and 4.3 s
 for the scan. See docs/radar-hardware.md § 8 and ground_station/interferometer.py.
 The sizing below is still correct for what each approach costs.
@@ -191,12 +191,12 @@ def compare(rf: RadarFront, sector=90.0, ranges=(5.0, 10.0, 20.0)):
     print("  moving: the scan takes seconds and the bearing moves while it runs,")
     print("  so at 10 m a 4.3 s scan needs the drone under 0.10 m/s. Spending")
     print("  the same seconds on a longer dwell beats more beams tenfold, and")
-    print("  neither survives a flying target. See docs/radar-software.md § 1 and")
+    print("  neither survives a flying target. See docs/radar-hardware.md § 8 and")
     print("  docs/radar-hardware.md § 8; the interferometer is ground_station/interferometer.py.")
     print("")
     print("  One correction to the sizing above: with all three horns ROTATED")
     print("  90 deg the two receivers touch at a 193 mm baseline, which is")
-    print("  unambiguous to +/-18.4 deg and covers the 17 deg half-beam. The")
+    print("  unambiguous to +/-18.5 deg and covers the 17 deg half-beam. The")
     print("  grating-lobe warning applies to the UN-rotated 263.8 mm spacing.")
 
 

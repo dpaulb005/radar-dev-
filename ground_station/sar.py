@@ -25,9 +25,16 @@ before azimuth rather than after it.
     cross-range           lambda * R / (2 L)      -- the rail length
     can't be beaten       lambda / (4 sin(th/2))  -- the horn beam, th = 34 deg
 
-The scene is static, so **there is no drone WiFi to coexist with** and the
-sweep can use the whole ISM band: 2400-2500 MHz, B = 100 MHz, a 1.50 m range
-cell instead of the 3.75 m the 40 MHz tracking sweep is stuck with.
+The scene is static, so there is no moving target to keep up with and the dwell
+per position can be as long as you like.
+
+CAUTION on the bandwidth used below. `--plan` defaults to B = 100 MHz, which is
+a 1.50 m range cell -- but 2400-2500 MHz is OUTSIDE the ISM band and
+firmware/radar_ctl refuses it (the sweep stops at 2483.5 MHz; see
+docs/radar-hardware.md § 10). The tracking sweep is now the whole legal band,
+83.5 MHz, for a 1.80 m cell -- not the 40 MHz/3.75 m it was when this was
+written. Pass --bw 83.5 for numbers the hardware can actually produce; the
+100 MHz default is a what-if, not a plan.
 
 Why backprojection and not the range-migration algorithm MIT hands out: RMA is
 faster and assumes a straight track sampled at exactly even spacing. **A drone
@@ -316,6 +323,8 @@ def selftest():
 
     # -- the design numbers
     check(abs(range_res(100e6) - 1.4990) < 1e-3, "100 MHz must give a 1.50 m cell")
+    # the band the hardware can legally sweep, which is what a real plan uses
+    check(abs(range_res(83.5e6) - 1.7952) < 1e-3, "83.5 MHz must give a 1.80 m cell")
     check(range_res(40e6) > range_res(100e6), "less bandwidth is a coarser cell")
     c10 = cross_range_res(10.0, 2.0)
     c10_long = cross_range_res(10.0, 4.0)

@@ -3,7 +3,7 @@
 
 Scanning the horns and comparing amplitudes across beam positions cannot give
 the bearing of a drone that is flying: the scan takes seconds and the bearing
-moves while it runs (measured in docs/radar-software.md § 1). This module
+moves while it runs (measured in docs/radar-hardware.md § 8). This module
 measures bearing across *space* instead of across time.
 
     Δφ = 2π · d · sin(θ) / λ            θ = asin( Δφ · λ / (2π · d) )
@@ -24,8 +24,10 @@ Two wiring options are supported, both giving the same call:
                 `v_mps` given.
 
 Calibration is one constant. Two receive paths are never phase-identical: 1 mm
-of extra coax is 4.3° at 2.46 GHz (the wave sees the 84.7 mm wavelength inside
-PTFE, not the 121.9 mm one in air), which is 0.43° of bearing. Point the array
+of extra coax is 4.2° at the 2.4418 GHz centre of the full-band sweep (the wave
+sees the 85.3 mm wavelength inside PTFE, not the 122.8 mm one in air), which is
+0.43° of bearing. It was quoted as 4.3° at 2.46 GHz, the centre of the old
+40 MHz sweep; the difference is well inside build tolerance. Point the array
 at a reflector on boresight, call `calibrate()`, and the offset is removed from
 then on.
 
@@ -270,7 +272,7 @@ def add_bearings(dets, rd_a, rd_b, ranges, vels, interf,
 
     A caution about that last one, because it is a real limit and not a
     conservative one. Switched mode throws away every other chirp, so its
-    unambiguous velocity is HALF the simultaneous figure — 2.06 m/s at a
+    unambiguous velocity is HALF the simultaneous figure — 2.07 m/s at a
     7.4 ms PRI. Past it the velocity folds, and because the motion correction
     is computed FROM the velocity, a folded target does not merely report the
     wrong speed: it reports a bearing that can be a whole beamwidth out. The
@@ -280,7 +282,7 @@ def add_bearings(dets, rd_a, rd_b, ranges, vels, interf,
     Doppler line exactly half a span away whatever the true velocity is, so
     the folded and unfolded cases are indistinguishable in the data. This is
     the strongest argument for building the simultaneous version, which has
-    the full +/-4.12 m/s and needs no correction at all.
+    the full +/-4.15 m/s and needs no correction at all.
 
     Reporting no bearing is always better than reporting a wrong one.
     """

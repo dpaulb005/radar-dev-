@@ -100,8 +100,12 @@ horns end up compared against each other by phase, so they want to be as close
 to identical as you can make them, and that is far easier while the jig is set
 up and your hand is in. Materials for three are already in the bill.
 
-Numbers from `antenna/horn.py` — an *optimum* pyramidal horn on a WR-340 guide
-at 2.44 GHz:
+Numbers from `antenna/horn.py` at its default — an *optimum* pyramidal horn on a
+WR-340 guide at **2.45 GHz**. (2.45 is the ISM nominal; the sweep centre is
+2.4418 GHz. Re-solving at the sweep centre moves the aperture by ~1 mm and the
+probe by 0.4 mm, which is below what you can cut and well below the 0.5 mm steps
+§ 2c tunes the probe in. The numbers below are the ones the cut list, the 3-D
+model and `DEFAULT_BASELINE_M` all use, so use these.)
 
 | | mm |
 |---|---|
@@ -161,9 +165,14 @@ LiteVNA-64 is ~$165, a NanoVNA V2 Plus4 ~$150, and the common $65 NanoVNA-H4
 stops at 1.5 GHz and **cannot see this antenna at all**. None of it is worth
 buying for one measurement.
 
-You do not need it because the link has ~54 dB of margin at 10 m. A horn with a
-poor 3:1 match loses 1.25 dB, and there are two of them, so a badly tuned pair
-costs 2.5 dB out of 54. The dimensions come from closed-form optimum-horn theory
+You do not need it because the link has ~54 dB of margin at 10 m — the echo
+above the leakage-limited detection floor, less the 13 dB a confident detection
+needs, at the pessimistic 0.0026 m² RCS. (Do not confuse it with the ~55 dB of
+*clutter cancellation* the room has to give you, in
+[`radar-software.md`](radar-software.md) § 8. Similar number, unrelated
+quantity, and the clutter one is the one that actually decides the build.) A
+horn with a poor 3:1 match loses 1.25 dB, and there are two of them, so a badly
+tuned pair costs 2.5 dB out of 54. The dimensions come from closed-form optimum-horn theory
 and are reliable if you cut to them; a VNA only confirms it.
 
 **Tune with the radar itself instead.** Once the chain is alive (checkpoint 7),
@@ -245,7 +254,7 @@ MIT's is an LM324/LT1214 gain stage plus a 15 kHz active filter. This does
 the same with one TL072 on the 12 V rail:
 
 ```
- mixer IF ──┤100n├──┬── R1 10k ──┐        The two 100n/10k high-passes (160 Hz)
+ mixer IF ──┤100n├──┬── R1 10k ──┐        The two 100n/10k high-passes (159 Hz)
                     │            │        are what stop the TX→RX leakage tone
                  R2 10k       ┌──┴──┐     (~26 Hz) from saturating the gain.
                     │         │ TL072│    Leakage is ~40 dB above the drone
@@ -265,8 +274,12 @@ lists every lead and every jumper (`R3 pin 1 → b14`, wire 27 `a4 → a7`), gen
 `breadboard.html` in the same folder is the interactive version: hover a part, wire, net or
 hole and the board shows what shares that connection.
 
-Total gain ≈ 61 dB. A 10 m drone echo (≈ −78 dBm at the IF) comes out at
-~20 mV; leakage comes out at ~200 mV; nothing clips a line input.
+Total gain ≈ 61 dB, and about 55 dB of that reaches the output node once the
+49.9 Ω termination has halved the incoming signal. A 10 m drone echo (≈ −78 dBm
+at the IF) comes out at ~21 mV and the leakage at ~116 mV, against a 316 mV line
+nominal: nothing clips. The leakage figure scales directly with how poor your
+TX→RX isolation turns out to be, so measure it rather than assuming it — 35 dB is
+what every number here assumes.
 
 Two things the breadboard drawing above leaves out, which an external review of
 the carrier-PCB version caught and you should add too:
@@ -284,6 +297,16 @@ straight through **File ▸ Open ▸ SPICE netlist**; the ngspice decks in
 `hardware/spice/` itself carry `.control` blocks and do not import). The
 schematic with every value on it is `hardware/kicad/radar_multisim.kicad_sch`.
 The readings that matter:
+
+**One caveat on the stimulus frequencies below.** They are scaled to the
+*superseded* 40 MHz sweep: 12.5 Hz was its leakage beat and 417 Hz its 10 m
+echo. On the 83.5 MHz sweep the same two land at **26 Hz** and **870 Hz**, where
+the two 159 Hz high-passes reject the leakage by 31 dB rather than 43 dB — so
+the 46 dB input ratio comes out at about **15 dB**, not 3 dB. Nothing clips
+either way (the echo is ~21 mV and the leakage ~116 mV against a 316 mV line
+nominal), and every corner frequency below is unchanged, but re-run the two
+video-amp rows at 26 Hz and 870 Hz if you want the bench check to match the
+sweep you are actually going to transmit.
 
 | block | stimulus | PASS |
 |---|---|---|
@@ -320,7 +343,7 @@ same 107 mV out that the simulation predicted.
   level control is part of your calibration.
 - Either way, set the gain once so the leakage tone sits well below clip and
   never touch it again. The video amp is designed around this: about 61 dB of
-  gain puts the leakage at ~200 mV and a 10 m drone echo at ~20 mV against a
+  gain puts the leakage at ~116 mV and a 10 m drone echo at ~21 mV against a
   316 mV line nominal, so nothing clips and nothing needs riding. In stage 2 a
   gain change between the two beat channels is a phase error.
 - In the OS disable every "enhancement", AGC and noise suppression. 44.1 or
@@ -358,19 +381,26 @@ Build the frame for three horns and populate two of them.
   beam, which caps the spacing:
 
   ```
-  d  ≤  λ / (2 · sin θ_max)  =  0.1219 / (2 × sin 17°)  =  209 mm
+  d  ≤  λ / (2 · sin θ_max)  =  0.1228 / (2 × sin 17°)  =  210 mm
   ```
 
   Two horns side by side in the un-rotated orientation put their phase centres
   **263.8 mm** apart, past that limit, and the bearing wraps at ±13.4° — inside
   the 17° half-beam, where it does real damage. Rotated, they touch at
-  **193 mm**, unambiguous to **±18.4°**, which covers the half-beam with room
+  **193 mm**, unambiguous to **±18.5°**, which covers the half-beam with room
   to spare. The azimuth beamwidth goes from 36° to 34°, which is nothing, and
   the polarisation rotates, which is fine as long as the transmit horn rotates
   with them.
 - **RX A and RX B mouths must be flush in one plane**, to a millimetre. A 1 mm
   depth difference in *air* is 3° of phase; 1 mm of extra *coax* on one channel
-  is 4.3°, because a wave is ~30 % slower in PTFE. Both show up as bearing bias.
+  is 4.2°, because a wave is ~30 % slower in PTFE. Both show up as bearing bias.
+- **Measure the finished baseline and pass it to the software.** 193.1 mm is the
+  horn's E-plane aperture, i.e. two ideal mouths touching. Real walls and the
+  6 mm solder tabs push the built centres 1–2 mm further apart, and the baseline
+  is a *scale factor* on every bearing — `cal` cannot absorb it, because `cal` is
+  measured on boresight where `sin θ = 0`. 2 mm of error is ~1 % of bearing,
+  about 0.2° at the edge of the beam. Measure mouth centre to mouth centre and
+  pass it as `radar_acquire.py --baseline 0.195`.
 - TX centred above the pair, mouth in the same plane, 290 mm centre to centre.
   Centred matters: it keeps the leakage path equal into both receivers.
 - Centre of the RX row ~300 mm above the board.
@@ -453,9 +483,16 @@ track on the floor plane, which is what the console and the tracker draw.
 | second 2400–2500 band-pass | 29 | in front of the second LNA |
 | third horn | 0 | copper for three is already in BOM section B |
 | second LNA | 0 | the SPF5189Z 4-pack covers it |
-| second TL072 video channel | 0 | parts already in section C |
+| second TL072 video channel | 18 | a second video amp needs three more op-amp channels, so a third and fourth TL072, passives and a second breadboard — BOM row 27 |
+| 2 more SMA jumper 3-packs | 18 | four more coax runs, bought in one batch so the two receive chains stay phase-matched — BOM row 29 |
 | **4-input interface (UMC404HD)** | 139 | beat A, beat B and sync on one sample clock |
-| **total** | **~$290** | |
+| **total** | **~$299** | with the ZX05 at BOM's $73; ~$305 at ORDER.md's current $79 |
+
+(This list and [`../hardware/BOM.md`](../hardware/BOM.md) § F used to disagree:
+§ F omitted the $9 LO pad that the ZX05 choice requires, and this table omitted
+the second video-amp parts and the extra jumpers. Both are now the same nine
+rows. With the $25 generic level-7 mixer you skip the pad *and* the LO
+amplifier, and it comes to **~$242**.)
 
 The four-input interface is the one part that cannot be substituted, and the one
 part of the baseband section stage 2 replaces rather than adds to. Two separate
@@ -501,7 +538,7 @@ and in that time a drone at 1.8 m/s advances its round-trip phase by 79° agains
 a signal that is only 157° at the edge of the beam; that motion term has to be
 subtracted using the measured velocity, so one velocity bin of 0.13 m/s costs
 about 0.6° of bearing. It also halves the Doppler samples per antenna, which
-halves the unambiguous velocity to ±2.06 m/s. Measured on the full sweep across
+halves the unambiguous velocity to ±2.07 m/s. Measured on the full sweep across
 36 bearings and velocities it declines to answer twice, both at the beam edge at
 the slowest velocity tested; simultaneous mode is 36/36 with a worst error of
 0.00° on the same grid. It abstains rather than lying, but it abstains.
@@ -520,12 +557,12 @@ you smoothly with no scanning and no moving parts.
 ### The cheap alternative, and exactly where it runs out
 
 A servo under the stage-1 frame, sweeping **3 beams over 48°** in 1.42 s, is
-$15–30 against $151 for the second receive chain. It is a real option, and the
+$15–30 against $160 for the second receive chain. It is a real option, and the
 honest comparison is:
 
 | | servo scan, 48° / 3 beams | interferometer |
 |---|---|---|
-| extra hardware | one servo, **$15–30** | second chain, **$151** |
+| extra hardware | one servo, **$15–30** | second chain, **$160** |
 | receive chains | the one stage 1 already has | two, phase-matched |
 | time per fix | 1.42 s | **0.47 s** |
 | bearing at rest | 0.74° rms | **0.18°** |
@@ -549,13 +586,29 @@ of budget while the interferometer has not noticed.
 
 **One warning that applies to the scan and only gets worse as the radar gets
 better.** Every scan number above was measured on the old 40 MHz sweep. Re-run
-at 83.5 MHz the 4.3 s nine-beam scan collapses to 42.5° rms, because narrower
-range cells concentrate the TX leakage into a taller, sharper peak, and in an
-off-boresight beam the *target* is attenuated by the beam pattern while the
+at 83.5 MHz the nine-beam scan is reported to collapse to 42.5° rms, because
+narrower range cells concentrate the TX leakage into a taller, sharper peak, and
+in an off-boresight beam the *target* is attenuated by the beam pattern while the
 *leakage is not* — so the leak outranks it and the amplitude centroid tracks the
 leak. Closing that needs a leakage gate inside `centroid()`; it is open. The
 interferometer is unaffected: it reads phase at a CFAR-selected cell, not
 amplitude across beams.
+
+> **Treat every scan accuracy figure in this section as unverified.** Unlike
+> every other number in this repo, none of them is pinned by a case in
+> `test_radar.py` — they are prose, and the mechanism above is real but the
+> magnitudes do not reproduce from the parameters given here. A direct re-run
+> through `radar_acquire.process` and `ScanningRadar.centroid` at 8 m on a
+> 0.0026 m² target gives roughly 0.2° (9 beams) and 0.7° (3 beams) at 40 MHz,
+> matching the table, but **0.0–1.4° and 1.0–2.3° at 83.5 MHz** — degraded, and
+> nothing like 42.5°. The collapse needs the leakage peak to survive CFAR's
+> 1.5 m `min_range` floor, which depends on the isolation and the clutter in the
+> scene rather than on the bandwidth alone. Before you rely on the scan for
+> stage-1 azimuth, measure it in your own room; before you quote 42.5° or
+> 0.74° again, pin them with a test. The design conclusion is unaffected — the
+> scan cannot follow a flying target at any of these numbers, for the timing
+> reason at the top of this section — but the figures themselves should not be
+> treated as measurements.
 
 **The servo is not wasted either way.** It is how you measure the horn's real
 beam pattern, and how you sweep a corner reflector across boresight to find the
@@ -586,7 +639,7 @@ first if the budget is tight. $53, and nothing else depends on it.
 Everything downstream of the mixer's IF is band-independent: the video
 amplifier, the reference, the power, the sound card, the whole DSP, the
 interferometer and its tests. A 24 GHz front end would take the range cell from
-1.80 m to 0.60 m and the interferometer's unambiguous cone from ±18.4° to about
+1.80 m to 0.60 m and the interferometer's unambiguous cone from ±18.5° to about
 ±90°, because the baseline that matters scales with the wavelength.
 
 The catch is the antenna, and it is the reason this build is at 2.4 GHz: every

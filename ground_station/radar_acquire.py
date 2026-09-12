@@ -45,8 +45,12 @@ import fmcw_sim
 import interferometer as interf
 from radar_twin import ScanningRadar, cfar_detect
 
-F0_HZ = 2.400e9          # defaults: 2400-2480 MHz (3.5 MHz top margin). Overridden by
-BW_HZ = 80.0e6           # --f0-mhz/--bw-mhz, or by radar_ctl's status when --ctl is used.
+F0_HZ = 2.400e9          # defaults: the whole ISM band, 2400-2483.5 MHz, which is what
+BW_HZ = 83.5e6           # radar_ctl ships with. Overridden by --f0-mhz/--bw-mhz, or by
+                         # radar_ctl's status when --ctl is used. Keep this in step with
+                         # SWEEP_BW_HZ in firmware/radar_ctl: the beat->range scale is
+                         # linear in the bandwidth, so an 80 MHz assumption against an
+                         # 83.5 MHz sweep over-reports every range by 4.4 %.
 SYNC_FRAC = 0.5          # sync threshold as a fraction of the sync channel's peak
 SETTLE_FRAC = 0.05       # drop the first 5 % of each chirp (PLL settle)
 
@@ -106,9 +110,9 @@ def segment_chirps(beat, sync, fs, n_chirps, return_edges=False,
         # OFF by default, and it used to be on. Subtracting a constant from a
         # chirp removes a WINDOW-SHAPED lobe centred on range bin 0, about two
         # bins wide -- so it eats part of any target inside two bins of DC,
-        # which at 40 MHz is everything closer than 7.5 m, and biases the peak
-        # outward. Measured over 3-20 m it cost a mean 0.27 m and 1.05 m at
-        # 3 m; without it, 0.04 m and 0.04 m. The DC it was meant to remove is
+        # which on the 83.5 MHz sweep is everything closer than 3.6 m (it was
+        # 7.5 m at 40 MHz), and biases the peak outward. Measured over 3-20 m it
+        # cost a mean 0.27 m and 1.05 m at 3 m; without it, 0.04 m and 0.04 m. The DC it was meant to remove is
         # already gone twice over: the sound card is AC-coupled, and
         # range_doppler(bg_subtract=True) subtracts the average chirp. Keep the
         # switch only so the regression test can show the difference.
@@ -531,7 +535,7 @@ def run(args):
     if ctl:
         ctl.sweep(True)                      # the ESP32 boots with RF off
     # The beam-scan centroid is legacy: it only works on a nearly stationary
-    # target (docs/radar-software.md § 1). It is never used in azimuth mode.
+    # target (docs/radar-hardware.md § 8). It is never used in azimuth mode.
     scan_mode = (not interf_mode) and (
         (bool(ctl) and not args.range_only) or (args.selftest and not args.st_range_only))
     radar = ScanningRadar(sector=args.sector) if scan_mode else None
@@ -714,9 +718,9 @@ def main():
     ap.add_argument("--t-chirp-ms", type=float, default=6.4,
                     help="nominal up-chirp (only for block sizing; measured live from sync)")
     ap.add_argument("--thresh", type=float, default=15.0, help="CFAR threshold dB")
-    ap.add_argument("--f0-mhz", type=float, default=2400.0,
+    ap.add_argument("--f0-mhz", type=float, default=F0_HZ / 1e6,
                     help="sweep start; overridden by radar_ctl status when --ctl is given")
-    ap.add_argument("--bw-mhz", type=float, default=80.0,
+    ap.add_argument("--bw-mhz", type=float, default=BW_HZ / 1e6,
                     help="sweep width; 40 with --f0-mhz 2440 for WiFi-channel-1 coexistence")
     ap.add_argument("--ctl", help="radar_ctl serial port (sweep on/off; also the optional turntable)")
     # ---- azimuth ----
@@ -740,8 +744,17 @@ def main():
     g.add_argument("--st-cal-deg", type=float, default=0.0,
                    help="selftest only: inject this much chain phase offset, to "
                         "prove --calibrate removes it")
+    # These defaults (9 beams over 90 deg) are the LEGACY scan geometry. The
+    # geometry docs/radar-hardware.md § 8 recommends is --sector 48 --step 24,
+    # and docs/radar-software.md § 7 passes it explicitly. The defaults are left
+    # as they are deliberately: the scan is deprecated in favour of
+    # --interferometer, and its published accuracy figures (0.74 deg rms at
+    # rest, the 42.5 deg collapse at 83.5 MHz) are prose in radar-hardware.md
+    # § 8 with no test pinning them -- they do not reproduce from the parameters
+    # given there. Re-tune these only together with a regression test.
     ap.add_argument("--sector", type=float, default=90.0)
-    ap.add_argument("--step", type=float, default=12.0, help="beam step deg (3x oversample)")
+    ap.add_argument("--step", type=float, default=12.0,
+                    help="beam step deg (legacy scan; § 8 recommends --sector 48 --step 24)")
     ap.add_argument("--server", help="console URL, e.g. http://localhost:8080")
     ap.add_argument("--record", metavar="WAV", help="save raw stereo audio")
     ap.add_argument("--replay", metavar="WAV")

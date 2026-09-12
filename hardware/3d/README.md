@@ -93,7 +93,7 @@ The roll is what makes the baseline legal, per
 [`../../docs/radar-hardware.md`](../../docs/radar-hardware.md) § 7: side by side *unrolled* the
 phase centres would be 263.8 mm apart, past the 209 mm ambiguity limit, and the
 bearing would wrap at ±13.4° — inside the 17° half-beam. Rolled, the horns
-touch at 193 mm and stay unambiguous to ±18.4°. Both receive runs leave their
+touch at 193 mm and stay unambiguous to ±18.5°. Both receive runs leave their
 feeds the same way and take the same path to the board, because 1 mm of extra
 coax on one channel is 4.3° of phase and about 0.3° of bearing error.
 

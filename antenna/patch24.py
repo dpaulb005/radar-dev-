@@ -28,7 +28,7 @@ The architecture it designs, and why:
     leaves AZIMUTH as the single-patch pattern (~80 deg, which is what you
     want to search). The lambda/2 horizontal spacing then makes the
     interferometer unambiguous across that entire pattern, instead of the
-    +/-18.4 deg the 193 mm horn baseline gives at 2.4 GHz.
+    +/-18.5 deg the 193 mm horn baseline gives at 2.4 GHz.
 
 Usage:
     python3 patch24.py               the design
@@ -294,7 +294,14 @@ def link(b, t_up=T_UP, retrace=T_RETRACE, fs=FS, n_chirps=64,
                      nf_db=8.0,           # BGT24LTR22 NF_SSB
                      losses_db=2.0,       # mismatch; the feed loss is in the gain
                      n_chirps=n_chirps, isolation_db=30.0)
-    # the build as it stands, exactly as docs/drone-software.md invokes it
+    # The 2.4 GHz column this comparison is scored against. NOTE: this is the
+    # SUPERSEDED 40 MHz coexistence sweep (2440-2480, above the drone's WiFi),
+    # at MIT's inherited +13 dBm rather than the ~+10 dBm the build delivers at
+    # the TX horn. It is deliberately left as-is so the 24 GHz numbers below
+    # stay comparable to the ones already published, but it is NOT the current
+    # build: that is 2400-2483.5 MHz, 83.5 MHz, ~+10 dBm (fmcw_sim.as_built()),
+    # which gives a 1.80 m cell, 87.04 Hz/m, +/-4.15 m/s and a -77.4 dBm echo.
+    # Refresh this column against as_built() before quoting the 24 GHz delta.
     old = RadarSpec(f0=2.440e9, bw=40e6, gt_dbi=13.4, gr_dbi=13.4)
     old.t_chirp, old.fs = 6.4e-3, 48_000.0
     pri_new, pri_old = t_up + retrace, 7.4e-3
@@ -335,7 +342,7 @@ def link(b, t_up=T_UP, retrace=T_RETRACE, fs=FS, n_chirps=64,
             ("echo at 10 m", f"{new_.rx_dbm(r, rcs):.0f} dBm",
                              f"{old.rx_dbm(r, rcs):.0f} dBm"),
             ("SNR at 10 m", f"{snr:.0f} dB", f"{snr_old:.0f} dB"),
-            ("interferometer cone", f"+/-{b['unamb']:.0f} deg", "+/-18.4 deg"),
+            ("interferometer cone", f"+/-{b['unamb']:.0f} deg", "+/-18.5 deg"),
         ]
         for k, a, c in rows:
             print(f"    {k:<26}{a:>13}{c:>14}")
@@ -462,14 +469,15 @@ def selftest():
     check(lk["sigma_bearing_deg"] < 2.5, "thermal bearing floor must be in budget")
     check(lk["snr"] < lk["snr_old"], "24 GHz must cost echo, not gain it")
 
-    # -- the 2.4 GHz comparison column must reproduce the published build,
-    #    or the comparison is worthless
+    # -- the 2.4 GHz comparison column must reproduce the 40 MHz COEXISTENCE
+    #    sweep it represents, or the comparison is worthless. These are not the
+    #    current build's figures -- see the note where `old` is built.
     old = lk["old"]
-    check(abs(old.range_res - 3.75) < 0.01, f"published range cell is 3.75 m: {old.range_res}")
-    check(abs(old.beat_hz(1.0) - 41.70) < 0.05, f"published 41.70 Hz/m: {old.beat_hz(1.0)}")
-    check(abs(old.lam / (4 * 7.4e-3) - 4.12) < 0.02, "published +/-4.12 m/s")
+    check(abs(old.range_res - 3.75) < 0.01, f"40 MHz range cell is 3.75 m: {old.range_res}")
+    check(abs(old.beat_hz(1.0) - 41.70) < 0.05, f"40 MHz slope is 41.70 Hz/m: {old.beat_hz(1.0)}")
+    check(abs(old.lam / (4 * 7.4e-3) - 4.12) < 0.02, "40 MHz sweep centre gives +/-4.12 m/s")
     check(abs(old.rx_dbm(10.0, 0.01) - (-74.0)) < 1.0,
-          f"published echo is -74 dBm: {old.rx_dbm(10.0, 0.01)}")
+          f"40 MHz column echo is -74 dBm at +13 dBm TX: {old.rx_dbm(10.0, 0.01)}")
     check(abs(lk["snr_old"] - 71.0) < 1.5, f"published SNR is 71 dB: {lk['snr_old']}")
 
     # -- the sweep panel is monotone and brackets the band
@@ -508,5 +516,5 @@ if __name__ == "__main__":
         sweep_panel(SUBSTRATES["FR-4"])
     print("\n  Compare: the 2.4 GHz horn is 263.8 x 193.1 mm, folded from sheet")
     print("  copper, and its 193 mm interferometer baseline is unambiguous only")
-    print("  to +/-18.4 deg. This is a few square centimetres, a board house")
+    print("  to +/-18.5 deg. This is a few square centimetres, a board house")
     print("  prints it, and it is unambiguous everywhere it can see.")

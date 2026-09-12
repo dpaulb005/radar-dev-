@@ -29,8 +29,11 @@ what gets measured. That difference is an audio tone. The whole machine exists
 to turn a distance into a pitch and then measure the pitch.
 
 The ADF4351 is not swept smoothly. It is re-tuned 64 times, 1.305 MHz per step,
-100 µs per step, which walks 2400 MHz up to 2483.5 MHz in 6.4 ms, then parks
-back at 2400 for 1 ms and does it again. The echo is that identical staircase,
+100 µs per step, which walks 2400 MHz up the band in 6.4 ms, then parks back at
+2400 for 1 ms and does it again. The last step sits one step below the nominal
+top, at **2482.195 MHz**, so the slope is exactly `bw / T_up` with no N/(N−1)
+fudge — and the highest frequency actually radiated is 1.3 MHz inside the band
+edge, which is where the emission-mask margin comes from. The echo is that identical staircase,
 delayed. For 66.7 ns out of every 100 µs step the transmitter has stepped up and
 the echo has not, so the two differ by one whole step. That is 0.067 % of the
 time, and the average difference is:
@@ -50,13 +53,23 @@ nothing downstream can improve it.
 
 ### The chain, as data
 
+> **Two drone RCS values are in use in this repo, and they differ by 5.9 dB.**
+> The link-budget tables (`fmcw_sim.py --budget`, the README's headline echo)
+> assume **0.01 m²**; the room and ranging simulations in `test_radar.py` and
+> § 8 below assume **0.0026 m²**, the more pessimistic of the two. The chain
+> table that follows is the 0.0026 m² case, which is why its −80 dBm at the RX
+> horn is 5.9 dB below the README's −74 dBm for the same target at the same
+> range. Neither has been measured on a real ESP-FLY — see
+> [`drone-hardware.md`](drone-hardware.md) § 6. Treat 0.0026 m² as the design
+> case and 0.01 m² as the optimistic one.
+
 | # | where | what the data is | size |
 |---|---|---|---|
 | 1 | ADF4351 output | 2400–2483.5 MHz, +5 dBm | — |
 | 2 | TX horn | 0.2 W EIRP over a 34° beam | — |
 | 3 | RX horn | the same staircase, 66.7 ns late, −80 dBm | — |
 | 4 | mixer IF | one audio tone per target, 870 Hz at 10 m, 40 µV pk | — |
-| 5 | video amp out | the same tone at 19 mV pk | — |
+| 5 | video amp out | the same tone at 21 mV pk | — |
 | 6 | sound card | 2 channels (3 in stage 2), 16-bit, 48 kHz | **92 KB** per block |
 | 7 | after segmentation | 64 × 292 float array | **146 KB** |
 | 8 | after two FFTs | 64 × 146 range–Doppler map, dB | **73 KB** |
@@ -124,16 +137,20 @@ could not separate them; Doppler could.**
 
 | axis | resolution | unambiguous span |
 |---|---|---|
-| range | 1.80 m | 381 m (filter limited) |
-| velocity | 0.13 m/s | ±4.12 m/s |
+| range | 1.80 m | 183 m (filter limited) |
+| velocity | 0.13 m/s | ±4.15 m/s |
 
 Cell-averaging CFAR then compares each cell to its neighbours and keeps whatever
 stands 15 dB above the local background. Zero Doppler is skipped entirely, since
 that is where leakage and static clutter live.
 
-Note how little of the range FFT is used. 48 kHz sampling reaches 576 m and the
-15.9 kHz anti-alias filter cuts that to 381 m, so an indoor target lives in the
+Note how little of the range FFT is used. 48 kHz sampling reaches 276 m and the
+15.9 kHz video low-pass cuts that to 183 m, so a 10 m indoor target lives in the
 first 5 % of the bins. The sound card is not the limit anywhere in this design.
+(Both numbers scale as 1/B, so they were 576 m and 381 m on the old 40 MHz
+sweep. The wider sweep halves the reach and still leaves an order of magnitude
+more than an indoor room needs. The 15.9 kHz RC is one pole, so it limits the
+*noise bandwidth*; the interface's own converter does the real anti-aliasing.)
 
 ### The equations, in one place
 
@@ -143,10 +160,10 @@ first 5 % of the bins. The sound card is not the limit anywhere in this design.
 | range resolution | `c / 2B` | 1.80 m |
 | target's FFT bin | `2·B·R / c` | 5.6 bins at 10 m (5.3 after the settling trim) |
 | velocity resolution | `λ / (2·N·PRI)` | 0.13 m/s |
-| unambiguous velocity | `± λ / (4·PRI)` | ±4.12 m/s |
-| max range from sampling | `c·T_up·f_s / (4·B)` | 576 m |
-| max range from the filter | `c·T_up·f_LP / (2·B)` | 381 m |
-| bearing from phase | `asin(Δφ·λ / 2π d)` | ±18.4° at d = 193 mm |
+| unambiguous velocity | `± λ / (4·PRI)` | ±4.15 m/s |
+| max range from sampling | `c·T_up·f_s / (4·B)` | 276 m |
+| max range from the filter | `c·T_up·f_LP / (2·B)` | 183 m |
+| bearing from phase | `asin(Δφ·λ / 2π d)` | ±18.5° at d = 193 mm |
 | scan time a moving target allows | `θ·R / v_tangential` | 0.44 s per m/s at 10 m |
 
 ---
@@ -162,7 +179,7 @@ part now, so the ESP32 **steps an ADF4351 PLL** instead:
   tuning problem** — MIT's biggest practical headache is gone.
 - The cost: PLL relock per step limits how fast the chirp can be. 6.4 ms instead
   of MIT's ~20 ms is still *faster* than MIT, but the Doppler window is
-  `λ / (4·PRI)` = **±4.12 m/s** at a 7.4 ms PRI. A drone crossing faster than
+  `λ / (4·PRI)` = **±4.15 m/s** at a 7.4 ms PRI. A drone crossing faster than
   that aliases in velocity; range is unaffected.
 
 **The staircase itself costs nothing, and that is measured rather than
@@ -223,7 +240,7 @@ python -m sounddevice                  # lists audio devices; note the interface
 
 ```bash
 python radar_acquire.py --selftest
-# SELFTEST PASS: range 8.26 m (mid-dwell truth 8.24), az 13.9 deg (true 15.0), vel 1.03 m/s ...
+# SELFTEST PASS: range 8.26 m (mid-dwell truth 8.24), az 15.6 deg (true 15.0), vel 1.02 m/s ...
 python radar_acquire.py --selftest --f0-mhz 2400 --bw-mhz 83.5 --st-range 5 --st-az -30 --st-vel -2
 python radar_acquire.py --selftest --st-range-only --st-range 6 --st-vel 1.5
 python radar_twin.py --track 20        # 0.09 m RMS
@@ -300,11 +317,15 @@ Commands you will use by hand:
 ```
 ?              status
 SWEEP 0        stop (parks on 2400 MHz, SYNC low)
-CW 2460        park anywhere 2200–4400 MHz — for antenna and spectrum tests
+CW 2460        park on one frequency — for antenna and spectrum tests
+               (the synthesiser reaches 2200–4400 MHz; the firmware clamps
+                CW to 2400–2483.5 and replies ERR outside it)
 SWEEP 1        chirp
 AZ 30 / HOME   turntable
 SET step_us 80 / SET steps 32 / SET retrace_us 1000
-SET f0_mhz 2400 / SET bw_mhz 83.5      sweep edges (refused outside 2400–2483.5)
+SET f0_mhz 2400 / SET bw_mhz 83.5      sweep edges. Refused unless the top step
+                                       (f0 + bw − bw/steps) stays inside 2483.5 MHz
+                                       with 1 MHz to spare, so set bw before steps
 SWMODE 1       stage-2 RF switch, alternating antennas
 RFOFF          kill the output from any state
 ```
@@ -388,9 +409,9 @@ Three things it refuses to answer rather than guess, reported as `no_az`:
 
 | reason | when |
 |---|---|
-| `ambiguous` | the phase fell outside the ±18.4° cone |
+| `ambiguous` | the phase fell outside the ±18.5° cone |
 | `low-quality` | one channel is far weaker at that cell, so one of them is measuring noise |
-| `velocity-fold` | switched mode only, target reported near its ±2.06 m/s fold |
+| `velocity-fold` | switched mode only, target reported near its ±2.07 m/s fold |
 
 And the fix is always the **strongest** return. If that one has no trustworthy
 bearing the block reports `"fix": null` with `no_fix`, rather than promoting a
@@ -402,7 +423,7 @@ One constant, in radians, in `interferometer_cal.json`. Point at a reflector
 whose bearing you know, run `--calibrate`, and the fixed offset of chain B
 relative to chain A is measured and stored. 1 mm of extra coax is **4.3°** of
 phase and **0.43°** of bearing — the wave sees the 84.7 mm wavelength inside
-PTFE, not the 121.9 mm one in air — so about 6 mm of unmatched cable spends the
+PTFE, not the 122.8 mm one in air — so about 6 mm of unmatched cable spends the
 whole 2.5° budget. Re-check `cal` after anything is unplugged; if it drifts more
 than about 20° between sessions, look for a connector rather than believing the
 bearing.
@@ -420,7 +441,7 @@ sign.
 ### The one limit that is not fixable in software
 
 Switched mode uses every other chirp, so its unambiguous velocity is **half**
-the simultaneous figure: ±2.06 m/s at a 7.4 ms PRI, against ±4.12 m/s. Past that
+the simultaneous figure: ±2.07 m/s at a 7.4 ms PRI, against ±4.15 m/s. Past that
 the velocity folds, and because the motion correction is computed *from* the
 velocity, a folded target reports a bearing that can be a whole beamwidth out.
 The guard catches targets *reported* near the fold; it cannot catch one that
@@ -456,8 +477,14 @@ wide in cross-range. Three keys in `config.json` describe the geometry:
 ```json
 "radar_origin": [0.0, 0.0, 1.0],   // horn position in the room frame, boresight = +x at az 0
 "radar_sigma_r": 0.15,             // m, from the parabolic range interpolation
-"radar_sigma_az_deg": 2.5          // measured centroid accuracy
+"radar_sigma_az_deg": 2.5          // the LEGACY SCAN's centroid budget
 ```
+
+`radar_sigma_az_deg` is the scan's number, and it is the one the console's
+uncertainty ellipse is drawn from. **Running stage 2, set it to 0.2**: the
+interferometer measures 0.18° rms, so leaving it at 2.5 draws a cross-range
+ellipse about fourteen times wider than the fix deserves and the tracker
+under-weights a good bearing. It is a `config.json` edit, not a code change.
 
 **Checkpoint 4:** stand at three tape-measured spots across the sector; the
 console's X/Y tiles agree within ~0.4 m cross-range at 8 m.
@@ -472,9 +499,13 @@ the build works at all.
 
 ### Measure your clutter cancellation, the day the chain first works
 
-Every SNR figure in this repo — the 71 dB at 10 m above all — is
-thermal-noise-limited and assumes an empty universe. Indoors that is not the
-limit. A 1 m² patch of wall is **26 dB above** a 0.0026 m² drone and shares its
+Every SNR figure in this repo — the 71 dB at 10 m above all — assumes an empty
+universe. (It is also not the *thermal* figure: 71 dB is the echo above the
+**leakage-limited** floor, the one `fmcw_sim.practical_mds_dbm()` computes,
+because the TX leakage sits at the converter's input and everything more than
+its dynamic range below that is unrecoverable. Against thermal noise alone the
+same echo is 89 dB up. The leakage-limited number is the honest one, and it is
+still not the limit indoors.) A 1 m² patch of wall is **26 dB above** a 0.0026 m² drone and shares its
 1.80 m range cell. The drone survives only because the wall does not move and
 gets subtracted, so what matters is not how strong the echo is but **how well
 the room cancels**.
@@ -586,7 +617,7 @@ Expect returns that are not the drone.
 | symptom | look at |
 |---|---|
 | `# no sync` | `SWEEP 1`; R channel wiring; divider level; wrong `--device` |
-| detections at 0.3–1.5 m always | leakage; `min_range` is 1.5 m by design — improve isolation (foil behind the horns), check the two 160 Hz high-passes |
+| detections at 0.3–1.5 m always | leakage; `min_range` is 1.5 m by design — improve isolation (foil behind the horns), check the two 159 Hz high-passes |
 | everything at one range, any speed | video amp clipping: leakage too strong, lower the gain of stage A to 51 |
 | range right, velocity wrong by ~15 % | PRI vs chirp time — should be impossible now; check `t_chirp_ms` against `?` |
 | no target beyond 4 m | LO drive low (measure), LNA unpowered, RX horn probe length, polarisation mismatch |

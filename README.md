@@ -38,9 +38,9 @@ and why the cheaper 24 GHz modules were rejected despite being better radars.
 |---|---|
 | sweep | 2400–2483.5 MHz (83.5 MHz), 6.4 ms up-chirp, 7.4 ms PRI — the whole ISM band, because the drone's link is on 915 MHz |
 | range cell / accuracy | **1.80 m** / 0.04 m mean, 0.10 m worst, measured 3–20 m on the real stepped waveform |
-| velocity | 0.13 m/s resolution, unambiguous to ±4.12 m/s, reachable to ±26 m/s |
-| azimuth | phase between two RX horns 193 mm apart → **0.18° rms in one 0.47 s dwell**, unambiguous to ±18.4° |
-| drone echo at 10 m | −74 dBm, 71 dB SNR after 64 chirps — in free space |
+| velocity | 0.13 m/s resolution, unambiguous to ±4.15 m/s, reachable to ±26 m/s |
+| azimuth | phase between two RX horns 193 mm apart → **0.18° rms in one 0.47 s dwell**, unambiguous to ±18.5° |
+| drone echo at 10 m | −77 dBm at the optimistic 0.01 m² RCS (−83 dBm at the 0.0026 m² design case), 72 dB above the leakage-limited floor after 64 chirps — in free space |
 | what actually decides it | clutter cancellation. You need ~55 dB at 10 m, and nothing in this repo can predict yours |
 | stages | 1 range + velocity · 2 second RX horn → azimuth · turntable optional, coverage only |
 
@@ -128,4 +128,16 @@ end must land on a pad that exists.
 | `ground_station/server.py` + `web/` | the console: PPI scope, tracker, `/api/radar` |
 | `ground_station/tracker.py`, `scan_design.py` | Kalman filter, scan sizing |
 | `antenna/horn.py` | the horn design — optimum pyramidal on a WR-340 feed |
+| `ground_station/sar.py` | synthetic-aperture imaging from the stage-1 chain — design and simulation only; there is no path from a recording to an image yet |
 | `hardware/3d/` | both models, their screenshot renderer and their two verifiers |
+
+**Not part of this radar.** `ground_station/` still carries the ground station
+from the project this one replaced — a passive RSSI/FTM multilateration network
+and a drone-interception autopilot: `locate.py`, `calibrate.py`, `geometry.py`,
+`guidance.py`, `autopilot.py`, `pursuit_sim.py`, `digital_twin.py`, and the
+sniffer sketches under `firmware/archive/`. Nothing in the four build documents
+uses them, there are no sniffer nodes in this design, and
+[`drone-software.md`](docs/drone-software.md) § 10 rules radar-driven flight out
+of scope. They still import, `server.py` still carries the RSSI path behind the
+`nodes` block in `config.json`, and `matplotlib` is in `requirements.txt` only
+for `locate.py --plot`. Treat all of it as archive, not as part of the build.
