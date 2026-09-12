@@ -2,5 +2,6 @@ numpy>=1.24
 scipy>=1.10
 pyserial>=3.5
 aiohttp>=3.9        # web GUI (server.py)
-matplotlib>=3.7     # only needed for locate.py --plot
+matplotlib>=3.7     # OPTIONAL: only fmcw_sim.py --rdmap (a static range-Doppler
+                    # PNG). The live console renders the same map without it.
 sounddevice>=0.4   # live radar capture (radar_acquire.py); needs PortAudio
