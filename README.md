@@ -156,6 +156,7 @@ end must land on a pad that exists.
 | `ground_station/server.py` + `web/` | the console: range–Doppler heatmap, range-vs-time waterfall, detection table, track, `/api/radar`; `--demo` needs no hardware |
 | `ground_station/test_radar.py` | the regression suite, 22 cases — geometry, DSP, ranging; no hardware, no network |
 | `antenna/horn.py` | the horn design — optimum pyramidal on a WR-340 feed |
+| `antenna/hfss/` | two printable study PDFs: antenna engineering basics, and a step-by-step HFSS model of this horn with every dimension generated from `horn.py` |
 | `antenna/vivaldi.py` | the wideband PCB alternative to the horns — a design study, not the antenna built |
 | `hardware/3d/` | both models, their screenshot renderer and their two verifiers |
 | `stage2/` | the quarantined azimuth build, below |

@@ -187,6 +187,12 @@ horn with a poor 3:1 match loses 1.25 dB, and there are two of them, so a badly
 tuned pair costs 2.5 dB out of 54. The dimensions come from closed-form optimum-horn theory
 and are reliable if you cut to them; a VNA only confirms it.
 
+**Simulate it first, if you want to.** [`../antenna/hfss/`](../antenna/hfss/) has
+a step-by-step HFSS procedure for this exact horn, with every dimension generated
+from `horn.py`, plus a primer on the antenna theory behind it. What the solver is
+really worth is the probe match — the gain and the beamwidths you already have in
+closed form. Skip it entirely if you would rather cut metal.
+
 **Tune with the radar itself instead.** Once the chain is alive (checkpoint 7),
 park the PLL with `CW 2460`, put a corner reflector at a fixed range on
 boresight, and adjust the probe depth in 0.5 mm steps for maximum detection SNR.
