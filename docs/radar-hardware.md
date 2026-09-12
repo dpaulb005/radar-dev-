@@ -4,6 +4,13 @@ The MIT RES.LL-003 coffee-can FMCW radar, built with the parts you can
 actually buy in 2026 and fed by your own pyramidal horns. Every step ends
 with a checkpoint. Do not skip checkpoints.
 
+This page is the whole radar: **one transmit horn, one receive horn, range and
+radial velocity.** There is no bearing in it, and nothing below is waiting on a
+later part to become useful. A few decisions are made so that the azimuth
+upgrade in [`../stage2/`](../stage2/) stays a bolt-on — they are marked where
+they are made, all but one of them is free, and you can ignore them entirely if
+you never intend to build it.
+
 Companion pages: [`radar-software.md`](radar-software.md) (what runs on it and
 what it measures), [`../hardware/BOM.md`](../hardware/BOM.md) (priced parts),
 [`../hardware/ORDER.md`](../hardware/ORDER.md) (links and prices, in buying
@@ -47,28 +54,26 @@ holding 0.1 m of range accuracy everywhere in a small room and being 0.2–0.5 m
 out and blind inside 1.5 m. [`drone-hardware.md`](drone-hardware.md) has the
 link and what it costs.
 
-**Two stages, one frame, same RF chain:**
+**What it measures, and what it does not:**
 
-| stage | adds | measures |
-|---|---|---|
-| 1 | TX + one RX, bolted into the three-horn frame | range + radial velocity |
-| 2 | the second RX horn and its receive path | **+ azimuth**, from phase, in one 0.47 s dwell — 0.18° rms |
-| optional | turntable under the whole frame | nothing new — only points the 34° beam at a wider sector |
+| | |
+|---|---|
+| range | 1.80 m cell, 0.04 m mean accuracy, from the beat tone |
+| radial velocity | 0.13 m/s, unambiguous to ±4.15 m/s, from chirp-to-chirp phase |
+| bearing | **none.** One receiver measures no angle. The 34° beam is all the direction there is |
+| optional | turntable under the frame — points the 34° beam at a wider sector, and is how you measure the beam pattern |
 
-Azimuth used to come from scanning the horns and comparing amplitudes across
-beam positions. That is gone as the primary method. The centroid assumes every
-beam saw the target at one bearing, so the whole scan has to finish before the
-bearing moves: `t_scan < θ·R / v_tangential`, which at 10 m with a 2.5° budget
-caps a 4.3 s scan at a target speed of **0.10 m/s**. That is a parked drone, and
-no dwell or step size changes it. Azimuth now comes from the phase difference
-between two receivers inside one dwell, and the turntable is demoted to an
-optional pointing aid. The scan survives as the cheap stage-1 option for a
-*hovering* target — § 8 has the comparison.
+A detection is therefore a range, a radial velocity and an SNR: a track down the
+boresight, not a position on the floor. Everything that would turn it into a
+bearing — a second receive horn and the phase comparison between the two — is
+written and quarantined in [`../stage2/`](../stage2/), and none of it is built
+here.
 
-**Build stage 1 into the stage 2 frame.** Every decision below is made so that
-adding azimuth later is a bolt-on, not a rebuild: horn orientation, mount
-geometry, which parts to buy in multiples, and where the spare op-amp and
-amplifier go. Section 7 lists them.
+**Build it so the door stays open.** A handful of the steps below cost nothing
+now and save a rebuild if you ever do go after azimuth: horn orientation, the
+frame holding three horns, which parts to buy in multiples, and where the spare
+op-amp and amplifier go. Each is flagged *keeps the door open* at the point of
+the decision, and § 7 collects all seven in one table.
 
 ---
 
@@ -84,21 +89,28 @@ sheet ×2, a **2-input USB audio interface**, ESP32 devkit, TL072 ×2 + passives
 12 V supply + LM2596 ×2 are all on the bench.
 
 The interface is the one item whose answer depends on how far you intend to go.
-Stage 1 records two channels — beat and sync — so any line-level two-input
-interface does it, including one you already own. Stage 2 needs **four channels
-on one sample clock** and that means the UMC404HD; § 8 says why, and two
-separate two-input boxes never work, because a phase measurement between
-independently clocked converters means nothing. Buy the four-input one up front
-only if you have already decided on azimuth.
+This radar records two channels — beat and sync — so any line-level two-input
+interface does it, including one you already own. *Keeps the door open:* the
+azimuth upgrade is the one thing that would replace it rather than add to it,
+because comparing the phase of two receivers needs **four channels on one sample
+clock** and two separate two-input boxes have independent clocks. Buy the
+four-input one up front only if you have already decided to build
+[`../stage2/`](../stage2/); otherwise run on what you own and decide later.
 
 ---
 
 ## 2. Build the horns — make all three at once
 
-Make **three**, in one session, from one marked-out sheet. The two receive
-horns end up compared against each other by phase, so they want to be as close
-to identical as you can make them, and that is far easier while the jig is set
-up and your hand is in. Materials for three are already in the bill.
+Make **three**, in one session, from one marked-out sheet. This radar uses two
+of them — one transmit, one receive — and the third costs nothing: materials for
+three are already in the bill, and a spare horn is worth having the first time
+you dent one.
+
+*Keeps the door open:* the third horn is the azimuth upgrade's second receiver,
+and two receivers get compared against each other by phase, so they want to be
+as close to identical as you can make them. That is far easier while the jig is
+set up and your hand is in than it is in a year. Cut all three now even if you
+never fit the third.
 
 Numbers from `antenna/horn.py` at its default — an *optimum* pyramidal horn on a
 WR-340 guide at **2.45 GHz**. (2.45 is the ISM nominal; the sweep centre is
@@ -179,8 +191,9 @@ and are reliable if you cut to them; a VNA only confirms it.
 park the PLL with `CW 2460`, put a corner reflector at a fixed range on
 boresight, and adjust the probe depth in 0.5 mm steps for maximum detection SNR.
 That optimises the exact quantity you care about, which is more than S11 tells
-you anyway. Do the two receive horns the same way and stop when they read within
-1 dB of each other.
+you anyway. *Keeps the door open:* tune the spare horn the same way and stop when
+it reads within 1 dB of the one you fitted — a matched pair is what the azimuth
+upgrade needs, and tuning it now is free.
 
 **If you want the real measurement, borrow the instrument** — a university RF
 teaching lab or a local amateur radio club; LiteVNAs are common and members lend
@@ -190,7 +203,7 @@ them. Twenty minutes covers every row:
 |---|---|
 | return loss | S11 ≤ −10 dB over 2400–2484 MHz (tune the 28 mm probe in 0.5 mm steps for the minimum) |
 | TX–RX isolation, TX 290 mm above the RX row | S21 ≤ −35 dB |
-| **RX A vs RX B match** | S11 curves within 2 dB of each other across the band — the two receive horns feed a phase comparison, so they want to be twins |
+| **RX vs the spare horn** | S11 curves within 2 dB of each other across the band — not needed here, but two receivers feeding a phase comparison want to be twins, so check it while the instrument is on the bench |
 | gain, two-antenna method at 3 m | 13.4 ± 1.5 dBi |
 | beamwidths (rotate the horn by hand against a protractor) | 34 ± 4° E, 36 ± 4° H; first sidelobe ≤ −12 dB |
 
@@ -332,9 +345,10 @@ same 107 mV out that the simulation predicted.
   retrace. `radar_acquire.py` measures the chirp time and the PRI from it —
   the software never assumes either.
 - Video amp output → sound card **LEFT**.
-- On a **UMC404HD** those two are the front-panel combo jacks **INPUT 1**
-  (beat A) and **INPUT 3** (sync), on ¼" TS plugs, and stage 2's second beat
-  channel goes into INPUT 2.
+- On a **UMC404HD** — if you happen to own one, or bought it for the upgrade
+  already — those two are the front-panel combo jacks **INPUT 1** (beat) and
+  **INPUT 3** (sync), on ¼" TS plugs, which leaves INPUT 2 free for a second
+  beat channel later.
 - On a **two-input interface** they are simply left and right. On a small USB
   mixer such as the Xenyx 302USB that is the stereo RCA line channel — beat into
   its left, sync into its right, the mic channel all the way down, and its
@@ -344,8 +358,9 @@ same 107 mV out that the simulation predicted.
 - Either way, set the gain once so the leakage tone sits well below clip and
   never touch it again. The video amp is designed around this: about 61 dB of
   gain puts the leakage at ~116 mV and a 10 m drone echo at ~21 mV against a
-  316 mV line nominal, so nothing clips and nothing needs riding. In stage 2 a
-  gain change between the two beat channels is a phase error.
+  316 mV line nominal, so nothing clips and nothing needs riding. (It is also a
+  habit worth keeping: with two beat channels, a gain change on one of them is a
+  phase error.)
 - In the OS disable every "enhancement", AGC and noise suppression. 44.1 or
   48 kHz, 16-bit. Both work; tell the software which (`--fs`).
 
@@ -355,30 +370,32 @@ running (next page).
 
 ---
 
-## 7. Mount the horns — build the stage 2 frame now
+## 7. Mount the horns — build the three-horn frame
 
-This is the section that decides whether azimuth is a bolt-on or a rebuild.
-Build the frame for three horns and populate two of them.
+Two horns are live: TX and RX. Build the frame for **three** anyway and leave
+the third bay empty — it is the one piece of mechanics that cannot be added
+later without taking the mast apart, and an empty bay costs nothing.
 
 ```
             ┌───────────┐
             │    TX     │      TX centred above, 290 mm below its
             └───────────┘      centre to the RX row: same isolation
                   │            as the old side-by-side 290 mm, and
-               290 mm          symmetric to both receivers
+               290 mm          symmetric across the row
                   │
       ┌───────────┬───────────┐
-      │   RX A    │   RX B    │   touching, centres 193 mm apart
-      └───────────┴───────────┘   ← the interferometer baseline
-       stage 1     stage 2
+      │    RX     │  (empty)  │   touching, centres 193 mm apart
+      └───────────┴───────────┘   ← the bay the second receiver takes
+        built       left for the upgrade
 ```
 
 - **Rotate all three horns 90° from the obvious orientation**: the 193.1 mm
   (b1) side goes **horizontal**, the 263.8 mm side vertical. Polarisation
-  becomes horizontal, which is fine as long as all three match.
-- That rotation is not cosmetic; it is what makes the baseline legal. The
-  phase difference between the two receivers has to stay inside ±π across the
-  beam, which caps the spacing:
+  becomes horizontal, which is fine as long as all three match. Here it costs
+  nothing either way; what it buys is below.
+- *Keeps the door open:* that rotation is not cosmetic, and it is the reason the
+  two bays are 193 mm apart rather than 264 mm. A phase difference between two
+  receivers has to stay inside ±π across the beam, which caps the spacing:
 
   ```
   d  ≤  λ / (2 · sin θ_max)  =  0.1228 / (2 × sin 17°)  =  210 mm
@@ -388,41 +405,55 @@ Build the frame for three horns and populate two of them.
   **263.8 mm** apart, past that limit, and the bearing wraps at ±13.4° — inside
   the 17° half-beam, where it does real damage. Rotated, they touch at
   **193 mm**, unambiguous to **±18.5°**, which covers the half-beam with room
-  to spare. The azimuth beamwidth goes from 36° to 34°, which is nothing, and
+  to spare. The horizontal beamwidth goes from 36° to 34°, which is nothing, and
   the polarisation rotates, which is fine as long as the transmit horn rotates
   with them.
-- **RX A and RX B mouths must be flush in one plane**, to a millimetre. A 1 mm
-  depth difference in *air* is 3° of phase; 1 mm of extra *coax* on one channel
-  is 4.2°, because a wave is ~30 % slower in PTFE. Both show up as bearing bias.
-- **Measure the finished baseline and pass it to the software.** 193.1 mm is the
-  horn's E-plane aperture, i.e. two ideal mouths touching. Real walls and the
-  6 mm solder tabs push the built centres 1–2 mm further apart, and the baseline
-  is a *scale factor* on every bearing — `cal` cannot absorb it, because `cal` is
-  measured on boresight where `sin θ = 0`. 2 mm of error is ~1 % of bearing,
-  about 0.2° at the edge of the beam. Measure mouth centre to mouth centre and
-  pass it as `radar_acquire.py --baseline 0.195`.
-- TX centred above the pair, mouth in the same plane, 290 mm centre to centre.
-  Centred matters: it keeps the leakage path equal into both receivers.
+- *Keeps the door open:* **the two RX mouths must end up flush in one plane**, to
+  a millimetre, so build the empty bay's saddle to the same depth as the live
+  one. A 1 mm depth difference in *air* is 3° of phase; 1 mm of extra *coax* on
+  one channel is 4.2°, because a wave is ~30 % slower in PTFE. Neither matters
+  with one receiver; both are bearing bias with two, and a bay built to a
+  different depth than its neighbour is a bias no calibration removes.
+- *Keeps the door open:* **measure the finished bay spacing and write it on the
+  frame.** 193.1 mm is the horn's E-plane aperture, i.e. two ideal mouths
+  touching. Real walls and the 6 mm solder tabs push the built centres 1–2 mm
+  further apart, and that spacing is a *scale factor* on every bearing the
+  upgrade would report — a boresight calibration cannot absorb it, because on
+  boresight `sin θ = 0`. 2 mm of error is ~1 % of bearing, about 0.2° at the edge
+  of the beam. Measure mouth centre to mouth centre now, while a tape fits
+  between them.
+- TX centred above the row, mouth in the same plane, 290 mm centre to centre.
+  Centred matters: it keeps the leakage path equal into both bays.
 - Centre of the RX row ~300 mm above the board.
+- Coax from the horn to the board: whatever you use for the live receiver, cut
+  its twin from the same reel at the same time and coil it with the frame. *Keeps
+  the door open* for the price of 20 cm of RG316.
 - A sheet of aluminium foil on cardboard behind the horns (not across the
   mouths) buys a few dB of isolation for free.
 - **You stand behind the horns**, phone in pocket. A phone in the beam at 3 m
   is as strong at the receiver as the drone's own WiFi; behind the horns it is
   ~25 dB weaker.
 
-### The seven decisions that make stage 1 upgradeable
+### The seven decisions that keep the door open
 
-| decide now | why | costs now |
+None of these is part of measuring range and velocity. All of them are free or
+nearly free *now* and expensive *later*, which is the only reason a document
+about range and velocity mentions them at all. If you are certain you will never want bearing, skip the
+table and build the radar.
+
+| decide now | why it matters later | costs now |
 |---|---|---|
-| Frame holds three horns; leave the RX B position empty | otherwise the whole mast is rebuilt | $0 |
-| Build all three horns in one session | the two RX horns must match | $0, materials are for three |
-| Rotate all horns 90°, b1 horizontal | a rotated pair is unambiguous, an un-rotated pair is not | $0 |
-| Decide whether azimuth is in the plan **before** buying the interface | phase needs both beat channels on one sample clock, so stage 2 means a 4-input interface. If azimuth is the goal, buy it once now; if stage 1 is the goal, run stage 1 on any 2-in interface and write it off later | $0 or +$139 |
-| Buy the SPF5189Z **4-pack** | 2 used, 1 becomes the second LNA, 1 becomes the LO amplifier | $0, already the 4-pack |
-| Buy SMA jumpers as one batch | the two receive chains want phase-matched cables, and one batch is the cheap way | $0 |
-| Put two TL072s on the board and wire only one video amp | the second channel then drops into empty rows | +$4 |
+| Frame holds three horns; leave the second RX bay empty | otherwise the whole mast is rebuilt | $0 |
+| Build all three horns in one session | the two receive horns would have to match | $0, materials are for three |
+| Rotate all horns 90°, b1 horizontal | a rotated pair is unambiguous at 193 mm, an un-rotated pair at 264 mm is not | $0 |
+| Decide whether you want bearing **before** buying the interface | comparing phase needs both beat channels on one sample clock, i.e. a 4-input interface. If bearing is the goal, buy it once now; if this radar is the goal, run it on any 2-in interface and write that off later | $0 or +$139 |
+| Buy the SPF5189Z **4-pack** | 2 used here, 1 would become the second LNA, 1 the LO amplifier | $0, already the 4-pack |
+| Buy SMA jumpers as one batch | two receive chains want phase-matched cables, and one batch is the cheap way | $0 |
+| Put two TL072s on the board and wire only one video amp | a second video channel then drops into empty rows | +$4 |
 
-Everything else in stage 2 is new parts you buy when you get there.
+Everything else the upgrade needs is new parts bought when you get there —
+[`../hardware/BOM.md`](../hardware/BOM.md) § F prices them, and
+[`../stage2/`](../stage2/) is the design.
 
 **Checkpoint 7 — the leakage tone.** Power everything, `SWEEP 1`, open the
 sound card monitor. You must see a **low tone with a strong ~26 Hz component**
@@ -433,201 +464,59 @@ ADF4351 lock LED.
 
 Then the MIT test: `python radar_acquire.py --device N` and **walk toward the
 horns from 5 m**. Range decreases, velocity is negative and about your walking
-speed. That is a working radar, and it is the whole of stage 1.
+speed. That is a working radar, and it is the whole of this build — the bring-up,
+the three measurements that decide whether it works in your room and the console
+are in [`radar-software.md`](radar-software.md).
 
 ---
 
-## 8. Stage 2 — the second receiver, and azimuth
+## 8. Azimuth — not in this build, and where it went
 
-Bolt the third horn into the empty RX B position and give it a receive path.
-Both receivers see the same echo at the same instant, so the target is not
-allowed to move during the measurement, and the whole thing takes one dwell:
+Bearing from the phase difference between two receivers is **designed, written
+and passing its tests**, and it is **not built here**. All of it — what it
+measures and what it costs, the second receive chain, the LO budget once one
+splitter has to feed two mixers, the RF-switch alternative, the beam-scan option
+the turntable used to serve, and the calibration it needs — lives in
+[`../stage2/`](../stage2/). Nothing on this page depends on any of it, and
+nothing on this page has to be undone to get there.
 
-```
-        RX A          RX B                 Δφ = 2π · d · sin(θ) / λ
-          |<--- d --->|
-           \    |    /                      θ = asin( Δφ · λ / 2π d )
-            \   |   /
-             \  |  /  θ                     one dwell, 0.47 s
-              \ | /                         no moving parts
-               \|/
-             target
-```
+What § 1–7 already did for it, so it stays a bolt-on rather than a rebuild:
 
-**What it buys**, measured against the scan it replaces, three noise seeds per
-point, on the full 83.5 MHz sweep:
+| done | where |
+|---|---|
+| the frame holds the second horn, at 193 mm, because all three are rolled 90° | § 7 |
+| the third horn is cut, tuned and matched to the one you fitted | § 2, § 2c |
+| the spare LNA and two spare op-amp channels are already on the bench | § 1, § 5 |
+| the SMA jumpers came from one batch, so two receive chains would match | § 7 |
+| the interface decision was made knowingly, not by accident | § 1 |
 
-| | scanning, 9 beams × 64 | two receivers, one dwell |
-|---|---|---|
-| time per fix | 4.3 s | **0.47 s** |
-| bearing error, rms | 1.5° | **0.18°** |
-| bearing error, worst | 2.7° | **0.29°** |
-| works on a moving target | no | yes |
-
-That is 8× inside the 2.5° budget and 9× faster. Thermal noise is nowhere near
-the limit: the bearing holds 0.16° until the echo weakens by 20 dB, and the
-cliff after that is CFAR losing the target altogether and the radar reporting
-**no** bearing — not the phase measurement quietly degrading.
-
-**What it gives up: elevation.** One baseline measures one angle, and putting it
-horizontal spends it on azimuth. Range, azimuth and radial velocity is a 2-D
-track on the floor plane, which is what the console and the tracker draw.
-
-**What to buy** — all of it bolts into the frame § 7 already put up:
-
-| item | ~$ | note |
-|---|---|---|
-| second mixer | 25–79 | a 1.5–4.5 GHz SMA module at ~$25, or the ZX05-43MH again |
-| second 2-way splitter | 13 | LO to both mixers |
-| 6 dB SMA pad, plus the spare SPF5189Z | 9 | **only if you used the ZX05-43MH** — see the LO budget below |
-| second 2400–2500 band-pass | 29 | in front of the second LNA |
-| third horn | 0 | copper for three is already in BOM section B |
-| second LNA | 0 | the SPF5189Z 4-pack covers it |
-| second TL072 video channel | 18 | a second video amp needs three more op-amp channels, so a third and fourth TL072, passives and a second breadboard — BOM row 27 |
-| 2 more SMA jumper 3-packs | 18 | four more coax runs, bought in one batch so the two receive chains stay phase-matched — BOM row 29 |
-| **4-input interface (UMC404HD)** | 139 | beat A, beat B and sync on one sample clock |
-| **total** | **~$299** | with the ZX05 at BOM's $73; ~$305 at ORDER.md's current $79 |
-
-(This list and [`../hardware/BOM.md`](../hardware/BOM.md) § F used to disagree:
-§ F omitted the $9 LO pad that the ZX05 choice requires, and this table omitted
-the second video-amp parts and the extra jumpers. Both are now the same nine
-rows. With the $25 generic level-7 mixer you skip the pad *and* the LO
-amplifier, and it comes to **~$242**.)
-
-The four-input interface is the one part that cannot be substituted, and the one
-part of the baseband section stage 2 replaces rather than adds to. Two separate
-two-input interfaces have independent sample clocks, and a phase measurement
-between independently clocked converters means nothing. If you knew from the
-start that azimuth was the goal, buying it once in stage 1 is $139 either way;
-if you did not, the two-input interface stage 1 ran on is what you write off.
-
-**Option B, two simultaneous channels** (recommended):
-
-- third horn into the RX B slot, mouth flush with RX A,
-- second band-pass and second SPF5189Z (spare from the 4-pack),
-- **second mixer**, and a second video-amp channel on the empty breadboard rows,
-- **a 2-way splitter on the LO branch** so both mixers get an LO,
-- the UMC404HD carries beat A, beat B and sync on one sample clock.
-
-**Watch the LO budget.** This is the one thing that does not simply scale. The
-chain delivers ~+10.5 dBm into the mixer today, already 2.5 dB under the
-ZX05-43MH's +13 dBm rating. Splitting that again for a second mixer leaves
-+7 dBm each, 6 dB low, and conversion loss rises. Fix it with the spare
-amplifier:
-
-```
-splitter LO port  +10.5 dBm ──►[6 dB pad]──►[SPF5189Z +12 dB]──►[2-way]──► +13 dBm to each mixer
-                                  ▲                    ▲
-                     without the pad the amp           the spare from the 4-pack
-                     is driven past its +18 dBm P1dB
-```
-
-That costs one 6 dB SMA pad (~$9) and the splitter (~$13); the amplifier is
-already in the box. If you used the cheap 1.5–4.5 GHz mixer modules instead,
-they are level-7 parts and +7 dBm suits them directly — no LO amplifier
-needed, so skip this whole paragraph.
-
-**Option A, one chain and an RF switch** (~$40): a single SPDT switch in front
-of one receive chain, alternating antennas chirp by chirp, driven from the
-ESP32 pin the stepper would have used. No second mixer, no second video amp, no
-second beat channel. It removes channel mismatch entirely, because both
-measurements go through the same mixer and the same amplifier.
-
-The cost is software, and it is real. The two antennas are sampled 7.4 ms apart,
-and in that time a drone at 1.8 m/s advances its round-trip phase by 79° against
-a signal that is only 157° at the edge of the beam; that motion term has to be
-subtracted using the measured velocity, so one velocity bin of 0.13 m/s costs
-about 0.6° of bearing. It also halves the Doppler samples per antenna, which
-halves the unambiguous velocity to ±2.07 m/s. Measured on the full sweep across
-36 bearings and velocities it declines to answer twice, both at the beam edge at
-the slowest velocity tested; simultaneous mode is 36/36 with a worst error of
-0.00° on the same grid. It abstains rather than lying, but it abstains.
-
-**Checkpoint 8 — the calibration constant.** Put a corner reflector on
-boresight at a known range. Read the phase difference between the two channels
-at its range–Doppler cell. That number is `cal`; subtract it from every
-measurement afterwards. Re-check it after anything is unplugged. 1 mm of extra
-coax on one channel is 4.3° of phase and 0.43° of bearing, so if `cal` drifts by
-more than about 20° between sessions, look for a connector rather than
-believing the bearing.
-
-Then walk across the beam at a fixed range: the reported azimuth should follow
-you smoothly with no scanning and no moving parts.
-
-### The cheap alternative, and exactly where it runs out
-
-A servo under the stage-1 frame, sweeping **3 beams over 48°** in 1.42 s, is
-$15–30 against $160 for the second receive chain. It is a real option, and the
-honest comparison is:
-
-| | servo scan, 48° / 3 beams | interferometer |
-|---|---|---|
-| extra hardware | one servo, **$15–30** | second chain, **$160** |
-| receive chains | the one stage 1 already has | two, phase-matched |
-| time per fix | 1.42 s | **0.47 s** |
-| bearing at rest | 0.74° rms | **0.18°** |
-| holds 2.5° up to | **0.5 m/s** of drift | ≥ 1 m/s, and flat — one dwell has nothing to smear |
-| needs calibration | no | yes, 0.43° of bearing per mm of cable |
-| sees a perfectly still target | no | no — same cause, § below |
-
-Three beams is not a typo. Nine beams over 90° — which this repo used to
-specify — is *better* on a parked target (0.20° against 0.74°) and three times
-*worse* on a drifting one, because a scan costs time in proportion to its beam
-count and 12° steps oversample a 34° beam anyway. The guard rail is that the
-sector must stay comfortably wider than the target's excursion: 36° over 4 beams
-fails even at rest, because the centroid gets squeezed toward the middle with no
-beams beyond the edge to balance it.
-
-**Build the servo version if** you want azimuth on stage 1 without a second
-receive chain and you are willing to fly a careful hover. **It will not track a
-drone being flown** — a hand-flown 25 g quad indoors has no optical flow and no
-GPS, so nothing holds its position but you, and at walking pace the scan is out
-of budget while the interferometer has not noticed.
-
-**One warning that applies to the scan and only gets worse as the radar gets
-better.** Every scan number above was measured on the old 40 MHz sweep. Re-run
-at 83.5 MHz the nine-beam scan is reported to collapse to 42.5° rms, because
-narrower range cells concentrate the TX leakage into a taller, sharper peak, and
-in an off-boresight beam the *target* is attenuated by the beam pattern while the
-*leakage is not* — so the leak outranks it and the amplitude centroid tracks the
-leak. Closing that needs a leakage gate inside `centroid()`; it is open. The
-interferometer is unaffected: it reads phase at a CFAR-selected cell, not
-amplitude across beams.
-
-> **Treat every scan accuracy figure in this section as unverified.** Unlike
-> every other number in this repo, none of them is pinned by a case in
-> `test_radar.py` — they are prose, and the mechanism above is real but the
-> magnitudes do not reproduce from the parameters given here. A direct re-run
-> through `radar_acquire.process` and `ScanningRadar.centroid` at 8 m on a
-> 0.0026 m² target gives roughly 0.2° (9 beams) and 0.7° (3 beams) at 40 MHz,
-> matching the table, but **0.0–1.4° and 1.0–2.3° at 83.5 MHz** — degraded, and
-> nothing like 42.5°. The collapse needs the leakage peak to survive CFAR's
-> 1.5 m `min_range` floor, which depends on the isolation and the clutter in the
-> scene rather than on the bandwidth alone. Before you rely on the scan for
-> stage-1 azimuth, measure it in your own room; before you quote 42.5° or
-> 0.74° again, pin them with a test. The design conclusion is unaffected — the
-> scan cannot follow a flying target at any of these numbers, for the timing
-> reason at the top of this section — but the figures themselves should not be
-> treated as measurements.
-
-**The servo is not wasted either way.** It is how you measure the horn's real
-beam pattern, and how you sweep a corner reflector across boresight to find the
-interferometer's fixed phase offset.
+The parts to buy when you get there are priced in
+[`../hardware/BOM.md`](../hardware/BOM.md) § F. The checkpoints on this page stop
+at **7**, which is the finished radar; bringing up a second receiver has its own
+bench procedure — the calibration constant above all — and that lives with the
+code in [`../stage2/README.md`](../stage2/README.md).
 
 ---
 
-## 9. Optional — a turntable, for coverage only
+## 9. Optional — a turntable, for pointing and for measuring the horn
 
-The interferometer measures bearing across the 34° beam. If you want a wider
-sector, the turntable points the whole three-horn frame; it no longer takes
-part in the measurement.
+The radar sees whatever is inside the 34° beam and reports its range and radial
+velocity; it does not care where the frame is pointed. The turntable does two
+jobs, and neither of them is measuring a bearing:
+
+- **pointing.** It aims the whole three-horn frame at a wider sector than one
+  beam covers, between dwells.
+- **measuring the horn.** It is how you get a real beam pattern: park the PLL on
+  `CW`, put a corner reflector on boresight, and step the frame past it while
+  watching the detection SNR. That is the only antenna measurement on this bench
+  that does not need a borrowed VNA (§ 2c).
 
 - NEMA-17 + A4988, 1/16 microstep (MS1–3 high), VREF set for ~0.8 A.
 - Lazy-susan bearing (150 mm), stepper 1:1 via a printed hub. `STEPS_PER_DEG`
   in `radar_ctl.ino` is 8.889 for 1:1 (200 × 16 / 360).
 - Coax to three horns needs slack for ±45°. Loose loops, not a tight twist.
-- It moves **between** dwells, never during one. Point, dwell, read bearing,
-  repeat.
+- It moves **between** dwells, never during one. Point, dwell, read, repeat: a
+  frame that is moving while the block is being recorded smears every range cell.
 
 Most indoor flying fits in one 34° beam at 3–10 m, so this is the part to skip
 first if the budget is tight. $53, and nothing else depends on it.
@@ -637,10 +526,12 @@ first if the budget is tight. $53, and nothing else depends on it.
 ## 9b. Where this goes next — 24 GHz
 
 Everything downstream of the mixer's IF is band-independent: the video
-amplifier, the reference, the power, the sound card, the whole DSP, the
-interferometer and its tests. A 24 GHz front end would take the range cell from
-1.80 m to 0.60 m and the interferometer's unambiguous cone from ±18.5° to about
-±90°, because the baseline that matters scales with the wavelength.
+amplifier, the reference, the power, the sound card, the whole DSP and its tests.
+A 24 GHz front end would take the range cell from **1.80 m to 0.60 m**, which is
+the figure that matters here. (It would also widen the unambiguous cone of the
+quarantined azimuth design from ±18.5° to about ±90°, because the baseline that
+matters scales with the wavelength — that study is in
+[`../stage2/`](../stage2/).)
 
 The catch is the antenna, and it is the reason this build is at 2.4 GHz: every
 cheap 24 GHz module arrives with its array already laid out on the package, so

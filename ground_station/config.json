@@ -1,51 +1,23 @@
 {
-  "_comment": "Active FMCW radar console. The 'nodes' block is the archived passive-RF layout and is ignored when a radar fix is present; the radar keys below are the live ones.",
-  "path_loss_n": 2.2,
-  "drone_z": 1.2,
-  "solve_3d": true,
-  "ranging": "rssi",
-  "sigma_a": 2.0,
-  "predict_horizon_s": 0.5,
-  "nodes": {
-    "1": {
-      "pos": [
-        0.0,
-        0.0,
-        0.3
-      ],
-      "rssi0": -40.0
-    },
-    "2": {
-      "pos": [
-        5.0,
-        0.0,
-        0.3
-      ],
-      "rssi0": -40.0
-    },
-    "3": {
-      "pos": [
-        2.5,
-        6.0,
-        0.3
-      ],
-      "rssi0": -40.0
-    },
-    "4": {
-      "pos": [
-        2.5,
-        3.0,
-        2.6
-      ],
-      "rssi0": -40.0
-    }
-  },
-  "radar_origin": [
-    0.0,
-    0.0,
-    1.0
-  ],
+  "_comment": "Stage-1 FMCW radar console (server.py). One TX horn, one RX horn: the radar measures RANGE and RADIAL VELOCITY only. There is no azimuth in stage 1, so there is no bearing key and no azimuth sigma anywhere.",
   "radar_sigma_r": 0.15,
-  "radar_sigma_az_deg": 2.5,
-  "_radar": "Active FMCW radar (radar_acquire.py -> /api/radar): radar_origin = horn position in the same frame as the nodes, boresight along +x; sigma_r from range interpolation (~0.1-0.2 m), sigma_az from beam centroiding (2.5 deg measured in radar_twin)."
+  "radar_sigma_v": 0.1,
+  "snr_ref_db": 12.0,
+  "sigma_a": 2.0,
+  "track_model": "cv",
+  "track_gate_sigma": 5.0,
+  "track_coast_s": 2.0,
+  "predict_horizon_s": 0.5,
+  "waterfall_seconds": 180,
+  "stale_s": 3.0,
+  "chirp_jitter_warn_pct": 2.0,
+  "_meaning": {
+    "radar_sigma_r": "range measurement sigma (m) at snr_ref_db, from the sub-bin parabola fit in cfar_detect; inflated as 1/sqrt(SNR) below that",
+    "radar_sigma_v": "radial velocity measurement sigma (m/s) at snr_ref_db, from the Doppler bin interpolation",
+    "sigma_a": "Kalman process noise: white-noise acceleration drive (m/s^2) on the range/velocity state",
+    "track_gate_sigma": "chi-square gate on the 2-D (range, velocity) innovation; a detection further out than this is clutter, not this target",
+    "waterfall_seconds": "how much range-vs-time history the server keeps in its rolling buffer",
+    "stale_s": "no block for this long -> the console shows NO SYNC",
+    "chirp_jitter_warn_pct": "peak-to-peak spread of the SYNC-measured chirp time, as a percentage of the mean, above which the sync divider is flagged marginal"
+  }
 }

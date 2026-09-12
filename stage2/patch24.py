@@ -279,7 +279,8 @@ def link(b, t_up=T_UP, retrace=T_RETRACE, fs=FS, n_chirps=64,
          rcs=0.01, r=10.0, verbose=True):
     """The 24 GHz operating point, scored by ground_station/fmcw_sim.py -- the
     same RadarSpec, the same radar equation and the same leakage-limited MDS
-    that produce the 2.4 GHz build's published 71 dB.
+    that produce the 40 MHz comparison column's 71 dB (the build as it is now
+    gets 72 dB above the same leakage-limited floor; see `old` below).
 
     Velocity is computed from the PRI, not the up-chirp: the retrace is dead
     time but the Doppler axis still samples on it. That is the same distinction
@@ -478,7 +479,8 @@ def selftest():
     check(abs(old.lam / (4 * 7.4e-3) - 4.12) < 0.02, "40 MHz sweep centre gives +/-4.12 m/s")
     check(abs(old.rx_dbm(10.0, 0.01) - (-74.0)) < 1.0,
           f"40 MHz column echo is -74 dBm at +13 dBm TX: {old.rx_dbm(10.0, 0.01)}")
-    check(abs(lk["snr_old"] - 71.0) < 1.5, f"published SNR is 71 dB: {lk['snr_old']}")
+    check(abs(lk["snr_old"] - 71.0) < 1.5,
+          f"40 MHz column SNR is 71 dB: {lk['snr_old']}")
 
     # -- the sweep panel is monotone and brackets the band
     rows = sweep_panel(fr, verbose=False)

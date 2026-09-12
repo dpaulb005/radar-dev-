@@ -375,7 +375,10 @@ def check_horn_geometry():
       clearance  the horns are 263.8 mm tall once rolled; TX has to clear the
                  receive row rather than intersect it.
     """
-    C, LAM = 2.99792458e8, 2.99792458e8 / 2.46e9
+    # lambda at the centre of the sweep as built, 2400-2483.5 MHz. It was
+    # 2.46e9 here, the centre of the superseded 40 MHz sweep, which made the
+    # ambiguity limit read 209 mm instead of 210 mm.
+    C, LAM = 2.99792458e8, 2.99792458e8 / 2.44175e9
     A1, B1 = 0.2638, 0.1931              # horn aperture, docs/radar-hardware.md
     d = js_const("D_BASE")
     rxy = js_const("RXY")

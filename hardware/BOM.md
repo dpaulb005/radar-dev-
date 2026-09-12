@@ -7,10 +7,12 @@
 > the full-band sweep fits inside). This page is the reasoning; that one is the
 > shopping.
 >
-> **The interface is the one row that depends on how far you are going.** Stage 1
-> records two channels and any line-level 2-in interface does it, including one
-> you already own. Stage 2 needs four on one sample clock and that is the
-> UMC404HD at $139. Row 13 and row 26.
+> **The interface is the one row that depends on how far you are going.** This
+> radar records two channels — beat and sync — and any line-level 2-in interface
+> does it, including one you already own. The azimuth upgrade in
+> [`../stage2/`](../stage2/) would need four on one sample clock, and that is the
+> UMC404HD at $139. Row 13 is what you buy now; row 26 is what the upgrade
+> replaces it with.
 
 Researched September 2026 (Mini-Circuits store checked directly; Amazon /
 FPV retailers for the rest). Prices are US street, rounded. Order in the
@@ -24,7 +26,7 @@ table order — the mixer is the critical path.
 > (the mixer) and replaces the rest with parts that are in stock, for ~$200
 > of RF instead of ~$577.
 
-## A. RF chain — ~$205 (first receiver)
+## A. RF chain — ~$205 (the one receive chain this radar has)
 
 | # | item | qty | ~$ | source | notes |
 |---|---|---|---|---|---|
@@ -41,7 +43,7 @@ table order — the mixer is the critical path.
 
 | # | item | qty | ~$ | notes |
 |---|---|---|---|---|
-| 8 | **Copper sheet 24 ga (0.021"), 12" × 24"** | 2 | 45 | ~130 in² per horn; copper so the seams solder. Not aluminium |
+| 8 | **Copper sheet 24 ga (0.021"), 12" × 24"** | 2 | 45 | ~130 in² per horn, enough for three — two are fitted, the third is a spare that the azimuth upgrade would use. Copper so the seams solder. Not aluminium |
 | 9 | **SMA female 4-hole flange, solder cup**, 10-pack | 1 | 12 | the feed probe launch |
 | 10 | Brass rod 1/16" | 1 | 5 | probe: 28 mm into the guide |
 | 11 | 60/40 solder + paste flux | 1 | 15 | plumbing solder; long seams |
@@ -55,18 +57,18 @@ Dimensions: aperture 263.8 × 193.1 mm, WR-340 throat 86.4 × 43.2 mm, flare
 
 | # | item | qty | ~$ | notes |
 |---|---|---|---|---|
-| 13 | USB audio interface, 2 inputs — **owned: Behringer Xenyx 302USB** | 1 | 0 | the ADC. Stage 1 records two channels, beat and sync, so any line-level 2-in interface does it. On the 302USB that is the stereo RCA line channel, beat left and sync right, mic channel down and the Line/USB switch on LINE IN. See row 26 for what stage 2 changes |
+| 13 | USB audio interface, 2 inputs — **owned: Behringer Xenyx 302USB** | 1 | 0 | the ADC. This radar records two channels, beat and sync, so any line-level 2-in interface does it. On the 302USB that is the stereo RCA line channel, beat left and sync right, mic channel down and the Line/USB switch on LINE IN. Row 26 is the only part of the baseband section the azimuth upgrade would replace rather than add to |
 | 14 | ESP32 devkit (WROOM-32) | 1 | 10 | runs `firmware/radar_ctl` |
 | 15 | TL072 ×2, breadboard, resistors/capacitors kit | 1 | 25 | video amp (`radar-hardware.md` §5) |
 | 16a | 12 V 3 A supply — **owned** | 1 | 0 | 12 V for the op-amp and the stepper |
 | 16b | LM2596 buck ×2 | 1 | 8 | 5.00 V for the RF modules and the ESP32; set it before anything is connected |
 
-## D. Mechanical — frame, and an optional turntable — ~$53
+## D. Mechanical — the three-horn frame, and an optional turntable — ~$53
 
 | # | item | qty | ~$ | notes |
 |---|---|---|---|---|
 | 17 | Plywood ~18" × 15", L-brackets, M3 hardware, standoffs | 1 | 28 | |
-| 18 | NEMA-17 stepper + A4988 (+ lazy-susan bearing) | 0–1 | 25 | **optional.** Only points the 34° beam at a wider sector; it takes no part in measuring azimuth. Skip it first if the budget is tight |
+| 18 | NEMA-17 stepper + A4988 (+ lazy-susan bearing) | 0–1 | 25 | **optional.** Two jobs, neither of them a measurement of direction: it points the 34° beam at a wider sector, and it is how you sweep a reflector past boresight to measure the horn's real beam pattern. Skip it first if the budget is tight |
 
 ## E. Drone and its control link — ~$122
 
@@ -95,25 +97,27 @@ Procedure in [`../docs/drone-hardware.md`](../docs/drone-hardware.md), firmware
 and binding in [`../docs/drone-software.md`](../docs/drone-software.md).
 
 **If you are flying outdoors or in a space where 5–10 m is available, you can
-skip section H entirely** and fly from the phone on WiFi channel 1 with a
+skip this section entirely** and fly from the phone on WiFi channel 1 with a
 2440–2480 MHz sweep. It costs nothing and a 3.75 m range cell is a small
 fraction of a large scene. It is only a bedroom that makes this $122 worth
 spending.
 
-## F. Stage 2 — azimuth interferometer — ~$299
+## F. The azimuth upgrade — not part of this build — ~$299
 
-Bearing from the phase difference between two receivers, in one 0.47 s dwell,
-which is the only way to get it on a *moving* drone. See
-[`../docs/radar-hardware.md`](../docs/radar-hardware.md) § 8.
+**Buy none of this to build the radar.** Bearing from the phase difference
+between two receivers is designed, written and quarantined in
+[`../stage2/`](../stage2/); this section exists so you know what it would cost
+and what you must *not* buy twice. Rows 25 and 28 are already in the box, because
+sections B and A bought them in multiples on purpose.
 
 | # | item | qty | ~$ | notes |
 |---|---|---|---|---|
 | 22 | second ZX05-43MH-S+ mixer | 1 | 73 | second receive channel. Critical path — order first |
 | 23 | second 2-way splitter (LO to both mixers) | 1 | 13 | |
-| 23b | **6 dB SMA pad** | 1 | 9 | **only with the ZX05 mixer.** Splitting the LO again leaves +7 dBm per mixer, 6 dB under the ZX05's +13 dBm rating, so the spare SPF5189Z from row 3 goes in as an LO amplifier — and it needs this pad in front of it or it is driven past its +18 dBm P1dB. The $25 generic modules are level-7 parts that take +7 dBm directly: skip this row. [`../docs/radar-hardware.md`](../docs/radar-hardware.md) § 8 has the budget |
+| 23b | **6 dB SMA pad** | 1 | 9 | **only with the ZX05 mixer.** Splitting the LO again leaves +7 dBm per mixer, 6 dB under the ZX05's +13 dBm rating, so the spare SPF5189Z from row 3 goes in as an LO amplifier — and it needs this pad in front of it or it is driven past its +18 dBm P1dB. The $25 generic modules are level-7 parts that take +7 dBm directly: skip this row. [`../stage2/README.md`](../stage2/README.md) has the LO budget |
 | 24 | second 2400–2500 band-pass filter | 1 | 29 | in front of the second LNA; same part as row 7b |
-| 25 | third horn — materials already in B | — | 0 | **beside** the first RX at 193 mm centres, all three horns rotated 90° |
-| 26 | **Behringer UMC404HD** 4-input USB interface | 1 | 139 | the one part stage 2 forces you to replace. It needs beat A, beat B and sync on **one sample clock**: two 2-in interfaces have independent clocks and a phase measurement between independently clocked converters means nothing. Nothing else in the baseband section changes |
+| 25 | third horn — materials already in B, cut in the same session | — | 0 | drops into the empty bay **beside** the fitted RX at 193 mm centres, all three horns rotated 90° |
+| 26 | **Behringer UMC404HD** 4-input USB interface | 1 | 139 | the one part the upgrade forces you to replace rather than add to. It needs beat A, beat B and sync on **one sample clock**: two 2-in interfaces have independent clocks and a phase measurement between independently clocked converters means nothing. Nothing else in the baseband section changes |
 | 27 | third + fourth TL072, second passives set, second breadboard | 1 | 18 | row 15's two TL072 are fully used by U1A/U1B/U2B/U2A; a second video amp needs three more channels |
 | 28 | second LNA (SPF5189Z 4-pack, row 3) | — | 0 | |
 | 29 | 2 more SMA jumper 3-packs | 2 | 18 | the second receive chain adds four coax runs. Buy them together: the two RX chains must be phase-matched, and identical cables from one batch is the cheap way to do it |
@@ -135,12 +139,13 @@ build does not depend on.
 Prices below use the **$29** band-pass (GPIO Labs, the only cheap one that
 publishes rejection figures). The `~$` column in every table is the line total.
 
-### What to order now, if you are building stage 1 and want azimuth later
+### What to order now
 
-This is the list. It puts up the three-horn frame, builds two of the horns'
-worth of chain, and buys nothing you will have to replace.
+This is the list: the whole radar — range and radial velocity — with nothing in
+it that the azimuth upgrade would make you buy twice. It puts up the three-horn
+frame and fills two of its bays.
 
-**Order 1 — stage 1, $317**
+**Order 1 — the radar, $317**
 
 This list builds the horns the way [`../docs/radar-hardware.md`](../docs/radar-hardware.md)
 § 2 documents them: cut from 0.021" copper sheet, seams soldered, continuity
@@ -153,7 +158,7 @@ it is a substitution you are making yourself, not a documented build.
 |---|---|
 | mixer, 1.5–4.5 GHz SMA module | 25 |
 | ADF4351 PLL board | 27 |
-| SPF5189Z LNA **4-pack** (2 used now, 2 held for stage 2) | 24 |
+| SPF5189Z LNA **4-pack** (2 used now, 2 held for the upgrade) | 24 |
 | 2-way splitter | 13 |
 | 3 dB SMA attenuator | 9 |
 | SMA jumpers, 3 packs, **one order** so the cables match | 27 |
@@ -164,14 +169,14 @@ it is a substitution you are making yourself, not a documented build.
 | ESP32 devkit | 10 |
 | **two** TL072, breadboard, passives kit | 25 |
 | LM2596 ×2 (12 V supply already owned) | 8 |
-| USB audio interface — **already owned**, any 2-in does stage 1 | 0 |
+| USB audio interface — **already owned**, any 2-in carries beat and sync | 0 |
 | | **317** |
 
 **Order 1b — the drone's control link, $122.** Only if you are flying in a
 small room; see § E. RadioMaster Pocket 65, Bandit Nano 915 40, BetaFPV ELRS
 Nano 915 RX 17. Skip it outdoors and fly from the phone on a 40 MHz sweep.
 
-**Order 2 — stage 2, when stage 1 works, $70**
+**Order 2 — the azimuth upgrade, only if you go there, $70**
 
 | item | $ |
 |---|---|
@@ -181,22 +186,26 @@ Nano 915 RX 17. Skip it outdoors and fly from the phone on a 40 MHz sweep.
 | two more TL072, second passives set, second breadboard | 18 |
 | | **70** |
 
-**$387 of parts** (order 1 at $317 plus order 2 at $70), **about $416
-delivered** — plus **$122** for the 915 MHz link if you are flying indoors, so
-**~$538** for the full indoor build. Add the $139 four-input interface when you
-commit to stage 2 and it is **~$677**. Print the horns instead of cutting them
-and take $40 off. Live prices and links are in [`ORDER.md`](ORDER.md).
+Order 1 alone is the radar. **$387 of parts** buys both (order 1 at $317 plus
+order 2 at $70), **about $416 delivered** — plus **$122** for the 915 MHz link if
+you are flying indoors, so **~$538** for the full indoor build with the upgrade.
+Add the $139 four-input interface when you commit to the upgrade and it is
+**~$677**. Print the horns instead of cutting them and take $40 off. Live prices
+and links are in [`ORDER.md`](ORDER.md).
 
-Nothing in order 1 becomes redundant. The interface, the LNA 4-pack, the horn
-count, the frame and the second TL072 are all sized for the finished radar.
-The one item people get wrong here is the sound card: a UCA202 bought in
-stage 1 is $30 thrown away, because two of them cannot measure phase.
+Nothing in order 1 becomes redundant if you never place order 2, and nothing in
+it is wasted if you do: the LNA 4-pack, the horn count, the frame and the second
+TL072 are all sized for the larger radar. The one item people get wrong here is
+the sound card: a UCA202 bought now is $30 thrown away, because two of them
+cannot measure phase.
 
 ---
 
-### Under $500
+### Under $500, if you already know you want azimuth eventually
 
-Two builds that hit the budget. Both give azimuth; they differ in how the two
+Neither of these is needed for the radar this repo builds — order 1 above is. They
+are for the case where you have already decided to end up at the quarantined
+azimuth design, and want the cheapest route to it. They differ in how the two
 receive antennas are read.
 
 **Build A — switched single chain, ~$346 delivered.** Cheapest that works.
@@ -224,10 +233,10 @@ motion-phase correction, which is the only real software risk in A.
 Both assume: horns printed rather than cut from copper sheet, **no turntable**,
 and **no VNA** — the probe gets tuned against the radar's own SNR instead.
 
-**Why no turntable.** It was mandatory when azimuth came from scanning. With
-two receivers the interferometer covers the full ±17° beam from a fixed mount,
-so the turntable is now only for pointing at a wider sector. Add it later for
-$53 if you need the coverage.
+**Why no turntable.** It was mandatory back when azimuth came from scanning a
+beam. It measures nothing now: it points the beam at a wider sector, and it
+sweeps a reflector past boresight when you want the horn's real pattern. Add it
+later for $53 if you want either.
 
 **About the cheap mixer.** Several 1.5–4.5 GHz double-balanced SMA modules sell
 for ~$25 with 8.5 dB conversion loss against the ZX05-43MH's 7 dB, which costs
@@ -245,7 +254,7 @@ If none of the above compromises are acceptable.
 
 If you know from the start that you are going to azimuth, buy the **UMC404HD
 once** and skip the two-input interface entirely — it does everything the
-two-input one does, and it is the only part of the baseband section stage 2
+two-input one does, and it is the only part of the baseband section the upgrade
 touches. That is the single change from buying in stages.
 
 | | | running |
@@ -254,7 +263,7 @@ touches. That is the single change from buying in stages.
 | B. Horns, materials for all three | 95 | 300 |
 | C. Baseband, control, power | 43 | 343 |
 | D. Turntable | 53 | 396 |
-| F. Second receiver and interferometer (UMC404HD included) | 299 | **695** |
+| F. Second receiver and the azimuth upgrade (UMC404HD included) | 299 | **695** |
 | G. Test gear (buy none) | 0 | 695 |
 | shipping (Mini-Circuits direct) + 6 % tax | ~56 | **~751** |
 
@@ -267,26 +276,27 @@ two-input USB interface (a Behringer Xenyx 302USB). Also the ESP-FLY drone.
 
 | | | running |
 |---|---|---|
-| Stage 1 — range and velocity (A + B + C) | 343 | 343 |
-| + Stage 2 — azimuth (F, including the 4-input interface it forces) | 299 | 642 |
+| The radar — range and radial velocity (A + B + C) | 343 | 343 |
+| + the azimuth upgrade (F, including the 4-input interface it forces) | 299 | 642 |
 | + optional turntable (D) | 53 | 695 |
 
 
-Staged this way nothing is rebuilt: stage 1 puts up the three-horn frame and
-stage 2 is purely additive. One thing *is* written off — the two-input
-interface, once stage 2 needs four channels on one clock. That is the right
-trade when the two-input one is already on the shelf; it is not a reason to
-spend $139 up front on a capability you have not decided to build.
+The first row is this build. Staged this way nothing is rebuilt: the radar puts
+up the three-horn frame and the upgrade is purely additive. One thing *is*
+written off — the two-input interface, once four channels on one clock are
+needed. That is the right trade when the two-input one is already on the shelf;
+it is not a reason to spend $139 up front on a capability you have not decided to
+build.
 
 ### The cheaper azimuth path
 
 One RF switch in front of a single receive chain instead of a whole second
 chain. Section F's $160 of receive hardware (the $299 above, less the $139
 interface) becomes about $40, and a two-input interface is enough because there
-is still only one beat channel. See
-[`../docs/radar-hardware.md`](../docs/radar-hardware.md) § 8 for the trade: the
-two antennas are then sampled 7.4 ms apart, so the target's motion phase has to
-be corrected from the measured velocity, and the unambiguous velocity halves.
+is still only one beat channel. See [`../stage2/README.md`](../stage2/README.md)
+for the trade: the two antennas are then sampled 7.4 ms apart, so the target's
+motion phase has to be corrected from the measured velocity, and the unambiguous
+velocity halves.
 
 | | |
 |---|---|
@@ -304,4 +314,4 @@ be corrected from the measured velocity, and the unambiguous velocity halves.
 
 Not needed: external LNAs beyond the two, any 2.4 GHz sniffer boards,
 a UWB kit. An RF switch is the cheaper single-chain alternative to section F;
-`docs/radar-hardware.md` § 8 explains why it is not the first choice.
+`stage2/README.md` explains why it is not the first choice.

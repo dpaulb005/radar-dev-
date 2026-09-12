@@ -201,14 +201,15 @@ running and the beam on it.
 1. **Radar off.** Props on, room clear, ANGLE mode, arm, hover at 1 m for 30 s,
    land. This is the same aircraft it was before the link swap — the flight
    controller is unchanged, only the receiver and the sticks are new.
-2. **Radar sweeping.** Hover in the sector with the radio while
-   `radar_acquire.py --ctl … --server …` runs. The console shows the fix; the
+2. **Radar sweeping.** Hover in the beam with the radio while
+   `radar_acquire.py --ctl … --server …` runs. The console shows the range and
+   velocity track — not a position, because the radar measures no bearing; the
    ELRS Lua shows LQ still 100. In a small room, remember the drone must keep
    moving **toward or away** at **≥0.10 m/s** — a pure hover is subtracted
    along with the walls.
 
-**Checkpoint 8:** a 2-minute hover in the scanned sector with LQ 100 throughout
-and a continuous radar track in the console. Record it (console Record button).
+**Checkpoint 8:** a 2-minute hover in the beam with LQ 100 throughout
+and a continuous radar range track in the console. Record it (console Record button).
 
 ---
 

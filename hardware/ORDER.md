@@ -10,9 +10,10 @@ just where to click.
 > 1. **ZX05-43MH-S+ mixer is now $79.31 and hard to get** — DigiKey stock-notify
 >    only, Mouser backorder. It is the critical path. Order it first, or take
 >    the $25 generic module the budget build already specifies.
-> 2. **UMC404HD is $139, not the $100 in the BOM** — but it is no longer a
->    stage-1 purchase. Stage 1 records two channels and runs on the two-input
->    interface already owned; the $139 lands only if you go to stage 2.
+> 2. **UMC404HD is $139, not the $100 in the BOM** — and it is not a purchase
+>    for this radar at all. Two channels, beat and sync, run on the two-input
+>    interface already owned; the $139 lands only if you go after azimuth
+>    ([`../stage2/`](../stage2/)).
 > 3. **The GPIO Labs filter comes in SMA *and* RP-SMA.** You need **plain SMA**.
 >    RP-SMA reverses the pin gender and will not mate with the rest of the chain.
 >    Its 3 dB edges are **2380 / 2500 MHz**, so the full-band 2400–2483.5 sweep
@@ -31,9 +32,9 @@ just where to click.
 | 3 | **SPF5189Z LNA**, 4-pack | ~24 est. | [Amazon B08244LD9S](https://www.amazon.com/SPF5189Z-SPF-5189Z-5189Z-50MHz-4000MHz-Amplifier/dp/B08244LD9S) (4pcs) · singles: [B0H4CH543K](https://www.amazon.com/SPF5189Z-50-4000MHz-Ultra-Wideband-Wireless-Communication/dp/B0H4CH543K) |
 | 4 | 2-way SMA splitter, 380–2500 MHz | ~13 est. | [eBay 156232418130](https://www.ebay.com/itm/156232418130) · lab-grade: [Pasternack PE2074](https://www.pasternack.com/2-way-sma-reactive-power-divider-0.8-ghz-2.5-ghz-30-watts-pe2074-p.aspx) |
 | 5 | SMA 3 dB attenuator, DC–6/8 GHz | ~9 est. | [Amazon B0B93NB895](https://www.amazon.com/clp/B0B93NB895) (2 pcs) |
-| 6 | SMA M-M RG316 jumpers, 20 cm | ~18 est. | any Amazon 3-pack — **buy all of them in one order** so the two receive cables are from the same reel (1 mm of mismatch is 0.43° of bearing) |
+| 6 | SMA M-M RG316 jumpers, 20 cm | ~18 est. | any Amazon 3-pack — **buy all of them in one order** so that if a second receive chain ever goes in, both cables are from the same reel (1 mm of mismatch would be 0.43° of bearing) |
 | 7 | SMA adapter assortment | ~12 est. | any Amazon kit; skip until you need it |
-| 7b | **2.4 GHz band-pass** — buy **two**, one per receive chain | **29.10** confirmed | [GPIO Labs, SMA-F both ends](https://gpio.com/products/2450-mhz-ism-bandpass-filter-for-wifi-zigbee-and-bluetooth) — **3 dB edges 2380 / 2500 MHz**, 2.7 dB loss, >40 dB at 2.2 and 2.8 GHz. Your 2400–2483.5 sweep sits inside it with ~20 MHz of margin at each end. ⚠️ [the RP-SMA version](https://gpio.com/products/2450-mhz-or-2-4-ghz-ism-bandpass-filter-for-wifi-zigbee-and-bluetooth-with-rp-sma-connectors) will **not** mate with your chain |
+| 7b | **2.4 GHz band-pass** — one per receive chain, so **one** now (a second only with the azimuth upgrade) | **29.10** confirmed | [GPIO Labs, SMA-F both ends](https://gpio.com/products/2450-mhz-ism-bandpass-filter-for-wifi-zigbee-and-bluetooth) — **3 dB edges 2380 / 2500 MHz**, 2.7 dB loss, >40 dB at 2.2 and 2.8 GHz. Your 2400–2483.5 sweep sits inside it with ~20 MHz of margin at each end. ⚠️ [the RP-SMA version](https://gpio.com/products/2450-mhz-or-2-4-ghz-ism-bandpass-filter-for-wifi-zigbee-and-bluetooth-with-rp-sma-connectors) will **not** mate with your chain |
 
 ## B. Horns
 
@@ -49,7 +50,7 @@ just where to click.
 
 | # | item | $ | where |
 |---|---|---|---|
-| 13 | USB audio interface, 2 inputs — **owned, do not buy** | **0** | a Behringer Xenyx 302USB is on the shelf. Stage 1 wants two channels, beat and sync, and its stereo RCA line channel carries them: beat left, sync right, mic channel down, Line/USB switch on LINE IN. Buy the **UMC404HD** ([Sweetwater](https://www.sweetwater.com/store/detail/UMC404HD--behringer-u-phoria-umc404hd-usb-audio-interface) · [Amazon B00QHURLHM](https://www.amazon.com/BEHRINGER-Audio-Interface-4-Channel-UMC404HD/dp/B00QHURLHM), $139) only when you commit to stage 2, which needs four channels on one sample clock |
+| 13 | USB audio interface, 2 inputs — **owned, do not buy** | **0** | a Behringer Xenyx 302USB is on the shelf. This radar wants two channels, beat and sync, and its stereo RCA line channel carries them: beat left, sync right, mic channel down, Line/USB switch on LINE IN. Buy the **UMC404HD** ([Sweetwater](https://www.sweetwater.com/store/detail/UMC404HD--behringer-u-phoria-umc404hd-usb-audio-interface) · [Amazon B00QHURLHM](https://www.amazon.com/BEHRINGER-Audio-Interface-4-Channel-UMC404HD/dp/B00QHURLHM), $139) only if you commit to the azimuth upgrade, which needs four channels on one sample clock |
 | 14 | ESP32 devkit (WROOM-32) | ~10 est. | any Amazon/AliExpress devkit |
 | 15 | TL072 ×2, breadboard, R/C kit | ~25 est. | any electronics supplier |
 | 16a | 12 V 3 A supply — **owned, do not buy** | **0** | already on the shelf |
@@ -60,7 +61,7 @@ just where to click.
 | # | item | $ | where |
 |---|---|---|---|
 | 17 | Plywood, L-brackets, M3 hardware, standoffs | ~28 est. | hardware store |
-| 18 | NEMA-17 + A4988 + lazy-susan bearing | ~25 est. | **optional** — points the beam at a wider sector, takes no part in measuring azimuth. Cut this first |
+| 18 | NEMA-17 + A4988 + lazy-susan bearing | ~25 est. | **optional** — points the beam at a wider sector and sweeps a reflector past boresight for the horn's beam pattern. It measures no bearing. Cut this first |
 
 ## E. The 915 MHz control link
 
@@ -88,7 +89,7 @@ most common ELRS failure and it simply will not bind.
 
 The filter sits **in front of the LNA**, so its insertion loss adds directly to
 the system noise figure: 2.7 dB on top of the 4 dB the link budget assumes. That
-is irrelevant against 71 dB of margin, and it is the price of not putting every
+is irrelevant against 72 dB of margin, and it is the price of not putting every
 signal in the room into a 50–4000 MHz amplifier.
 
 **You can measure your own filter without a VNA.** Park the ADF4351 at a series
@@ -97,32 +98,40 @@ leakage level in `radar_acquire.py`. The leakage is flat with frequency, so what
 you are plotting is the filter's response. If the bottom of the sweep is more
 than a couple of dB down, raise `SET f0_mhz` until it is not.
 
-## F. Stage 2 — azimuth (order later)
+## F. The azimuth upgrade (not part of this order)
 
-Second mixer, second splitter, second band-pass, second LNA (already in the
-4-pack), second TL072 channel. Same links as rows 1, 4, 7b, 3, 15.
+Nothing here is needed to build the radar. If you ever go after bearing — the
+design is quarantined in [`../stage2/`](../stage2/) — it is a second mixer,
+second splitter, second band-pass, second LNA (already in the 4-pack) and a
+second TL072 channel, from the same links as rows 1, 4, 7b, 3, 15, plus the
+four-input interface in row 13's note.
 
 ## G. Test gear
 
 **Buy none of it.** A NanoVNA-H4 stops at 1.5 GHz and cannot see a 2.44 GHz
 antenna. The horn is tuned against detection SNR instead — see
-[`../docs/radar-software.md`](../docs/radar-software.md) § 8.
+[`../docs/radar-hardware.md`](../docs/radar-hardware.md) § 2c.
 
 ---
 
 ## Revised totals
 
-| | originally priced | with prices checked Sept 2026, less what is owned |
-|---|---|---|
-| stage 1 order | 394 | **284** (interface and 12 V supply owned) |
-| stage 2 order | 70 | 213 (74 + the UMC404HD stage 2 forces) |
-| 915 MHz link | — | 122 |
-| parts | 464 | **497** |
-| **delivered, indoor build, stage 1 only** | — | **~430** |
+Prices checked Sept 2026, less what is already owned (the two-input interface
+and the 12 V supply). These agree with [`BOM.md`](BOM.md)'s order lists; if the
+two ever disagree, BOM.md is the one that is maintained.
 
-Dropping the SMA adapter assortment and the turntable takes it to **~$630**.
-Using the $25 generic mixer instead of the ZX05 is already assumed in these
-numbers; the ZX05 build is about $54 more per receive channel.
+| | parts | delivered (+~7.5 % shipping and tax) |
+|---|---|---|
+| the radar — everything in BOM.md's order 1 | **317** | ~341 |
+| the 915 MHz control link (skip it outdoors) | 122 | ~131 |
+| **the indoor build: radar + link** | **439** | **~472** |
+| the azimuth upgrade, if ever (74 of RF + the $139 UMC404HD it forces) | 213 | ~229 |
+| everything, eventually | 652 | ~701 |
+
+Dropping the SMA adapter assortment takes the indoor build to $427 of parts,
+~$459 delivered. The turntable is not in any of these numbers — it is optional
+and nothing depends on it. The $25 generic mixer is assumed throughout; the
+ZX05-43MH build is about $54 more per receive channel.
 
 ## Order in this sequence
 
@@ -131,4 +140,5 @@ numbers; the ZX05 build is about $54 more per receive channel.
 3. **Copper and the interface** — these are what you build while the RF ships.
 4. **The 915 link** — only if you are flying indoors. Outdoors, skip § E and fly
    from the phone on a 40 MHz sweep.
-5. **Stage 2** — after stage 1 sees a corner reflector at a tape-measured range.
+5. **The azimuth upgrade, if ever** — not before this radar sees a corner
+   reflector at a tape-measured range and holds a track across the room.

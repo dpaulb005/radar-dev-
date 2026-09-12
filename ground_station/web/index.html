@@ -3,102 +3,106 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Radar Ground Station</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><circle cx='8' cy='8' r='7' fill='none' stroke='%233987e5' stroke-width='1.5'/><circle cx='8' cy='8' r='2.5' fill='%233987e5'/></svg>">
+<title>Stage 1 radar console — range &amp; radial velocity</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="app">
 
-  <header>
-    <div class="brand">
-      <span class="brand-mark"></span>
-      <h1>RADAR&nbsp;GROUND&nbsp;STATION</h1>
-      <span class="sub">FMCW radar console</span>
-    </div>
-    <div class="pills">
-      <span id="pill-link" class="pill">LINK&nbsp;<b>OFFLINE</b></span>
-      <span id="pill-fix"  class="pill">FIX&nbsp;<b>—</b></span>
-      <span id="pill-rec"  class="pill hidden">REC&nbsp;<b>●</b></span>
-      <span id="clock" class="pill mono">--:--:--</span>
-    </div>
-  </header>
+<header id="bar">
+  <div class="brand">
+    <span class="dot" id="link-dot"></span>
+    <strong>STAGE&nbsp;1 RADAR</strong>
+    <span class="sub">2.4 GHz FMCW &middot; 1 TX horn, 1 RX horn &middot; range &amp; radial velocity only &mdash; no bearing</span>
+  </div>
+  <div class="bar-stats">
+    <span class="chip" id="chip-sync">SYNC <b id="sync-state">--</b></span>
+    <span class="chip">BLOCK RATE <b id="stat-hz">--</b> Hz</span>
+    <span class="chip">CHIRP <b id="stat-tchirp">--</b> ms</span>
+    <span class="chip">PRI <b id="stat-pri">--</b> ms</span>
+    <span class="chip" id="chip-link">LINK <b id="link-mode">init</b></span>
+    <span class="chip demo" id="chip-demo" hidden>DEMO DATA</span>
+    <label class="chip toggle"><input type="checkbox" id="hold"> HOLD</label>
+  </div>
+</header>
 
-  <main>
-    <section id="scope-wrap">
-      <canvas id="scope"></canvas>
-      <canvas id="scope-overlay"></canvas>
-      <div id="scope-hud">
-        <button id="btn-edit"  class="ghost" title="Drag nodes to reposition">EDIT LAYOUT</button>
-        <button id="btn-sweep" class="ghost on" title="Toggle sweep animation">SWEEP</button>
-        <button id="btn-pred" class="ghost on" title="Show predicted position + uncertainty">PREDICT</button>
-        <button id="btn-reset" class="ghost" title="Reset view">RESET VIEW</button>
+<main>
+  <!-- 1. range-Doppler map ------------------------------------------- -->
+  <section class="panel" id="panel-rd">
+    <h2>1 &middot; RANGE&ndash;DOPPLER MAP <span class="hint" id="rd-hint">magnitude, dB &middot; CFAR detections circled</span></h2>
+    <div class="panel-body">
+      <canvas id="rd"></canvas>
+      <div class="overlay-msg" id="rd-msg">waiting for a block&hellip;</div>
+    </div>
+    <div class="panel-foot">
+      <label>dB floor
+        <input type="range" id="rd-floor" min="0" max="90" value="35">
+        <b id="rd-floor-val">--</b>
+      </label>
+      <span class="hint">negative velocity = closing &middot; zero-Doppler row is clutter and TX leakage</span>
+    </div>
+  </section>
+
+  <!-- 2. range vs time ---------------------------------------------- -->
+  <section class="panel" id="panel-wf">
+    <h2>2 &middot; RANGE vs TIME <span class="hint" id="wf-hint">peak magnitude over all Doppler, dB</span></h2>
+    <div class="panel-body">
+      <canvas id="wf"></canvas>
+      <div class="overlay-msg" id="wf-msg">waiting for blocks&hellip;</div>
+    </div>
+    <div class="panel-foot">
+      <span class="hint"><span class="swatch track"></span> Kalman range track</span>
+      <span class="hint" id="wf-span">history --</span>
+    </div>
+  </section>
+
+  <!-- 3. detections -------------------------------------------------- -->
+  <section class="panel" id="panel-dets">
+    <h2>3 &middot; DETECTIONS <span class="hint">strongest first, max 5 per block</span></h2>
+    <div class="panel-body scroll">
+      <table id="dets">
+        <thead>
+          <tr><th>#</th><th>range<span class="u">m</span></th>
+              <th>radial vel<span class="u">m/s</span></th>
+              <th>sense</th><th>SNR<span class="u">dB</span></th></tr>
+        </thead>
+        <tbody><tr class="empty"><td colspan="5">no detections yet</td></tr></tbody>
+      </table>
+    </div>
+    <div class="panel-foot">
+      <span class="hint" id="dets-foot">block &ndash; &middot; source t &ndash;</span>
+    </div>
+  </section>
+
+  <!-- 4. track + status --------------------------------------------- -->
+  <section class="panel" id="panel-track">
+    <h2>4 &middot; TRACK &amp; STATUS <span class="hint">Kalman on range + radial velocity</span></h2>
+    <div class="panel-body split">
+      <canvas id="trk"></canvas>
+      <div class="readouts">
+        <div class="ro"><span>track range</span><b id="ro-range">--</b><i>m</i></div>
+        <div class="ro"><span>track velocity</span><b id="ro-vel">--</b><i>m/s</i></div>
+        <div class="ro"><span>&sigma; range</span><b id="ro-sr">--</b><i>m</i></div>
+        <div class="ro"><span>&sigma; velocity</span><b id="ro-sv">--</b><i>m/s</i></div>
+        <div class="ro"><span>predicted range</span><b id="ro-pred">--</b><i>m</i></div>
+        <div class="ro"><span>time to closest</span><b id="ro-tca">--</b><i>s</i></div>
+        <div class="ro"><span>chirp time (SYNC)</span><b id="ro-tchirp">--</b><i>ms</i></div>
+        <div class="ro"><span>chirp pk&ndash;pk</span><b id="ro-jit">--</b><i>&micro;s</i></div>
+        <div class="ro"><span>PRI (SYNC)</span><b id="ro-pri">--</b><i>ms</i></div>
+        <div class="ro"><span>duty</span><b id="ro-duty">--</b><i>%</i></div>
+        <div class="ro"><span>block rate</span><b id="ro-hz">--</b><i>Hz</i></div>
+        <div class="ro"><span>blocks / bad</span><b id="ro-blocks">--</b><i></i></div>
       </div>
-      <div id="scope-readout" class="mono"></div>
-    </section>
+    </div>
+    <div class="panel-foot">
+      <span id="sync-detail" class="hint">no block received yet</span>
+    </div>
+  </section>
+</main>
 
-    <aside>
-      <section class="panel" id="panel-fix">
-        <h2>Position</h2>
-        <div class="tiles">
-          <div class="tile"><label>X</label><output id="fx">—</output><small>m</small></div>
-          <div class="tile"><label>Y</label><output id="fy">—</output><small>m</small></div>
-          <div class="tile"><label>SPEED</label><output id="fv">—</output><small>m/s</small></div>
-          <div class="tile"><label>RESID</label><output id="fr">—</output><small>m</small></div>
-        </div>
-        <div class="kv"><span>Azimuth / Elev</span><output id="fazel">—</output></div>
-        <div class="kv"><span>Slant range</span><output id="fslant">—</output></div>
-        <div class="kv"><span>Nodes in fix</span><output id="fn">—</output></div>
-        <div class="kv"><span>Solver rate</span><output id="frate">—</output></div>
-        <div class="kv"><span>Estimator</span><output id="fest">—</output></div>
-      </section>
+<footer id="statusline">
+  <span id="log">&nbsp;</span>
+</footer>
 
-      <section class="panel" id="panel-nodes">
-        <h2>Nodes</h2>
-        <div id="node-cards"></div>
-      </section>
-
-      <section class="panel" id="panel-link">
-        <h2>Link</h2>
-        <div class="row">
-          <select id="sel-port"></select>
-          <button id="btn-ports" class="ghost" title="Refresh ports">⟳</button>
-        </div>
-        <div class="row">
-          <button id="btn-connect">Connect</button>
-          <button id="btn-sim" class="alt">Sim mode</button>
-          <button id="btn-record" class="alt">Record</button>
-        </div>
-        <div class="row">
-          <button id="btn-pursuit" class="alt" title="Two-drone interception demo (sim only)">Pursuit demo</button>
-        </div>
-      </section>
-
-      <section class="panel" id="panel-cal">
-        <h2>Calibration</h2>
-        <div class="row">
-          <select id="cal-node"></select>
-          <input id="cal-dist" type="number" value="1.0" step="0.1" min="0.2" title="true distance (m)">
-          <input id="cal-secs" type="number" value="15" step="5" min="5" title="capture seconds">
-          <button id="btn-cal">Start</button>
-        </div>
-        <div id="cal-status" class="muted">Hold the powered drone at the given
-          distance from the selected node, then press Start.</div>
-        <div id="cal-bar"><div></div></div>
-      </section>
-
-      <section class="panel" id="panel-cfg">
-        <h2>Model</h2>
-        <div class="kv"><span>Path-loss n</span>
-          <input id="cfg-n" type="number" step="0.1" min="1.5" max="4"></div>
-        <div class="kv"><span>Drone alt (m)</span>
-          <input id="cfg-z" type="number" step="0.1" min="0"></div>
-      </section>
-    </aside>
-  </main>
-
-  <footer><div id="log" class="mono"></div></footer>
-</div>
-<script type="module" src="app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>

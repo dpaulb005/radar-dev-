@@ -60,6 +60,9 @@ import sys
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# the beat-signal generator is stage 1's (../ground_station/synth.py)
+sys.path.insert(1, os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                               os.pardir, "ground_station"))
 
 C = 2.99792458e8
 
@@ -253,7 +256,7 @@ def simulate(scene, positions, n_chirps=16, fs=48_000.0, t_up=6.4e-3,
     scene is [(x, y, rcs)] in metres. positions may be x only, or (x, y) pairs
     for a path that is not a straight line -- which is every real flight path.
     The radar looks along +y."""
-    from radar_acquire import SynthSource, segment_chirps
+    from synth import SynthSource, segment_chirps
     pos = np.asarray(positions, float)
     if pos.ndim == 1:
         pos = np.stack([pos, np.zeros_like(pos)], axis=1)

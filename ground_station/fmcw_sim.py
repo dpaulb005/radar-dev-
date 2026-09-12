@@ -45,14 +45,22 @@ C = 299_792_458.0
 K_BOLTZ = 1.380649e-23
 T0 = 290.0
 
+# The horns' E-plane aperture: how close two of them can physically sit once
+# they are rotated 90 deg (docs/radar-hardware.md section 7). Stage 1 does not
+# measure azimuth and never uses it, but the constant lives here so that there
+# is exactly ONE definition of it -- synth.py defaults its second-receiver
+# spacing to this, and stage2/interferometer.py imports it from here rather
+# than declaring its own.
+DEFAULT_BASELINE_M = 0.1931
+
 
 # ----------------------------------------------------------------------
 class RadarSpec:
     """The MIT coffee-can radar as MIT published it, with everything overridable.
 
     These defaults are MIT's reference design, NOT the radar in this repo, and
-    several callers (radar_twin.ScanningRadar, antenna/patch24.py's comparison
-    column) depend on them staying put. For the build documented in docs/, use
+    several callers (stage2/scanning.py's ScanningRadar, stage2/patch24.py's
+    comparison column) depend on them staying put. For the build documented in docs/, use
     as_built() below -- which is what the command line now does, because with
     MIT's defaults `fmcw_sim.py --budget` printed a 1.07 m range cell and a
     +/-1.5 m/s Doppler window, contradicting every figure in docs/ and quoting a
@@ -308,11 +316,11 @@ def range_doppler(cube, s: RadarSpec, bg_subtract=False, complex_out=False,
 
     rd is magnitude in dB by default. Pass complex_out=True for the raw complex
     map, which is what an interferometer needs: the bearing lives in the phase
-    between two receivers at the same cell (see interferometer.py).
+    between two receivers at the same cell (see stage2/interferometer.py).
 
     range_pad zero-pads the range FFT. It buys no resolution -- that is c/2B
     and nothing downstream can change it -- but it samples the mainlobe more
-    finely, and the sub-bin parabola in cfar_detect is fitted to SAMPLES of
+    finely, and the sub-bin parabola in dsp.cfar_detect is fitted to SAMPLES of
     that lobe. Below about two bins from DC the lobe is clipped by the DC edge
     and the three-point fit is badly biased: measured, a 3 m target at 40 MHz
     (bin 0.80) reads 1.13 m long. Padding is the fix; see docs/radar-software.md § 1

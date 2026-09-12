@@ -38,16 +38,23 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import pathlib
+import sys
 
 import numpy as np
 
-C = 2.99792458e8
-VF_PTFE = 0.695          # RG316 / RG405: a wave is ~30 % slower inside the cable
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                os.pardir, "ground_station"))
 
 # The horns' E-plane aperture, which is how close two of them can physically sit
-# once all three are rotated 90° (docs/radar-hardware.md § 7).
-DEFAULT_BASELINE_M = 0.1931
+# once all three are rotated 90° (docs/radar-hardware.md § 7). It is defined in
+# stage 1's fmcw_sim so that the stage-1 signal generator and this module share
+# exactly one number.
+from fmcw_sim import DEFAULT_BASELINE_M                            # noqa: E402
+
+C = 2.99792458e8
+VF_PTFE = 0.695          # RG316 / RG405: a wave is ~30 % slower inside the cable
 
 
 # ----------------------------------------------------------------------

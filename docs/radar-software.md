@@ -1,21 +1,26 @@
 # Radar software — what it measures, and how to bring it up
 
 What runs on the radar, what the signal actually is at every point, how to get
-it into the hardware, and how to prove each stage works — in the same order as
+it into the hardware, and how to prove each step works — in the same order as
 [`radar-hardware.md`](radar-hardware.md).
 
-Two programs:
+What this radar measures is **range and radial velocity**. There is no bearing in
+it — that is the quarantined upgrade in [`../stage2/`](../stage2/) — so a block of
+audio comes out as a list of detections, each a range, a velocity and an SNR.
+
+Three programs:
 
 | where | file | job |
 |---|---|---|
-| radar ESP32 | `firmware/radar_ctl/radar_ctl.ino` | step the ADF4351 sweep, drive SYNC, serial protocol; also drives the optional turntable or the stage-2 RF switch |
-| laptop | `ground_station/radar_acquire.py` | sound card → chirps → range-Doppler → CFAR → azimuth → fix → console |
+| radar ESP32 | `firmware/radar_ctl/radar_ctl.ino` | step the ADF4351 sweep, drive SYNC, serial protocol; also drives the optional turntable |
+| laptop | `ground_station/radar_acquire.py` | sound card → chirps → range-Doppler → CFAR → detections → console |
+| laptop | `ground_station/server.py` + `web/` | the console: range-Doppler heatmap, waterfall, detection table, Kalman track |
 
-`radar_acquire.py` is the hardware twin of `radar_twin.py`: it reuses
-`fmcw_sim.range_doppler`, `radar_twin.cfar_detect` and
-`interferometer.bearing` unchanged, so the DSP validated in simulation
-(0.09 m RMS track error) is the DSP that runs live. Fixes go into the console
-(`server.py`) through `POST /api/radar`.
+`radar_acquire.py` runs the same DSP whether the samples come from the sound
+card, a recorded WAV or the synthesiser: `synth.py` makes the signal,
+`fmcw_sim.range_doppler` makes the map and `dsp.cfar_detect` picks the
+detections out of it, so what the regression suite exercises is what runs live.
+Detections go into the console (`server.py`) through `POST /api/radar`.
 
 ---
 
@@ -58,7 +63,7 @@ nothing downstream can improve it.
 > assume **0.01 m²**; the room and ranging simulations in `test_radar.py` and
 > § 8 below assume **0.0026 m²**, the more pessimistic of the two. The chain
 > table that follows is the 0.0026 m² case, which is why its −80 dBm at the RX
-> horn is 5.9 dB below the README's −74 dBm for the same target at the same
+> horn is 5.9 dB below the README's −77 dBm for the same target at the same
 > range. Neither has been measured on a real ESP-FLY — see
 > [`drone-hardware.md`](drone-hardware.md) § 6. Treat 0.0026 m² as the design
 > case and 0.01 m² as the optimistic one.
@@ -70,14 +75,13 @@ nothing downstream can improve it.
 | 3 | RX horn | the same staircase, 66.7 ns late, −80 dBm | — |
 | 4 | mixer IF | one audio tone per target, 870 Hz at 10 m, 40 µV pk | — |
 | 5 | video amp out | the same tone at 21 mV pk | — |
-| 6 | sound card | 2 channels (3 in stage 2), 16-bit, 48 kHz | **92 KB** per block |
+| 6 | sound card | 2 channels, 16-bit, 48 kHz | **92 KB** per block |
 | 7 | after segmentation | 64 × 292 float array | **146 KB** |
 | 8 | after two FFTs | 64 × 146 range–Doppler map, dB | **73 KB** |
 | 9 | after CFAR | a list of (range, velocity, SNR) | ~300 B |
-| 10 | after the bearing | one fix: range, azimuth, velocity | ~100 B |
 
 A block is 64 chirps, 473 ms. The funnel from 92 KB of audio down to a
-100-byte answer is the entire job of the software.
+~300-byte answer is the entire job of the software.
 
 ### Stage 6 — what the laptop really records
 
@@ -163,8 +167,10 @@ more than an indoor room needs. The 15.9 kHz RC is one pole, so it limits the
 | unambiguous velocity | `± λ / (4·PRI)` | ±4.15 m/s |
 | max range from sampling | `c·T_up·f_s / (4·B)` | 276 m |
 | max range from the filter | `c·T_up·f_LP / (2·B)` | 183 m |
-| bearing from phase | `asin(Δφ·λ / 2π d)` | ±18.5° at d = 193 mm |
-| scan time a moving target allows | `θ·R / v_tangential` | 0.44 s per m/s at 10 m |
+
+There is no angle equation in that table, and that is the point: one receiver
+gives range and velocity. The phase-to-bearing relation and the cost of scanning
+a beam instead are in [`../stage2/`](../stage2/).
 
 ---
 
@@ -240,18 +246,21 @@ python -m sounddevice                  # lists audio devices; note the interface
 
 ```bash
 python radar_acquire.py --selftest
-# SELFTEST PASS: range 8.26 m (mid-dwell truth 8.24), az 15.6 deg (true 15.0), vel 1.02 m/s ...
-python radar_acquire.py --selftest --f0-mhz 2400 --bw-mhz 83.5 --st-range 5 --st-az -30 --st-vel -2
-python radar_acquire.py --selftest --st-range-only --st-range 6 --st-vel 1.5
-python radar_twin.py --track 20        # 0.09 m RMS
-python test_radar.py                   # the whole suite, 45 cases
+# SELFTEST PASS: range 8.26 m (mid-dwell truth 8.24), vel 1.04 m/s (true 1.0), SNR 55.5 dB
+python radar_acquire.py --selftest --f0-mhz 2400 --bw-mhz 83.5 --st-range 5 --st-vel -2
+python radar_acquire.py --selftest --st-range 6 --st-vel 1.5
+python server.py --demo                # the console on synthetic blocks, no hardware
+python test_radar.py                   # the whole suite, 22 cases
 ```
 
-PASS: `SELFTEST PASS` on each and the twin's RMS track error ≤ 0.15 m. The
+PASS: `SELFTEST PASS` on each, and the console draws a target that moves. The
 self-test synthesises exactly what the sound card records — single-ended beat,
 AC-coupled sync with droop, TX leakage at 35 dB isolation, thermal noise, the
 horn beam pattern — and runs it through the live code path. If it fails after
 you touch the DSP, the hardware is not the problem.
+
+(The azimuth suite is quarantined with the rest of stage 2 and is not part of
+this build's bring-up: `cd ../stage2 && python test_stage2.py`.)
 
 Then check that the drawings still agree with the build sheet:
 
@@ -266,7 +275,7 @@ They re-derive the models from the documents, so they fail if either the model
 *or* a document moves without the other. `--render` also loads each page in
 headless Chrome and fails on a JavaScript error or a geometry fault.
 
-Five things the self-test taught during development, already fixed in the code,
+Three things the self-test taught during development, already fixed in the code,
 that you would otherwise rediscover on hardware:
 
 1. **The PRI is not the chirp time.** Doppler comes from chirp-to-chirp phase,
@@ -275,15 +284,11 @@ that you would otherwise rediscover on hardware:
 2. **CFAR must peak-pick.** A strong target's windowed mainlobe is 3–5 bins
    wide; every one of those bins beats the distant training cells, so the
    *shoulder* bins came out as separate targets 1–2 range cells short.
-3. **Centroid on the strongest absolute return per beam**, not on the highest
-   CFAR ratio. A moving target smears across Doppler bins, and picking the bin
-   with the quietest neighbours instead of the loudest bin threw the azimuth 25°
-   off.
-4. **A target with exactly zero Doppler is invisible** — background subtraction
+3. **A target with exactly zero Doppler is invisible** — background subtraction
    removes it with the clutter. Don't test with `--st-vel 0`; see § 8.
-5. **Near the sector edge the centroid is pulled inward**, because there are no
-   beams beyond the edge to balance it. Make any scan sector one beam step wider
-   than the flight box on each side.
+
+(Two more lessons, both about picking a bearing out of a beam scan, moved to
+[`../stage2/`](../stage2/) with the code they apply to.)
 
 ---
 
@@ -326,9 +331,12 @@ SET step_us 80 / SET steps 32 / SET retrace_us 1000
 SET f0_mhz 2400 / SET bw_mhz 83.5      sweep edges. Refused unless the top step
                                        (f0 + bw − bw/steps) stays inside 2483.5 MHz
                                        with 1 MHz to spare, so set bw before steps
-SWMODE 1       stage-2 RF switch, alternating antennas
 RFOFF          kill the output from any state
 ```
+
+The firmware also carries `SWMODE`, the RF-switch mode the quarantined azimuth
+design uses to alternate between two antennas. Nothing here sends it, and with
+one receive chain it does nothing useful.
 
 The ESP32 **boots silent**: PLL locked and parked, RF output *off*, sweep
 stopped. Nothing radiates until you send `SWEEP 1` or `CW`, and
@@ -346,16 +354,16 @@ stopped. Nothing radiates until you send `SWEEP 1` or `CW`, and
 
 ---
 
-## 5. Stage 1 — range and velocity
+## 5. Run it — range and velocity
 
 ```bash
-python radar_acquire.py --device 3 --ctl /dev/ttyUSB0 --range-only --record first-walk.wav
+python radar_acquire.py --device 3 --ctl /dev/ttyUSB0 --record first-walk.wav
 ```
 
-`--ctl` is still needed in stage 1 — the script turns the sweep on and off
-through it; `--range-only` keeps the scan logic out of it. `--device` is the
-interface's index from `python -m sounddevice`. Output is one JSON line per
-block of 64 chirps (~0.5 s):
+`--ctl` is how the script turns the sweep on when it starts and off when it
+exits, so it is worth having even though nothing else needs the serial line.
+`--device` is the interface's index from `python -m sounddevice`. Output is one
+JSON line per block of 64 chirps (~0.5 s):
 
 ```
 {"t": 1788671945.4, "t_chirp_ms": 6.395, "pri_ms": 7.392, "dets": [{"range": 4.62, "vel": -1.31, "snr": 38.4}]}
@@ -379,115 +387,86 @@ answers with `--replay first-walk.wav`.
 
 ---
 
-## 6. Stage 2 — azimuth from two receivers
+## 6. Azimuth — quarantined, not deleted
 
-**Written and tested.** `ground_station/interferometer.py` is the engine and
-`radar_acquire.py --interferometer` runs it. The hardware, the parts and what it
-buys are in [`radar-hardware.md`](radar-hardware.md) § 8.
+Bearing from the phase difference between two receivers is **written, tested and
+not part of this build**. The engine, the one calibration constant it needs, the
+switched-mode alternative and the frame marker that keeps its sign honest, the
+beam-scan option the turntable used to serve, and the numbers each of them is
+worth are all in [`../stage2/`](../stage2/), with `test_stage2.py` beside them
+and still passing. The flags that used to be on `radar_acquire.py` —
+`--interferometer`, `--switched`, `--calibrate` — went with them, into
+`stage2/acquire_az.py`. Start at [`../stage2/README.md`](../stage2/README.md).
 
-```bash
-# two receive chains, three audio channels (beat A, beat B, sync)
-python radar_acquire.py --interferometer --ctl /dev/ttyUSB0 --f0-mhz 2400 --bw-mhz 83.5
+Two things about that quarantine matter while you work on this page:
 
-# one chain and an RF switch instead (SWMODE 1 on the ESP32 first)
-python radar_acquire.py --switched --ctl /dev/ttyUSB0 --f0-mhz 2400 --bw-mhz 83.5
+- **the dependency runs one way.** `stage2/` imports from `ground_station/` —
+  `fmcw_sim`, `dsp`, `synth` — and nothing in `ground_station/` imports
+  `stage2/`. So the stage-1 DSP can be changed without consulting it, but a
+  change that moves `range_doppler`, `cfar_detect` or `segment_chirps` has a
+  second suite to keep green.
+- **`synth.py` keeps its unused arguments.** `SynthSource` still takes `n_rx`,
+  `switched` and `cal_rad`; stage 1 always runs `n_rx=1` and never touches the
+  other two. They are not dead weight, they are what stage 2 is tested through,
+  and removing them would break the quarantined suite for no gain here.
 
-# calibrate once, against a corner reflector on boresight
-python radar_acquire.py --interferometer --calibrate --cal-az 0 --ctl /dev/ttyUSB0
-# -> writes interferometer_cal.json, reloaded automatically from then on
-
-# no hardware at all
-python radar_acquire.py --selftest --interferometer --st-az -8 --st-vel -1.8
-```
-
-What it does, per block: cut **both** beat channels on the **one** sync so their
-cells line up, take the complex range–Doppler of each, and at every CFAR
-detection read `angle(rd_B · conj(rd_A)) − cal`, then
-`az = asin(Δφ·λ / 2π d)`.
-
-Three things it refuses to answer rather than guess, reported as `no_az`:
-
-| reason | when |
-|---|---|
-| `ambiguous` | the phase fell outside the ±18.5° cone |
-| `low-quality` | one channel is far weaker at that cell, so one of them is measuring noise |
-| `velocity-fold` | switched mode only, target reported near its ±2.07 m/s fold |
-
-And the fix is always the **strongest** return. If that one has no trustworthy
-bearing the block reports `"fix": null` with `no_fix`, rather than promoting a
-weaker sidelobe that happens to have a bearing.
-
-### Calibration
-
-One constant, in radians, in `interferometer_cal.json`. Point at a reflector
-whose bearing you know, run `--calibrate`, and the fixed offset of chain B
-relative to chain A is measured and stored. 1 mm of extra coax is **4.3°** of
-phase and **0.43°** of bearing — the wave sees the 84.7 mm wavelength inside
-PTFE, not the 122.8 mm one in air — so about 6 mm of unmatched cable spends the
-whole 2.5° budget. Re-check `cal` after anything is unplugged; if it drifts more
-than about 20° between sessions, look for a connector rather than believing the
-bearing.
-
-### Switched mode needs a frame marker, and this is not optional
-
-A block of audio starts at an arbitrary point in the A/B alternation, so which
-antenna a chirp came from is **not recoverable from the data**. Get it backwards
-and every bearing comes out negated. `radar_ctl`'s `SWMODE 1` therefore skips
-one chirp per block — SYNC stays low for a whole extra PRI — and restarts the
-alternation on antenna A. `interferometer.tdm_parity()` finds that doubled gap.
-Without it the software refuses to report bearings at all rather than risk the
-sign.
-
-### The one limit that is not fixable in software
-
-Switched mode uses every other chirp, so its unambiguous velocity is **half**
-the simultaneous figure: ±2.07 m/s at a 7.4 ms PRI, against ±4.15 m/s. Past that
-the velocity folds, and because the motion correction is computed *from* the
-velocity, a folded target reports a bearing that can be a whole beamwidth out.
-The guard catches targets *reported* near the fold; it cannot catch one that
-folded to a small apparent velocity, and no processing of two alternating
-sub-cubes can. This is the strongest argument for building the simultaneous
-version.
+The turntable's old job — step the beam across a sector, centroid the amplitudes,
+call that a bearing — went to `stage2/` with the rest of it. What is left of the
+turntable is pointing and measuring the horn
+([`radar-hardware.md`](radar-hardware.md) § 9).
 
 ---
 
-## 7. Scanning the turntable — coverage only
+## 7. The console
 
 ```bash
-python radar_acquire.py --device 3 --ctl /dev/ttyUSB0 --sector 48 --step 24 \
-                        --server http://localhost:8080
+python server.py                       # http://localhost:8080
+python server.py --demo                # same console, synthetic blocks, no hardware
 ```
 
-Per scan the script sends `AZ` for each beam, waits for `OK AZ` (motion done
-plus settle), captures 64 chirps, runs CFAR, and centroids across beams after
-the last one. **Three beams over 48° is the geometry to use**, not the nine over
-90° this repo used to specify — [`radar-hardware.md`](radar-hardware.md) § 8 has
-the measurements. One line per scan:
+Then point the acquisition at it:
 
-```
-{"t": ..., "beams": 3, "fix": {"range": 7.9, "az": 11.3, "vel": 0.6, "snr": 48.2, "x": 7.75, "y": 1.55, "beams": 3}}
+```bash
+python radar_acquire.py --device 3 --ctl /dev/ttyUSB0 \
+                        --server http://localhost:8080 --map
 ```
 
-**Console:** run `python server.py` in another terminal and open
-<http://localhost:8080>. With `--server` set, every fix is POSTed to
-`/api/radar`: the FIX pill reads **RADAR n BEAMS**, and the scope blip and its
-uncertainty ellipse come from the radar's polar covariance — tight in range,
-wide in cross-range. Three keys in `config.json` describe the geometry:
+`--server` POSTs one payload per block to `/api/radar`; `--map` adds the
+range–Doppler map to that payload, which is the only part big enough to be worth
+a flag — without it the detections, the track and the waterfall all still arrive
+and only the heatmap goes dark. Four panels, and none of them draws a direction:
 
-```json
-"radar_origin": [0.0, 0.0, 1.0],   // horn position in the room frame, boresight = +x at az 0
-"radar_sigma_r": 0.15,             // m, from the parabolic range interpolation
-"radar_sigma_az_deg": 2.5          // the LEGACY SCAN's centroid budget
+| panel | what it shows |
+|---|---|
+| range–Doppler heatmap | the block's map as the DSP sees it, range across, velocity down — the leakage ridge at zero Doppler, the target off it |
+| range-vs-time waterfall | one column per block, so a target walking in is a diagonal streak and a wall is a vertical line |
+| detection table | what CFAR kept this block: range, velocity, SNR, strongest first |
+| track | the Kalman filter's range and velocity, with the raw detections behind it |
+
+**There is no plan view.** A plan position indicator draws a bearing, this radar
+does not measure one, and a scope that invents an angle to put a blip on is worse
+than no scope. The waterfall is the honest version of the same picture: it shows
+everything the radar knows, against time.
+
+The endpoints, if you want to drive it yourself:
+
+```
+GET  /              the console page
+POST /api/radar     ingest one block
+GET  /api/state     the latest block (minus the map), the track, the waterfall, stats
+GET  /api/stream    Server-Sent Events, one event per ingested block
 ```
 
-`radar_sigma_az_deg` is the scan's number, and it is the one the console's
-uncertainty ellipse is drawn from. **Running stage 2, set it to 0.2**: the
-interferometer measures 0.18° rms, so leaving it at 2.5 draws a cross-range
-ellipse about fourteen times wider than the fix deserves and the tracker
-under-weights a good bearing. It is a `config.json` edit, not a code change.
+This radar's only geometry constant is the range uncertainty the tracker is
+given, σ_r = 0.15 m, which comes from the parabolic interpolation of the range
+peak; it and the velocity uncertainty beside it are `config.json` values, not
+code changes. `server.py` prints a line for any azimuth or multilateration key
+left over in that file and then ignores it.
 
-**Checkpoint 4:** stand at three tape-measured spots across the sector; the
-console's X/Y tiles agree within ~0.4 m cross-range at 8 m.
+**Checkpoint 4:** with `server.py` running and `--server` set, stand at the same
+three tape-measured ranges as checkpoint 3. Each one appears in the detection
+table, the track follows to the same 0.4 m, and the waterfall shows three
+stripes where you stood and the diagonals between them.
 
 ---
 
@@ -499,8 +478,8 @@ the build works at all.
 
 ### Measure your clutter cancellation, the day the chain first works
 
-Every SNR figure in this repo — the 71 dB at 10 m above all — assumes an empty
-universe. (It is also not the *thermal* figure: 71 dB is the echo above the
+Every SNR figure in this repo — the 72 dB at 10 m above all — assumes an empty
+universe. (It is also not the *thermal* figure: 72 dB is the echo above the
 **leakage-limited** floor, the one `fmcw_sim.practical_mds_dbm()` computes,
 because the TX leakage sits at the converter's input and everything more than
 its dynamic range below that is unrecoverable. Against thermal noise alone the
@@ -541,18 +520,14 @@ It costs nothing and it tells you whether to trust every other number here.
 
 `range_doppler(bg_subtract=True)` subtracts the mean across chirps, which is
 what removes the TX leakage and the room. A target with no radial velocity is
-removed with them. Measured:
+removed with them. Measured in the range domain at 2.5 m with 50 dB of clutter
+cancellation, 0.00 m/s gives 0 detections out of 5 attempts, 0.05 m/s gives 3,
+and 0.10 m/s and above gives 5
+([`drone-hardware.md`](drone-hardware.md) § 7).
 
-| radial velocity | 1.4 s scan | one dwell, interferometer |
-|---|---|---|
-| **0.00 m/s** | **8.9° rms** | **8.5° rms** |
-| 0.02 m/s | 7.9° | 8.5° |
-| 0.05 m/s | 2.2° | **0.13°** |
-| 0.10 m/s | 0.26° | 0.11° |
-
-Worse than the error: at exactly zero Doppler `radar_acquire.py` locks onto a
-leakage residue at 2.2 m and reports it as the fix with SNR 49.7 and quality
-1.0. So *"hold it as still as you can"* is actively the wrong instruction. A
+Worse than the miss: at exactly zero Doppler `radar_acquire.py` locks onto a
+leakage residue at 2.2 m and reports it as the strongest detection, with SNR
+49.7. So *"hold it as still as you can"* is actively the wrong instruction. A
 real hover is never that still — rotors and airframe jitter keep it out of the
 DC bin — and **0.05 m/s is enough**. But a drone parked on a shelf is invisible,
 and so is one crossing the beam purely sideways, and if you are bench-testing
@@ -590,8 +565,9 @@ same range cell is, and only because it removes the range dimension, not because
 it is loud.
 
 Two that are not. **The beam fills the room**: at 34° it is 0.92 m across at
-1.5 m and 2.55 m at 4.17 m, so the horn does no localising at all and whatever
-azimuth you want has to come from the second receiver. And **multipath is not
+1.5 m and 2.55 m at 4.17 m, so the horn does no localising at all: everything in
+the room that moves is in the beam, and range and Doppler are the only things
+separating them. And **multipath is not
 modelled**: a 2.87 × 4.17 m box is a resonant cavity at 2.4 GHz, wall bounces
 put ghost targets at longer apparent ranges, and nothing here predicts them.
 Expect returns that are not the drone.
@@ -604,11 +580,12 @@ Expect returns that are not the drone.
 |---|---|---|
 | range | beat frequency, range FFT per chirp, parabolic peak interpolation | `fmcw_sim.range_doppler`, `cfar_detect` |
 | velocity | phase across 64 chirps at the target's range bin, axis scaled by the measured PRI | `range_doppler`, `process()` |
-| detection | CA-CFAR in linear power, guard 4 / train 6, one-sided at the near edge, peak-picked | `cfar_detect` |
-| azimuth, stage 2 | phase difference between the two beat channels at the CFAR cell, minus `cal` | `interferometer.bearing` |
-| azimuth, scanning | amplitude-weighted centroid of the strongest return across beams, ±1.5 range cells | `ScanningRadar.centroid` |
-| chirp time / PRI | rising and falling edges on the SYNC channel, per block | `segment_chirps` |
-| covariance into the tracker | σ_r = 0.15 m, σ_x = r · 2.5°, rotated by azimuth | `server.py: ingest_radar` |
+| detection | CA-CFAR in linear power, guard 4 / train 6, one-sided at the near edge, peak-picked | `dsp.cfar_detect` |
+| chirp time / PRI | rising and falling edges on the SYNC channel, per block | `synth.segment_chirps` |
+| range uncertainty into the tracker | σ_r = 0.15 m, from the parabolic range interpolation | `server.py: ingest_radar` |
+
+(Azimuth, by either method, is made in [`../stage2/`](../stage2/) and nowhere
+here.)
 
 ---
 
@@ -623,6 +600,5 @@ Expect returns that are not the drone.
 | no target beyond 4 m | LO drive low (measure), LNA unpowered, RX horn probe length, polarisation mismatch |
 | target vanishes when it stops | working as designed — § 8 |
 | nothing survives past 5 m in a real room | clutter cancellation — measure it, § 8 |
-| bearing biased by a constant | `cal` — recalibrate, then look for the connector |
-| bearing negated in switched mode | the frame marker; `SWMODE 1` and check `tdm_parity` |
-| fix jumps between two targets | you are a target too — stand behind the horns |
+| the strongest detection jumps between two ranges | you are a target too — stand behind the horns |
+| console empty but `radar_acquire.py` is printing lines | `--server` not set, or set to a different port than `server.py` is on |

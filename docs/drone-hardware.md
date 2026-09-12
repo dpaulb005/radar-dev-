@@ -199,7 +199,7 @@ roughly doubles it. Free, and worth doing for the first flights.
 ## 7. Where to hover
 
 The horns' beams are 34° × 36°. At 5 m that is a ~3 m wide, ~3 m tall window.
-Fly inside the sector at 3–10 m from the horns, at horn height ±1.5 m.
+Fly inside the beam at 3–10 m from the horns, at horn height ±1.5 m.
 
 **In a room smaller than the beam this matters differently.** At 1.5 m the beam
 is only 0.92 m across; at 4.17 m it is 2.55 m — 32 % to 89 % of a 2.87 m wide
@@ -210,7 +210,7 @@ cancellation, 0.00 m/s gives 0 fixes out of 5, 0.05 m/s gives 3, and 0.10 m/s an
 above gives 5.
 
 **Checkpoint 7:** floor marks at 3, 5 and 8 m along the boresight (or at 1.5, 2.5
-and 3.5 m in a small room), and the sector edges taped on the floor.
+and 3.5 m in a small room), and the beam edges taped on the floor.
 
 ## 8. The 2.4 GHz phone build, if you want it back
 
