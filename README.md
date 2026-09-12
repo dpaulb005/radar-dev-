@@ -68,8 +68,15 @@ where the decision is made; `docs/radar-hardware.md` § 7 collects them.
 
 ## Build it
 
-Five steps, in this order. Each document ends its steps with a checkpoint you can
-verify before moving on.
+**Start with [`BUILD.md`](BUILD.md).** It is the whole project in the order you
+should actually build it — which is not the order the documents below teach it.
+It puts the long lead times and the expensive mistakes first: what to run today
+for nothing, what to order before anything else, what to make while the RF parts
+are in transit, and the one ten-minute measurement that decides whether this
+works in your room at all.
+
+The five documents it sends you to, each ending its steps with a checkpoint you
+can verify before moving on:
 
 1. **[`hardware/BOM.md`](hardware/BOM.md)** — every part and why it was chosen,
    priced and stock-checked. **[`hardware/ORDER.md`](hardware/ORDER.md)** is the
@@ -127,6 +134,7 @@ cd ../stage2 && python test_stage2.py                  # the quarantined azimuth
 cd ../hardware/breadboard && python layout.py          # placement vs the netlist
 cd ../3d && python verify_model.py --render            # bench model vs WIRING/MODULES/BOM
             python verify_drone.py --render            # drone model vs the drone docs
+cd ../../docs && python verify_build_order.py          # BUILD.md's checkpoints and sections resolve
 ```
 
 The two model verifiers re-derive the drawings from the documents, so they fail
