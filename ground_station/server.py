@@ -543,7 +543,13 @@ class DemoRadar:
 
     C = 299792458.0
 
-    def __init__(self, seed=3, n_v=64, n_r=48, f0=2.36e9, bw=140e6,
+    # The sweep here must be THIS radar's, not MIT's reference design: 2400-2483.5
+    # MHz, the whole ISM band, because the drone's control link lives at 915 MHz.
+    # It was 2.36 GHz / 140 MHz, which is MIT's original and a band this firmware
+    # refuses (2360-2395 MHz is licensed aeronautical telemetry) -- and it made
+    # --demo show a 1.07 m range cell against the 1.80 m the radar really has.
+    # Keep these in step with fmcw_sim.as_built().
+    def __init__(self, seed=3, n_v=64, n_r=32, f0=2.400e9, bw=83.5e6,
                  range_pad=2, t_chirp_ms=6.395, pri_ms=7.392, with_map=True):
         self.rng = np.random.default_rng(seed)
         self.n_v, self.n_r = int(n_v), int(n_r)
@@ -552,7 +558,7 @@ class DemoRadar:
         lam = self.C / (f0 + bw / 2.0)
         # range resolution is c/2B and nothing downstream changes it; the FFT
         # zero-pad only samples that same mainlobe more finely (fmcw_sim.py).
-        self.res_r = self.C / (2.0 * bw)             # 1.07 m at 140 MHz
+        self.res_r = self.C / (2.0 * bw)             # 1.80 m at 83.5 MHz
         self.dr = self.res_r / float(range_pad)
         self.lobe_r = 1.05 * float(range_pad)        # mainlobe width, in bins
         self.r0 = 0.0
