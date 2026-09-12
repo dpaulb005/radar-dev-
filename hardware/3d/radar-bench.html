@@ -148,8 +148,12 @@ const M={
 // wire gauges: RG316 2.5 mm, 22 AWG hook-up 1.7 mm, breadboard jumper 0.9 mm
 const R_COAX=0.00125, R_WIRE=0.00085, R_JUMP=0.00045;
 // harness wire colours, as called out in WIRING.md
+// pink replaces grey for SYNC and brown replaces white for STEP/DIR/EN, matching
+// ../breadboard/layout.py: on a cream board white and grey are unreadable.
+// white and grey stay defined -- the coax/audio harness below still uses them.
 const WC={black:0x1a1a1a,red:0xc0392b,orange:0xe07b20,green:0x2ecc71,violet:0x8e44ad,
-          blue:0x2e86de,yellow:0xd8c02a,white:0xe8e8e8,grey:0x8a949c,brown:0x7a4a24};
+          blue:0x2e86de,yellow:0xd8c02a,white:0xe8e8e8,grey:0x8a949c,brown:0x8a5a2b,
+          pink:0xe0669a};
 const wireMat={}; for(const k in WC) wireMat[k]=mat({color:WC[k],roughness:.7});
 
 const pickables=[], labels=[], registry={};
@@ -710,8 +714,8 @@ const BBJUMPERS=[
  ['b29','b26','violet'],['a26','a24','violet'],['b24','c16','violet'],['d16','d17','violet'],['a1','a16','violet'],
  ['a46','b53','blue'],['a47','b54','blue'],['a48','b55','blue'],['f48','b56','blue'],
  ['f53','e58','yellow'],['g53','g59','yellow'],
- ['g50','g60','white'],['g51','g61','white'],['g52','g62','white'],
- ['h49','a60','grey'],
+ ['g50','g60','brown'],['g51','g61','brown'],['g52','g62','brown'],
+ ['h49','a60','pink'],
 ];
 const bbWireG=new THREE.Group(); bbG.add(bbWireG);
 BBJUMPERS.forEach(([a,b,col])=>{
@@ -1079,7 +1083,7 @@ function sideToSide(A,B,corr){
 // ---- ESP32 -> J9 (row j): ten Dupont jumpers, arched from the devkit's side
 // pins over the harness lanes and down onto the header from above.
 [['GND','1','black'],['D18','2','blue'],['D23','3','blue'],['D5','4','blue'],['D19','5','blue'],
- ['D25','6','grey'],['D26','7','white'],['D27','8','white'],['D14','9','white'],['3V3','10','yellow']
+ ['D25','6','pink'],['D26','7','brown'],['D27','8','brown'],['D14','9','brown'],['3V3','10','yellow']
 ].forEach(function(e){
   const A=P(esp,e[0]), B=P(bbParts.J9,e[1]), a1=stub(A);
   link('ESP32 '+e[0]+' -> J9 pin '+e[1]+' ('+JNETS.J9[+e[1]-1]+')',A,B,e[2],
@@ -1090,9 +1094,9 @@ function sideToSide(A,B,corr){
 // ---- A4988 -> J11 (row j). ENABLE/STEP/DIR leave the west face and nest;
 // VDD and GND_L leave the east face and wrap round the north end so they
 // never cut across the six motor-supply and coil wires below them.
-[['ENABLE','5','white',[[0.1517,0.1185]]],
- ['DIR','4','white',[[0.1493,0.1196]]],
- ['STEP','3','white',[[0.1505,0.1207]]],
+[['ENABLE','5','brown',[[0.1517,0.1185]]],
+ ['DIR','4','brown',[[0.1493,0.1196]]],
+ ['STEP','3','brown',[[0.1505,0.1207]]],
  ['VDD','2','yellow',[[0.1743,0.152],[0.1425,0.152],[0.1425,0.1218]]],
  ['GND_L','1','black',[[0.1723,0.150],[0.1445,0.150],[0.1445,0.1229]]]
 ].forEach(function(e){

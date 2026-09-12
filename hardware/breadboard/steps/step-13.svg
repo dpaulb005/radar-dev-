@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850.0 295.0" width="850.0" height="295.0" font-family="IBM Plex Mono, DejaVu Sans Mono, monospace">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850.0 280.0" width="850.0" height="280.0" font-family="IBM Plex Mono, DejaVu Sans Mono, monospace">
 <defs><filter id="built" color-interpolation-filters="sRGB"><feColorMatrix type="saturate" values="0.08"/></filter></defs>
-<rect width="850.0" height="295.0" fill="#f4f1e8" rx="8"/>
+<rect width="850.0" height="280.0" fill="#f4f1e8" rx="8"/>
 <line x1="25.0" y1="3.0000000000000004" x2="825.0" y2="3.0000000000000004" stroke="#d33" stroke-width="2"/>
 <text x="6.0" y="13.0" font-size="9" fill="#d33">V5</text>
 <line x1="25.0" y1="29.699999999999996" x2="825.0" y2="29.699999999999996" stroke="#2f77b0" stroke-width="2"/>
@@ -916,275 +916,211 @@
 <text x="24.0" y="177.3" font-size="8" text-anchor="end" fill="#666">j</text>
 <line x1="422.35" y1="2.5" x2="422.35" y2="30.0" stroke="#bbb" stroke-dasharray="3 3"/>
 <line x1="422.35" y1="185.0" x2="422.35" y2="215.0" stroke="#bbb" stroke-dasharray="3 3"/>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M60.4,95.8 Q66.75,56.25 73.10000000000001,22.7" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M60.4,95.8 Q66.75,56.25 73.10000000000001,22.7" fill="none" stroke="#14181d" stroke-width="3" stroke-linecap="round"/>
 <circle cx="60.4" cy="95.8" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/><circle cx="73.10000000000001" cy="22.7" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M492.2,174.3 Q492.2,197.40000000000003 492.2,205.5" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M492.2,174.3 Q492.2,197.40000000000003 492.2,205.5" fill="none" stroke="#14181d" stroke-width="3" stroke-linecap="round"/>
 <circle cx="492.2" cy="174.3" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/><circle cx="492.2" cy="205.5" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M162.0,123.5 Q162.0,176.5 162.0,205.5" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M162.0,123.5 Q162.0,176.5 162.0,205.5" fill="none" stroke="#14181d" stroke-width="3" stroke-linecap="round"/>
 <circle cx="162.0" cy="123.5" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/><circle cx="162.0" cy="205.5" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M200.10000000000002,123.5 Q200.10000000000002,176.5 200.10000000000002,205.5" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M200.10000000000002,123.5 Q200.10000000000002,176.5 200.10000000000002,205.5" fill="none" stroke="#14181d" stroke-width="3" stroke-linecap="round"/>
 <circle cx="200.10000000000002" cy="123.5" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/><circle cx="200.10000000000002" cy="205.5" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M263.6,123.5 Q263.6,172.0 263.6,205.5" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M263.6,123.5 Q263.6,172.0 263.6,205.5" fill="none" stroke="#14181d" stroke-width="3" stroke-linecap="round"/>
 <circle cx="263.6" cy="123.5" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/><circle cx="263.6" cy="205.5" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M517.6,95.8 Q530.3,56.25 543.0,22.7" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M517.6,95.8 Q530.3,56.25 543.0,22.7" fill="none" stroke="#14181d" stroke-width="3" stroke-linecap="round"/>
 <circle cx="517.6" cy="95.8" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/><circle cx="543.0" cy="22.7" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M555.7,95.8 Q568.4000000000001,56.25 581.1,22.7" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M555.7,95.8 Q568.4000000000001,56.25 581.1,22.7" fill="none" stroke="#14181d" stroke-width="3" stroke-linecap="round"/>
 <circle cx="555.7" cy="95.8" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/><circle cx="581.1" cy="22.7" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M593.8000000000001,95.8 Q606.5,56.25 619.2,22.7" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M593.8000000000001,95.8 Q606.5,56.25 619.2,22.7" fill="none" stroke="#14181d" stroke-width="3" stroke-linecap="round"/>
 <circle cx="593.8000000000001" cy="95.8" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/><circle cx="619.2" cy="22.7" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/>
 </g>
 <g>
+<path d="M581.1,123.5 Q581.1,176.5 581.1,205.5" fill="none" stroke="#ffd24a" stroke-width="8" stroke-linecap="round" opacity=".55"/>
 <path d="M581.1,123.5 Q581.1,176.5 581.1,205.5" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M581.1,123.5 Q581.1,176.5 581.1,205.5" fill="none" stroke="#14181d" stroke-width="3" stroke-linecap="round"/>
 <circle cx="581.1" cy="123.5" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/><circle cx="581.1" cy="205.5" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
-<path d="M682.6999999999999,95.8 Q682.6999999999999,51.75 682.6999999999999,22.7" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
-<path d="M682.6999999999999,95.8 Q682.6999999999999,51.75 682.6999999999999,22.7" fill="none" stroke="#14181d" stroke-width="3" stroke-linecap="round"/>
-<circle cx="682.6999999999999" cy="95.8" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/><circle cx="682.6999999999999" cy="22.7" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/>
-</g>
-<g>
-<path d="M758.9,123.5 Q758.9,172.0 758.9,205.5" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
-<path d="M758.9,123.5 Q758.9,172.0 758.9,205.5" fill="none" stroke="#14181d" stroke-width="3" stroke-linecap="round"/>
-<circle cx="758.9" cy="123.5" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/><circle cx="758.9" cy="205.5" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/>
-</g>
-<g>
-<path d="M809.7,95.8 Q809.7,47.25 809.7,22.7" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
-<path d="M809.7,95.8 Q809.7,47.25 809.7,22.7" fill="none" stroke="#14181d" stroke-width="3" stroke-linecap="round"/>
-<circle cx="809.7" cy="95.8" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/><circle cx="809.7" cy="22.7" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/>
-</g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M85.8,45.0 Q85.8,21.849999999999994 85.8,22.7" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M85.8,45.0 Q85.8,21.849999999999994 85.8,22.7" fill="none" stroke="#14181d" stroke-width="3" stroke-linecap="round"/>
 <circle cx="85.8" cy="45.0" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/><circle cx="85.8" cy="22.7" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M403.29999999999995,45.0 Q403.29999999999995,30.85 403.29999999999995,22.7" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M403.29999999999995,45.0 Q403.29999999999995,30.85 403.29999999999995,22.7" fill="none" stroke="#14181d" stroke-width="3" stroke-linecap="round"/>
 <circle cx="403.29999999999995" cy="45.0" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/><circle cx="403.29999999999995" cy="22.7" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M123.9,148.9 Q123.9,182.95 123.9,193.0" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M123.9,148.9 Q123.9,182.95 123.9,193.0" fill="none" stroke="#cc2b2b" stroke-width="3" stroke-linecap="round"/>
 <circle cx="123.9" cy="148.9" r="2.4" fill="#cc2b2b" stroke="#00000040" stroke-width=".8"/><circle cx="123.9" cy="193.0" r="2.4" fill="#cc2b2b" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M441.4,148.9 Q441.4,173.95 441.4,193.0" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M441.4,148.9 Q441.4,173.95 441.4,193.0" fill="none" stroke="#cc2b2b" stroke-width="3" stroke-linecap="round"/>
 <circle cx="441.4" cy="148.9" r="2.4" fill="#cc2b2b" stroke="#00000040" stroke-width=".8"/><circle cx="441.4" cy="193.0" r="2.4" fill="#cc2b2b" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M225.5,123.5 Q225.5,165.75 225.5,193.0" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M225.5,123.5 Q225.5,165.75 225.5,193.0" fill="none" stroke="#cc2b2b" stroke-width="3" stroke-linecap="round"/>
 <circle cx="225.5" cy="123.5" r="2.4" fill="#cc2b2b" stroke="#00000040" stroke-width=".8"/><circle cx="225.5" cy="193.0" r="2.4" fill="#cc2b2b" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M479.5,95.8 Q479.5,147.40000000000003 479.5,193.0" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M479.5,95.8 Q479.5,147.40000000000003 479.5,193.0" fill="none" stroke="#cc2b2b" stroke-width="3" stroke-linecap="round"/>
 <circle cx="479.5" cy="95.8" r="2.4" fill="#cc2b2b" stroke="#00000040" stroke-width=".8"/><circle cx="479.5" cy="193.0" r="2.4" fill="#cc2b2b" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M250.9,136.20000000000002 Q250.9,70.10000000000001 250.9,10.0" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M250.9,136.20000000000002 Q250.9,70.10000000000001 250.9,10.0" fill="none" stroke="#e2701a" stroke-width="3" stroke-linecap="round"/>
 <circle cx="250.9" cy="136.20000000000002" r="2.4" fill="#e2701a" stroke="#00000040" stroke-width=".8"/><circle cx="250.9" cy="10.0" r="2.4" fill="#e2701a" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M35.0,22.7 Q35.0,121.6 35.0,205.5" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M35.0,22.7 Q35.0,121.6 35.0,205.5" fill="none" stroke="#14181d" stroke-width="3" stroke-linecap="round"/>
 <circle cx="35.0" cy="22.7" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/><circle cx="35.0" cy="205.5" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M416.0,10.0 Q422.35,2.5 428.7,10.0" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M416.0,10.0 Q422.35,2.5 428.7,10.0" fill="none" stroke="#e2701a" stroke-width="3" stroke-linecap="round"/>
 <circle cx="416.0" cy="10.0" r="2.4" fill="#e2701a" stroke="#00000040" stroke-width=".8"/><circle cx="428.7" cy="10.0" r="2.4" fill="#e2701a" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M416.0,22.7 Q422.35,15.2 428.7,22.7" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M416.0,22.7 Q422.35,15.2 428.7,22.7" fill="none" stroke="#14181d" stroke-width="3" stroke-linecap="round"/>
 <circle cx="416.0" cy="22.7" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/><circle cx="428.7" cy="22.7" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M416.0,193.0 Q422.35,200.5 428.7,193.0" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M416.0,193.0 Q422.35,200.5 428.7,193.0" fill="none" stroke="#cc2b2b" stroke-width="3" stroke-linecap="round"/>
 <circle cx="416.0" cy="193.0" r="2.4" fill="#cc2b2b" stroke="#00000040" stroke-width=".8"/><circle cx="428.7" cy="193.0" r="2.4" fill="#cc2b2b" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M416.0,205.5 Q422.35,213.0 428.7,205.5" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M416.0,205.5 Q422.35,213.0 428.7,205.5" fill="none" stroke="#14181d" stroke-width="3" stroke-linecap="round"/>
 <circle cx="416.0" cy="205.5" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/><circle cx="428.7" cy="205.5" r="2.4" fill="#14181d" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M73.10000000000001,45.0 Q85.8,37.5 98.5,45.0" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M73.10000000000001,45.0 Q85.8,37.5 98.5,45.0" fill="none" stroke="#1f9153" stroke-width="3" stroke-linecap="round"/>
 <circle cx="73.10000000000001" cy="45.0" r="2.4" fill="#1f9153" stroke="#00000040" stroke-width=".8"/><circle cx="98.5" cy="45.0" r="2.4" fill="#1f9153" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M123.9,45.0 Q136.6,33.0 149.3,45.0" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M123.9,45.0 Q136.6,33.0 149.3,45.0" fill="none" stroke="#1f9153" stroke-width="3" stroke-linecap="round"/>
 <circle cx="123.9" cy="45.0" r="2.4" fill="#1f9153" stroke="#00000040" stroke-width=".8"/><circle cx="149.3" cy="45.0" r="2.4" fill="#1f9153" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M200.10000000000002,45.0 Q155.65,29.832 111.20000000000002,45.0" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M200.10000000000002,45.0 Q155.65,29.832 111.20000000000002,45.0" fill="none" stroke="#1f9153" stroke-width="3" stroke-linecap="round"/>
 <circle cx="200.10000000000002" cy="45.0" r="2.4" fill="#1f9153" stroke="#00000040" stroke-width=".8"/><circle cx="111.20000000000002" cy="45.0" r="2.4" fill="#1f9153" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M174.7,83.10000000000001 Q130.25,103.482 85.8,136.20000000000002" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M174.7,83.10000000000001 Q130.25,103.482 85.8,136.20000000000002" fill="none" stroke="#1f9153" stroke-width="3" stroke-linecap="round"/>
 <circle cx="174.7" cy="83.10000000000001" r="2.4" fill="#1f9153" stroke="#00000040" stroke-width=".8"/><circle cx="85.8" cy="136.20000000000002" r="2.4" fill="#1f9153" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M111.20000000000002,136.20000000000002 Q187.40000000000003,72.31200000000001 263.6,45.0" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M111.20000000000002,136.20000000000002 Q187.40000000000003,72.31200000000001 263.6,45.0" fill="none" stroke="#1f9153" stroke-width="3" stroke-linecap="round"/>
 <circle cx="111.20000000000002" cy="136.20000000000002" r="2.4" fill="#1f9153" stroke="#00000040" stroke-width=".8"/><circle cx="263.6" cy="45.0" r="2.4" fill="#1f9153" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M314.40000000000003,45.0 Q206.45,72.892 98.5,161.6" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M314.40000000000003,45.0 Q206.45,72.892 98.5,161.6" fill="none" stroke="#1f9153" stroke-width="3" stroke-linecap="round"/>
 <circle cx="314.40000000000003" cy="45.0" r="2.4" fill="#1f9153" stroke="#00000040" stroke-width=".8"/><circle cx="98.5" cy="161.6" r="2.4" fill="#1f9153" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M301.70000000000005,95.8 Q352.5,134.54199999999997 403.29999999999995,148.9" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M301.70000000000005,95.8 Q352.5,134.54199999999997 403.29999999999995,148.9" fill="none" stroke="#1f9153" stroke-width="3" stroke-linecap="round"/>
 <circle cx="301.70000000000005" cy="95.8" r="2.4" fill="#1f9153" stroke="#00000040" stroke-width=".8"/><circle cx="403.29999999999995" cy="148.9" r="2.4" fill="#1f9153" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M428.7,174.3 Q422.35,186.29999999999998 416.0,174.3" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M428.7,174.3 Q422.35,186.29999999999998 416.0,174.3" fill="none" stroke="#1f9153" stroke-width="3" stroke-linecap="round"/>
 <circle cx="428.7" cy="174.3" r="2.4" fill="#1f9153" stroke="#00000040" stroke-width=".8"/><circle cx="416.0" cy="174.3" r="2.4" fill="#1f9153" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M441.4,45.0 Q435.04999999999995,42.0 428.7,45.0" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M441.4,45.0 Q435.04999999999995,42.0 428.7,45.0" fill="none" stroke="#1f9153" stroke-width="3" stroke-linecap="round"/>
 <circle cx="441.4" cy="45.0" r="2.4" fill="#1f9153" stroke="#00000040" stroke-width=".8"/><circle cx="428.7" cy="45.0" r="2.4" fill="#1f9153" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M390.6,57.699999999999996 Q371.55,45.699999999999996 352.5,57.699999999999996" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M390.6,57.699999999999996 Q371.55,45.699999999999996 352.5,57.699999999999996" fill="none" stroke="#7a4fbf" stroke-width="3" stroke-linecap="round"/>
 <circle cx="390.6" cy="57.699999999999996" r="2.4" fill="#7a4fbf" stroke="#00000040" stroke-width=".8"/><circle cx="352.5" cy="57.699999999999996" r="2.4" fill="#7a4fbf" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M352.5,45.0 Q339.80000000000007,33.0 327.1,45.0" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M352.5,45.0 Q339.80000000000007,33.0 327.1,45.0" fill="none" stroke="#7a4fbf" stroke-width="3" stroke-linecap="round"/>
 <circle cx="352.5" cy="45.0" r="2.4" fill="#7a4fbf" stroke="#00000040" stroke-width=".8"/><circle cx="327.1" cy="45.0" r="2.4" fill="#7a4fbf" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M327.1,57.699999999999996 Q276.3,56.358 225.5,70.4" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M327.1,57.699999999999996 Q276.3,56.358 225.5,70.4" fill="none" stroke="#7a4fbf" stroke-width="3" stroke-linecap="round"/>
 <circle cx="327.1" cy="57.699999999999996" r="2.4" fill="#7a4fbf" stroke="#00000040" stroke-width=".8"/><circle cx="225.5" cy="70.4" r="2.4" fill="#7a4fbf" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M225.5,83.10000000000001 Q231.85000000000002,75.60000000000001 238.2,83.10000000000001" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M225.5,83.10000000000001 Q231.85000000000002,75.60000000000001 238.2,83.10000000000001" fill="none" stroke="#7a4fbf" stroke-width="3" stroke-linecap="round"/>
 <circle cx="225.5" cy="83.10000000000001" r="2.4" fill="#7a4fbf" stroke="#00000040" stroke-width=".8"/><circle cx="238.2" cy="83.10000000000001" r="2.4" fill="#7a4fbf" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <path d="M35.0,45.0 Q130.25,22.14 225.5,45.0" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
 <path d="M35.0,45.0 Q130.25,22.14 225.5,45.0" fill="none" stroke="#7a4fbf" stroke-width="3" stroke-linecap="round"/>
 <circle cx="35.0" cy="45.0" r="2.4" fill="#7a4fbf" stroke="#00000040" stroke-width=".8"/><circle cx="225.5" cy="45.0" r="2.4" fill="#7a4fbf" stroke="#00000040" stroke-width=".8"/>
 </g>
-<g>
-<path d="M606.5,45.0 Q650.95,40.68199999999999 695.4000000000001,57.699999999999996" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
-<path d="M606.5,45.0 Q650.95,40.68199999999999 695.4000000000001,57.699999999999996" fill="none" stroke="#2f77b0" stroke-width="3" stroke-linecap="round"/>
-<circle cx="606.5" cy="45.0" r="2.4" fill="#2f77b0" stroke="#00000040" stroke-width=".8"/><circle cx="695.4000000000001" cy="57.699999999999996" r="2.4" fill="#2f77b0" stroke="#00000040" stroke-width=".8"/>
-</g>
-<g>
-<path d="M619.2,45.0 Q663.6500000000001,36.182 708.1,57.699999999999996" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
-<path d="M619.2,45.0 Q663.6500000000001,36.182 708.1,57.699999999999996" fill="none" stroke="#2f77b0" stroke-width="3" stroke-linecap="round"/>
-<circle cx="619.2" cy="45.0" r="2.4" fill="#2f77b0" stroke="#00000040" stroke-width=".8"/><circle cx="708.1" cy="57.699999999999996" r="2.4" fill="#2f77b0" stroke="#00000040" stroke-width=".8"/>
-</g>
-<g>
-<path d="M631.9,45.0 Q676.3499999999999,45.182 720.8,57.699999999999996" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
-<path d="M631.9,45.0 Q676.3499999999999,45.182 720.8,57.699999999999996" fill="none" stroke="#2f77b0" stroke-width="3" stroke-linecap="round"/>
-<circle cx="631.9" cy="45.0" r="2.4" fill="#2f77b0" stroke="#00000040" stroke-width=".8"/><circle cx="720.8" cy="57.699999999999996" r="2.4" fill="#2f77b0" stroke="#00000040" stroke-width=".8"/>
-</g>
-<g>
-<path d="M631.9,123.5 Q682.6999999999999,82.90799999999999 733.5,57.699999999999996" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
-<path d="M631.9,123.5 Q682.6999999999999,82.90799999999999 733.5,57.699999999999996" fill="none" stroke="#2f77b0" stroke-width="3" stroke-linecap="round"/>
-<circle cx="631.9" cy="123.5" r="2.4" fill="#2f77b0" stroke="#00000040" stroke-width=".8"/><circle cx="733.5" cy="57.699999999999996" r="2.4" fill="#2f77b0" stroke="#00000040" stroke-width=".8"/>
-</g>
-<g>
-<path d="M695.4000000000001,123.5 Q727.1500000000001,97.53 758.9,95.8" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
-<path d="M695.4000000000001,123.5 Q727.1500000000001,97.53 758.9,95.8" fill="none" stroke="#c8951a" stroke-width="3" stroke-linecap="round"/>
-<circle cx="695.4000000000001" cy="123.5" r="2.4" fill="#c8951a" stroke="#00000040" stroke-width=".8"/><circle cx="758.9" cy="95.8" r="2.4" fill="#c8951a" stroke="#00000040" stroke-width=".8"/>
-</g>
-<g>
-<path d="M695.4000000000001,136.20000000000002 Q733.5,149.844 771.5999999999999,136.20000000000002" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
-<path d="M695.4000000000001,136.20000000000002 Q733.5,149.844 771.5999999999999,136.20000000000002" fill="none" stroke="#c8951a" stroke-width="3" stroke-linecap="round"/>
-<circle cx="695.4000000000001" cy="136.20000000000002" r="2.4" fill="#c8951a" stroke="#00000040" stroke-width=".8"/><circle cx="771.5999999999999" cy="136.20000000000002" r="2.4" fill="#c8951a" stroke="#00000040" stroke-width=".8"/>
-</g>
-<g>
-<path d="M657.3000000000001,136.20000000000002 Q720.8000000000002,155.94 784.3000000000001,136.20000000000002" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
-<path d="M657.3000000000001,136.20000000000002 Q720.8000000000002,155.94 784.3000000000001,136.20000000000002" fill="none" stroke="#8a5a2b" stroke-width="3" stroke-linecap="round"/>
-<circle cx="657.3000000000001" cy="136.20000000000002" r="2.4" fill="#8a5a2b" stroke="#00000040" stroke-width=".8"/><circle cx="784.3000000000001" cy="136.20000000000002" r="2.4" fill="#8a5a2b" stroke="#00000040" stroke-width=".8"/>
-</g>
-<g>
-<path d="M670.0,136.20000000000002 Q733.5,146.94 797.0,136.20000000000002" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
-<path d="M670.0,136.20000000000002 Q733.5,146.94 797.0,136.20000000000002" fill="none" stroke="#8a5a2b" stroke-width="3" stroke-linecap="round"/>
-<circle cx="670.0" cy="136.20000000000002" r="2.4" fill="#8a5a2b" stroke="#00000040" stroke-width=".8"/><circle cx="797.0" cy="136.20000000000002" r="2.4" fill="#8a5a2b" stroke="#00000040" stroke-width=".8"/>
-</g>
-<g>
-<path d="M682.6999999999999,136.20000000000002 Q746.2,151.44000000000003 809.7,136.20000000000002" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
-<path d="M682.6999999999999,136.20000000000002 Q746.2,151.44000000000003 809.7,136.20000000000002" fill="none" stroke="#8a5a2b" stroke-width="3" stroke-linecap="round"/>
-<circle cx="682.6999999999999" cy="136.20000000000002" r="2.4" fill="#8a5a2b" stroke="#00000040" stroke-width=".8"/><circle cx="809.7" cy="136.20000000000002" r="2.4" fill="#8a5a2b" stroke="#00000040" stroke-width=".8"/>
-</g>
-<g>
-<path d="M644.6000000000001,148.9 Q714.45,80.186 784.3000000000001,45.0" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>
-<path d="M644.6000000000001,148.9 Q714.45,80.186 784.3000000000001,45.0" fill="none" stroke="#e0669a" stroke-width="3" stroke-linecap="round"/>
-<circle cx="644.6000000000001" cy="148.9" r="2.4" fill="#e0669a" stroke="#00000040" stroke-width=".8"/><circle cx="784.3000000000001" cy="45.0" r="2.4" fill="#e0669a" stroke="#00000040" stroke-width=".8"/>
-</g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <rect x="41.349999999999994" y="38.650000000000006" width="25.4" height="12.7" fill="#222" rx="2"/>
 <rect x="45.45" y="42.75" width="4.5" height="4.5" fill="#d4b25a"/>
 <rect x="58.150000000000006" y="42.75" width="4.5" height="4.5" fill="#d4b25a"/>
 <text x="54.05" y="34.0" font-size="7.5" fill="#222" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">J1</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="47.699999999999996" y1="57.699999999999996" x2="47.699999999999996" y2="22.7" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(47.699999999999996,40.199999999999996) rotate(90)"><rect x="-13.75" y="-5.5" width="27.5" height="11.0" fill="#d9c39a" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text transform="translate(47.699999999999996,40.199999999999996) rotate(-90)" font-size="6.5" fill="#111" text-anchor="middle" dominant-baseline="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.2" paint-order="stroke">R1 49.9</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="47.699999999999996" y1="70.4" x2="60.4" y2="22.7" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(54.05,46.550000000000004) rotate(90)"><rect x="-8.5" y="-6.0" width="17.0" height="12.0" fill="#d08a3a" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text transform="translate(54.05,46.550000000000004) rotate(-90)" font-size="6.5" fill="#111" text-anchor="middle" dominant-baseline="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.2" paint-order="stroke">C20 1n</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="47.699999999999996" y1="83.10000000000001" x2="73.10000000000001" y2="83.10000000000001" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(60.4,83.10000000000001) rotate(0)"><rect x="-8.5" y="-6.0" width="17.0" height="12.0" fill="#d8b53a" rx="0" stroke="#333" stroke-width=".6"/></g>
 <text x="60.4" y="73.60000000000001" font-size="7" fill="#111" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">C1</text>
 <text x="60.4" y="79.60000000000001" font-size="6.5" fill="#333" text-anchor="middle" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">100n</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="73.10000000000001" y1="70.4" x2="35.0" y2="70.4" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(54.050000000000004,70.4) rotate(0)"><rect x="-13.75" y="-5.5" width="27.5" height="11.0" fill="#d9c39a" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text x="54.050000000000004" y="60.9" font-size="7" fill="#111" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">R2</text>
 <text x="54.050000000000004" y="66.9" font-size="6.5" fill="#333" text-anchor="middle" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">10k</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="85.8" y1="93.65" x2="85.8" y2="95.8" stroke="#5f6670" stroke-width="3"/>
 <line x1="98.5" y1="93.65" x2="98.5" y2="95.8" stroke="#5f6670" stroke-width="3"/>
 <line x1="111.20000000000002" y1="93.65" x2="111.20000000000002" y2="95.8" stroke="#5f6670" stroke-width="3"/>
@@ -1214,55 +1150,55 @@
 <text x="123.9" y="133.25" font-size="5.5" fill="#333" text-anchor="middle">8</text>
 <text transform="translate(123.9,123.89999999999999) rotate(-90)" font-size="4.2" fill="#cfcfcf" text-anchor="start" dominant-baseline="middle">V+</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="200.10000000000002" y1="57.699999999999996" x2="149.3" y2="57.699999999999996" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(174.7,57.699999999999996) rotate(0)"><rect x="-13.75" y="-5.5" width="27.5" height="11.0" fill="#d9c39a" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text x="174.7" y="48.199999999999996" font-size="7" fill="#111" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">R3</text>
 <text x="174.7" y="54.2" font-size="6.5" fill="#333" text-anchor="middle" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">100k</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="149.3" y1="70.4" x2="174.7" y2="70.4" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(162.0,70.4) rotate(0)"><rect x="-8.5" y="-6.0" width="17.0" height="12.0" fill="#d8b53a" rx="0" stroke="#333" stroke-width=".6"/></g>
 <text x="162.0" y="60.9" font-size="7" fill="#111" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">C2</text>
 <text x="162.0" y="66.9" font-size="6.5" fill="#333" text-anchor="middle" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">100n</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="200.10000000000002" y1="70.4" x2="238.2" y2="70.4" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(219.14999999999998,70.4) rotate(0)"><rect x="-13.75" y="-5.5" width="27.5" height="11.0" fill="#d9c39a" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text x="219.14999999999998" y="60.9" font-size="7" fill="#111" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">R4</text>
 <text x="219.14999999999998" y="66.9" font-size="6.5" fill="#333" text-anchor="middle" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">1k</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="174.7" y1="57.699999999999996" x2="225.5" y2="57.699999999999996" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(200.09999999999997,57.699999999999996) rotate(0)"><rect x="-13.75" y="-5.5" width="27.5" height="11.0" fill="#d9c39a" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text x="200.09999999999997" y="48.199999999999996" font-size="7" fill="#111" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">R6</text>
 <text x="200.09999999999997" y="54.2" font-size="6.5" fill="#333" text-anchor="middle" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">10k</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="314.40000000000003" y1="57.699999999999996" x2="263.6" y2="57.699999999999996" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(289.0,57.699999999999996) rotate(0)"><rect x="-13.75" y="-5.5" width="27.5" height="11.0" fill="#d9c39a" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text x="289.0" y="48.199999999999996" font-size="7" fill="#111" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">R7</text>
 <text x="289.0" y="54.2" font-size="6.5" fill="#333" text-anchor="middle" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">10k</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="314.40000000000003" y1="70.4" x2="352.5" y2="70.4" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(333.45,70.4) rotate(0)"><rect x="-13.75" y="-5.5" width="27.5" height="11.0" fill="#d9c39a" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text x="333.45" y="60.9" font-size="7" fill="#111" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">R8</text>
 <text x="333.45" y="66.9" font-size="6.5" fill="#333" text-anchor="middle" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">1k</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="263.6" y1="70.4" x2="301.70000000000005" y2="70.4" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(282.65,70.4) rotate(0)"><rect x="-13.75" y="-5.5" width="27.5" height="11.0" fill="#d9c39a" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text x="282.65" y="60.9" font-size="7" fill="#111" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">R12</text>
 <text x="282.65" y="66.9" font-size="6.5" fill="#333" text-anchor="middle" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">1k</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="301.70000000000005" y1="83.10000000000001" x2="327.1" y2="83.10000000000001" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(314.40000000000003,83.10000000000001) rotate(0)"><rect x="-8.5" y="-6.0" width="17.0" height="12.0" fill="#d08a3a" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text x="314.40000000000003" y="73.60000000000001" font-size="7" fill="#111" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">C9</text>
 <text x="314.40000000000003" y="79.60000000000001" font-size="6.5" fill="#333" text-anchor="middle" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">10n</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="403.29999999999995" y1="93.65" x2="403.29999999999995" y2="95.8" stroke="#5f6670" stroke-width="3"/>
 <line x1="416.0" y1="93.65" x2="416.0" y2="95.8" stroke="#5f6670" stroke-width="3"/>
 <line x1="428.7" y1="93.65" x2="428.7" y2="95.8" stroke="#5f6670" stroke-width="3"/>
@@ -1292,185 +1228,186 @@
 <text x="441.4" y="133.25" font-size="5.5" fill="#333" text-anchor="middle">8</text>
 <text transform="translate(441.4,123.89999999999999) rotate(-90)" font-size="4.2" fill="#cfcfcf" text-anchor="start" dominant-baseline="middle">V+</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="428.7" y1="161.6" x2="466.8" y2="161.6" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(447.75,161.6) rotate(0)"><rect x="-13.75" y="-5.5" width="27.5" height="11.0" fill="#d9c39a" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text x="447.75" y="152.10000000000002" font-size="7" fill="#111" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">R13</text>
 <text x="447.75" y="158.1" font-size="6.5" fill="#333" text-anchor="middle" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">100</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="466.8" y1="148.9" x2="479.5" y2="148.9" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(473.15,148.9) rotate(0)"><rect x="-8.5" y="-6.0" width="17.0" height="12.0" fill="#2a3140" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text x="466.8" y="142.9" font-size="7" fill="#c33" text-anchor="middle">+</text>
 <text x="473.15" y="139.4" font-size="7" fill="#111" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">C10</text>
 <text x="473.15" y="145.4" font-size="6.5" fill="#333" text-anchor="middle" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">10u</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="479.5" y1="136.20000000000002" x2="479.5" y2="205.5" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(479.5,170.85000000000002) rotate(90)"><rect x="-13.75" y="-5.5" width="27.5" height="11.0" fill="#d9c39a" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text transform="translate(479.5,170.85000000000002) rotate(-90)" font-size="6.5" fill="#111" text-anchor="middle" dominant-baseline="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.2" paint-order="stroke">R14 100k</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <rect x="473.15000000000003" y="117.15" width="25.39999999999992" height="12.7" fill="#222" rx="2"/>
 <rect x="477.25" y="121.25" width="4.5" height="4.5" fill="#d4b25a"/>
 <rect x="489.95" y="121.25" width="4.5" height="4.5" fill="#d4b25a"/>
 <text x="485.85" y="140.5" font-size="7.5" fill="#222" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">J2</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="479.5" y1="45.0" x2="416.0" y2="45.0" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(447.75000000000006,45.0) rotate(0)"><rect x="-13.75" y="-5.5" width="27.5" height="11.0" fill="#d9c39a" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text x="447.75000000000006" y="35.5" font-size="7" fill="#111" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">R9</text>
 <text x="447.75000000000006" y="41.5" font-size="6.5" fill="#333" text-anchor="middle" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">10k</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="416.0" y1="57.699999999999996" x2="441.4" y2="22.7" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(428.70000000000005,40.199999999999996) rotate(90)"><rect x="-13.75" y="-5.5" width="27.5" height="11.0" fill="#d9c39a" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text transform="translate(428.70000000000005,40.199999999999996) rotate(-90)" font-size="6.5" fill="#111" text-anchor="middle" dominant-baseline="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.2" paint-order="stroke">R10 10k</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="416.0" y1="70.4" x2="466.8" y2="22.7" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(441.4,46.550000000000004) rotate(0)"><rect x="-8.5" y="-6.0" width="17.0" height="12.0" fill="#2a3140" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text x="416.0" y="64.4" font-size="7" fill="#c33" text-anchor="middle">+</text>
 <text x="441.4" y="37.05" font-size="7" fill="#111" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">C5</text>
 <text x="441.4" y="43.050000000000004" font-size="6.5" fill="#333" text-anchor="middle" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">10u</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="441.4" y1="70.4" x2="390.6" y2="70.4" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(416.0,70.4) rotate(0)"><rect x="-13.75" y="-5.5" width="27.5" height="11.0" fill="#d9c39a" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text x="416.0" y="60.9" font-size="7" fill="#111" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">R11</text>
 <text x="416.0" y="66.9" font-size="6.5" fill="#333" text-anchor="middle" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">47</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="352.5" y1="83.10000000000001" x2="352.5" y2="22.7" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(352.5,52.9) rotate(90)"><rect x="-8.5" y="-6.0" width="17.0" height="12.0" fill="#2a3140" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text x="352.5" y="77.10000000000001" font-size="7" fill="#c33" text-anchor="middle">+</text>
 <text transform="translate(352.5,52.9) rotate(-90)" font-size="6.5" fill="#fff" text-anchor="middle" dominant-baseline="middle" font-weight="bold" stroke="#1b1f24" stroke-width="2.2" paint-order="stroke">C6 47u</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <rect x="142.95" y="167.95" width="25.40000000000001" height="12.7" fill="#222" rx="2"/>
 <rect x="147.05" y="172.04999999999998" width="4.5" height="4.5" fill="#d4b25a"/>
 <rect x="159.75" y="172.04999999999998" width="4.5" height="4.5" fill="#d4b25a"/>
 <text x="155.65" y="191.29999999999998" font-size="7.5" fill="#222" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">J3</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="149.3" y1="161.6" x2="187.40000000000003" y2="161.6" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(168.35000000000002,161.6) rotate(0)"><rect x="-13.75" y="-5.5" width="27.5" height="11.0" fill="#222" rx="2" stroke="#333" stroke-width=".6"/></g>
 <g transform="translate(168.35000000000002,161.6) rotate(0)"><rect x="7.0" y="-5.5" width="2.5" height="11.0" fill="#ddd"/></g>
 <text x="168.35000000000002" y="152.10000000000002" font-size="7" fill="#111" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">D1</text>
 <text x="168.35000000000002" y="158.1" font-size="6.5" fill="#333" text-anchor="middle" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">1N5822</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="187.40000000000003" y1="148.9" x2="187.40000000000003" y2="205.5" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(187.40000000000003,177.2) rotate(90)"><rect x="-8.5" y="-6.0" width="17.0" height="12.0" fill="#2a3140" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text x="187.40000000000003" y="142.9" font-size="7" fill="#c33" text-anchor="middle">+</text>
 <text transform="translate(187.40000000000003,177.2) rotate(-90)" font-size="6.5" fill="#fff" text-anchor="middle" dominant-baseline="middle" font-weight="bold" stroke="#1b1f24" stroke-width="2.2" paint-order="stroke">C11 100u</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <rect x="181.05" y="167.95" width="25.400000000000027" height="12.7" fill="#222" rx="2"/>
 <rect x="185.15" y="172.04999999999998" width="4.5" height="4.5" fill="#d4b25a"/>
 <rect x="197.85" y="172.04999999999998" width="4.5" height="4.5" fill="#d4b25a"/>
 <text x="193.75" y="191.29999999999998" font-size="7.5" fill="#222" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">J4</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="187.40000000000003" y1="136.20000000000002" x2="225.5" y2="136.20000000000002" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(206.45000000000005,136.20000000000002) rotate(0)"><rect x="-13.75" y="-5.5" width="27.5" height="11.0" fill="#d9c39a" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text x="206.45000000000005" y="126.70000000000002" font-size="7" fill="#111" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">R15</text>
 <text x="206.45000000000005" y="132.70000000000002" font-size="6.5" fill="#333" text-anchor="middle" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">10</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="225.5" y1="148.9" x2="225.5" y2="205.5" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(225.5,177.2) rotate(90)"><rect x="-8.5" y="-6.0" width="17.0" height="12.0" fill="#2a3140" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text x="225.5" y="142.9" font-size="7" fill="#c33" text-anchor="middle">+</text>
 <text transform="translate(225.5,177.2) rotate(-90)" font-size="6.5" fill="#fff" text-anchor="middle" dominant-baseline="middle" font-weight="bold" stroke="#1b1f24" stroke-width="2.2" paint-order="stroke">C13 100u</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <rect x="244.54999999999998" y="167.95" width="25.400000000000027" height="12.7" fill="#222" rx="2"/>
 <rect x="248.64999999999998" y="172.04999999999998" width="4.5" height="4.5" fill="#d4b25a"/>
 <rect x="261.34999999999997" y="172.04999999999998" width="4.5" height="4.5" fill="#d4b25a"/>
 <text x="257.25" y="191.29999999999998" font-size="7.5" fill="#222" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">J5</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="250.9" y1="148.9" x2="250.9" y2="205.5" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(250.9,177.2) rotate(90)"><rect x="-8.5" y="-6.0" width="17.0" height="12.0" fill="#2a3140" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text x="250.9" y="142.9" font-size="7" fill="#c33" text-anchor="middle">+</text>
 <text transform="translate(250.9,177.2) rotate(-90)" font-size="6.5" fill="#fff" text-anchor="middle" dominant-baseline="middle" font-weight="bold" stroke="#1b1f24" stroke-width="2.2" paint-order="stroke">C12 100u</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="123.9" y1="136.20000000000002" x2="123.9" y2="205.5" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(123.9,170.85000000000002) rotate(90)"><rect x="-8.5" y="-6.0" width="17.0" height="12.0" fill="#d08a3a" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text transform="translate(123.9,170.85000000000002) rotate(-90)" font-size="6.5" fill="#111" text-anchor="middle" dominant-baseline="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.2" paint-order="stroke">C3 100n</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="441.4" y1="136.20000000000002" x2="441.4" y2="205.5" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(441.4,170.85000000000002) rotate(90)"><rect x="-8.5" y="-6.0" width="17.0" height="12.0" fill="#d08a3a" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text transform="translate(441.4,170.85000000000002) rotate(-90)" font-size="6.5" fill="#111" text-anchor="middle" dominant-baseline="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.2" paint-order="stroke">C7 100n</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="504.90000000000003" y1="10.0" x2="504.90000000000003" y2="45.0" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(504.90000000000003,27.5) rotate(90)"><rect x="-8.5" y="-6.0" width="17.0" height="12.0" fill="#666" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text transform="translate(504.90000000000003,27.5) rotate(-90)" font-size="6.5" fill="#111" text-anchor="middle" dominant-baseline="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.2" paint-order="stroke">FB1 FB</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="504.90000000000003" y1="57.699999999999996" x2="517.6" y2="22.7" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(511.25,40.199999999999996) rotate(90)"><rect x="-8.5" y="-6.0" width="17.0" height="12.0" fill="#2a3140" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text x="504.90000000000003" y="51.7" font-size="7" fill="#c33" text-anchor="middle">+</text>
 <text transform="translate(511.25,40.199999999999996) rotate(-90)" font-size="6.5" fill="#fff" text-anchor="middle" dominant-baseline="middle" font-weight="bold" stroke="#1b1f24" stroke-width="2.2" paint-order="stroke">C14 10u</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="504.90000000000003" y1="70.4" x2="530.3" y2="22.7" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(517.6,46.550000000000004) rotate(90)"><rect x="-8.5" y="-6.0" width="17.0" height="12.0" fill="#d08a3a" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text transform="translate(517.6,46.550000000000004) rotate(-90)" font-size="6.5" fill="#111" text-anchor="middle" dominant-baseline="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.2" paint-order="stroke">C15 100n</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <rect x="498.55000000000007" y="76.75" width="25.39999999999992" height="12.7" fill="#222" rx="2"/>
 <rect x="502.65" y="80.85000000000001" width="4.5" height="4.5" fill="#d4b25a"/>
 <rect x="515.3499999999999" y="80.85000000000001" width="4.5" height="4.5" fill="#d4b25a"/>
 <text x="511.25" y="72.10000000000001" font-size="7.5" fill="#222" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">J6</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="543.0" y1="10.0" x2="543.0" y2="45.0" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(543.0,27.5) rotate(90)"><rect x="-8.5" y="-6.0" width="17.0" height="12.0" fill="#666" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text transform="translate(543.0,27.5) rotate(-90)" font-size="6.5" fill="#111" text-anchor="middle" dominant-baseline="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.2" paint-order="stroke">FB2 FB</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="543.0" y1="57.699999999999996" x2="555.7" y2="22.7" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(549.35,40.199999999999996) rotate(90)"><rect x="-8.5" y="-6.0" width="17.0" height="12.0" fill="#2a3140" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text x="543.0" y="51.7" font-size="7" fill="#c33" text-anchor="middle">+</text>
 <text transform="translate(549.35,40.199999999999996) rotate(-90)" font-size="6.5" fill="#fff" text-anchor="middle" dominant-baseline="middle" font-weight="bold" stroke="#1b1f24" stroke-width="2.2" paint-order="stroke">C16 10u</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="543.0" y1="70.4" x2="568.4000000000001" y2="22.7" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(555.7,46.550000000000004) rotate(90)"><rect x="-8.5" y="-6.0" width="17.0" height="12.0" fill="#d08a3a" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text transform="translate(555.7,46.550000000000004) rotate(-90)" font-size="6.5" fill="#111" text-anchor="middle" dominant-baseline="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.2" paint-order="stroke">C17 100n</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <rect x="536.65" y="76.75" width="25.39999999999999" height="12.7" fill="#222" rx="2"/>
 <rect x="540.75" y="80.85000000000001" width="4.5" height="4.5" fill="#d4b25a"/>
 <rect x="553.45" y="80.85000000000001" width="4.5" height="4.5" fill="#d4b25a"/>
 <text x="549.35" y="72.10000000000001" font-size="7.5" fill="#222" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">J7</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="581.1" y1="10.0" x2="581.1" y2="45.0" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(581.1,27.5) rotate(90)"><rect x="-8.5" y="-6.0" width="17.0" height="12.0" fill="#666" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text transform="translate(581.1,27.5) rotate(-90)" font-size="6.5" fill="#111" text-anchor="middle" dominant-baseline="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.2" paint-order="stroke">FB3 FB</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="581.1" y1="57.699999999999996" x2="593.8000000000001" y2="22.7" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(587.45,40.199999999999996) rotate(90)"><rect x="-8.5" y="-6.0" width="17.0" height="12.0" fill="#2a3140" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text x="581.1" y="51.7" font-size="7" fill="#c33" text-anchor="middle">+</text>
 <text transform="translate(587.45,40.199999999999996) rotate(-90)" font-size="6.5" fill="#fff" text-anchor="middle" dominant-baseline="middle" font-weight="bold" stroke="#1b1f24" stroke-width="2.2" paint-order="stroke">C18 10u</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <line x1="581.1" y1="70.4" x2="606.5" y2="22.7" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(593.8,46.550000000000004) rotate(90)"><rect x="-8.5" y="-6.0" width="17.0" height="12.0" fill="#d08a3a" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text transform="translate(593.8,46.550000000000004) rotate(-90)" font-size="6.5" fill="#111" text-anchor="middle" dominant-baseline="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.2" paint-order="stroke">C19 100n</text>
 </g>
-<g>
+<g opacity="0.38" filter="url(#built)">
 <rect x="574.75" y="76.75" width="25.39999999999999" height="12.7" fill="#222" rx="2"/>
 <rect x="578.85" y="80.85000000000001" width="4.5" height="4.5" fill="#d4b25a"/>
 <rect x="591.55" y="80.85000000000001" width="4.5" height="4.5" fill="#d4b25a"/>
 <text x="587.45" y="72.10000000000001" font-size="7.5" fill="#222" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">J8</text>
 </g>
+<rect x="568.1" y="161.29999999999998" width="140.30000000000007" height="26.0" fill="#ffd24a" opacity=".5" rx="12.0"/>
 <g>
 <rect x="574.75" y="167.95" width="127.0000000000001" height="12.7" fill="#222" rx="2"/>
 <rect x="578.85" y="172.04999999999998" width="4.5" height="4.5" fill="#d4b25a"/>
@@ -1485,101 +1422,25 @@
 <rect x="693.1500000000001" y="172.04999999999998" width="4.5" height="4.5" fill="#d4b25a"/>
 <text x="638.25" y="176.8" font-size="6.6" fill="#f4f1e8" text-anchor="middle" font-weight="bold">J9 ESP32</text>
 </g>
+<rect x="580.8000000000001" y="82.8" width="38.69999999999996" height="53.69999999999999" fill="#ffd24a" opacity=".5" rx="12.0"/>
 <g>
 <line x1="593.8000000000001" y1="123.5" x2="606.5" y2="95.8" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(600.15,109.65) rotate(90)"><rect x="-13.75" y="-5.5" width="27.5" height="11.0" fill="#d9c39a" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text transform="translate(600.15,109.65) rotate(-90)" font-size="6.5" fill="#111" text-anchor="middle" dominant-baseline="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.2" paint-order="stroke">R16 33</text>
 </g>
+<rect x="593.5" y="82.8" width="38.70000000000003" height="53.69999999999999" fill="#ffd24a" opacity=".5" rx="12.0"/>
 <g>
 <line x1="606.5" y1="123.5" x2="619.2" y2="95.8" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(612.8499999999999,109.65) rotate(90)"><rect x="-13.75" y="-5.5" width="27.5" height="11.0" fill="#d9c39a" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text transform="translate(612.8499999999999,109.65) rotate(-90)" font-size="6.5" fill="#111" text-anchor="middle" dominant-baseline="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.2" paint-order="stroke">R17 33</text>
 </g>
+<rect x="606.2" y="82.8" width="38.69999999999996" height="53.69999999999999" fill="#ffd24a" opacity=".5" rx="12.0"/>
 <g>
 <line x1="619.2" y1="123.5" x2="631.9" y2="95.8" stroke="#5f6670" stroke-width="1.5"/>
 <g transform="translate(625.55,109.65) rotate(90)"><rect x="-13.75" y="-5.5" width="27.5" height="11.0" fill="#d9c39a" rx="2" stroke="#333" stroke-width=".6"/></g>
 <text transform="translate(625.55,109.65) rotate(-90)" font-size="6.5" fill="#111" text-anchor="middle" dominant-baseline="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.2" paint-order="stroke">R18 33</text>
 </g>
-<g>
-<rect x="676.3499999999999" y="38.650000000000006" width="76.20000000000019" height="12.7" fill="#222" rx="2"/>
-<rect x="680.45" y="42.75" width="4.5" height="4.5" fill="#d4b25a"/>
-<rect x="693.1500000000001" y="42.75" width="4.5" height="4.5" fill="#d4b25a"/>
-<rect x="705.8500000000001" y="42.75" width="4.5" height="4.5" fill="#d4b25a"/>
-<rect x="718.5500000000001" y="42.75" width="4.5" height="4.5" fill="#d4b25a"/>
-<rect x="731.25" y="42.75" width="4.5" height="4.5" fill="#d4b25a"/>
-<rect x="743.95" y="42.75" width="4.5" height="4.5" fill="#d4b25a"/>
-<text x="714.4499999999999" y="47.5" font-size="6.6" fill="#f4f1e8" text-anchor="middle" font-weight="bold">J10 ADF LOGIC</text>
-</g>
-<g>
-<line x1="746.2" y1="57.699999999999996" x2="746.2" y2="22.7" stroke="#5f6670" stroke-width="1.5"/>
-<g transform="translate(746.2,40.199999999999996) rotate(90)"><rect x="-13.75" y="-5.5" width="27.5" height="11.0" fill="#d9c39a" rx="2" stroke="#333" stroke-width=".6"/></g>
-<text transform="translate(746.2,40.199999999999996) rotate(-90)" font-size="6.5" fill="#111" text-anchor="middle" dominant-baseline="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.2" paint-order="stroke">R19 10k</text>
-</g>
-<g>
-<rect x="739.85" y="76.75" width="25.400000000000063" height="12.7" fill="#222" rx="2"/>
-<rect x="743.95" y="80.85000000000001" width="4.5" height="4.5" fill="#d4b25a"/>
-<rect x="756.6500000000001" y="80.85000000000001" width="4.5" height="4.5" fill="#d4b25a"/>
-<text x="752.55" y="72.10000000000001" font-size="7.5" fill="#222" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">JP3</text>
-</g>
-<g>
-<rect x="752.55" y="167.95" width="63.500000000000085" height="12.7" fill="#222" rx="2"/>
-<rect x="756.6500000000001" y="172.04999999999998" width="4.5" height="4.5" fill="#d4b25a"/>
-<rect x="769.35" y="172.04999999999998" width="4.5" height="4.5" fill="#d4b25a"/>
-<rect x="782.0500000000002" y="172.04999999999998" width="4.5" height="4.5" fill="#d4b25a"/>
-<rect x="794.7500000000001" y="172.04999999999998" width="4.5" height="4.5" fill="#d4b25a"/>
-<rect x="807.45" y="172.04999999999998" width="4.5" height="4.5" fill="#d4b25a"/>
-<text x="784.3000000000001" y="176.8" font-size="6.6" fill="#f4f1e8" text-anchor="middle" font-weight="bold">J11 A4988 LOGIC</text>
-</g>
-<g>
-<line x1="771.5999999999999" y1="161.6" x2="809.7" y2="161.6" stroke="#5f6670" stroke-width="1.5"/>
-<g transform="translate(790.65,161.6) rotate(0)"><rect x="-13.75" y="-5.5" width="27.5" height="11.0" fill="#d9c39a" rx="2" stroke="#333" stroke-width=".6"/></g>
-<text x="790.65" y="152.10000000000002" font-size="7" fill="#111" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">R20</text>
-<text x="790.65" y="158.1" font-size="6.5" fill="#333" text-anchor="middle" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">10k</text>
-</g>
-<g>
-<line x1="784.3000000000001" y1="148.9" x2="784.3000000000001" y2="205.5" stroke="#5f6670" stroke-width="1.5"/>
-<g transform="translate(784.3000000000001,177.2) rotate(90)"><rect x="-13.75" y="-5.5" width="27.5" height="11.0" fill="#d9c39a" rx="2" stroke="#333" stroke-width=".6"/></g>
-<text transform="translate(784.3000000000001,177.2) rotate(-90)" font-size="6.5" fill="#111" text-anchor="middle" dominant-baseline="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.2" paint-order="stroke">R21 10k</text>
-</g>
-<g>
-<line x1="797.0" y1="148.9" x2="797.0" y2="205.5" stroke="#5f6670" stroke-width="1.5"/>
-<g transform="translate(797.0,177.2) rotate(90)"><rect x="-13.75" y="-5.5" width="27.5" height="11.0" fill="#d9c39a" rx="2" stroke="#333" stroke-width=".6"/></g>
-<text transform="translate(797.0,177.2) rotate(-90)" font-size="6.5" fill="#111" text-anchor="middle" dominant-baseline="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.2" paint-order="stroke">R22 10k</text>
-</g>
-<g>
-<line x1="784.3000000000001" y1="57.699999999999996" x2="822.4" y2="57.699999999999996" stroke="#5f6670" stroke-width="1.5"/>
-<g transform="translate(803.3500000000001,57.699999999999996) rotate(0)"><rect x="-13.75" y="-5.5" width="27.5" height="11.0" fill="#d9c39a" rx="2" stroke="#333" stroke-width=".6"/></g>
-<text x="803.3500000000001" y="48.199999999999996" font-size="7" fill="#111" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">R23</text>
-<text x="803.3500000000001" y="54.2" font-size="6.5" fill="#333" text-anchor="middle" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">10k</text>
-</g>
-<g>
-<line x1="822.4" y1="70.4" x2="822.4" y2="22.7" stroke="#5f6670" stroke-width="1.5"/>
-<g transform="translate(822.4,46.550000000000004) rotate(90)"><rect x="-13.75" y="-5.5" width="27.5" height="11.0" fill="#d9c39a" rx="2" stroke="#333" stroke-width=".6"/></g>
-<text transform="translate(822.4,46.550000000000004) rotate(-90)" font-size="6.5" fill="#111" text-anchor="middle" dominant-baseline="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.2" paint-order="stroke">R24 1k</text>
-</g>
-<g>
-<rect x="816.05" y="76.75" width="1.4210854715202004e-13" height="12.7" fill="#222" rx="2"/>
-<rect x="820.15" y="80.85000000000001" width="4.5" height="4.5" fill="#d4b25a"/>
-<rect x="807.45" y="80.85000000000001" width="4.5" height="4.5" fill="#d4b25a"/>
-<text x="816.05" y="72.10000000000001" font-size="7.5" fill="#222" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">J12</text>
-</g>
-<text x="35.0" y="247.5" font-size="9" font-weight="bold" fill="#14181d">JUMPER COLOUR CODE — one hue per function. No white, no grey: both vanish on a cream board.</text>
-<rect x="35.0" y="257.5" width="11.0" height="11.0" rx="2" fill="#14181d" stroke="#00000040" stroke-width=".8"/>
-<text x="50.0" y="266.0" font-size="8" fill="#333">black — GND</text>
-<rect x="120.9" y="257.5" width="11.0" height="11.0" rx="2" fill="#cc2b2b" stroke="#00000040" stroke-width=".8"/>
-<text x="135.9" y="266.0" font-size="8" fill="#333">red — VANA (+12 V analogue)</text>
-<rect x="285.2" y="257.5" width="11.0" height="11.0" rx="2" fill="#e2701a" stroke="#00000040" stroke-width=".8"/>
-<text x="300.2" y="266.0" font-size="8" fill="#333">orange — V5</text>
-<rect x="371.1" y="257.5" width="11.0" height="11.0" rx="2" fill="#c8951a" stroke="#00000040" stroke-width=".8"/>
-<text x="386.1" y="266.0" font-size="8" fill="#333">yellow — 3V3 logic</text>
-<rect x="491.3" y="257.5" width="11.0" height="11.0" rx="2" fill="#1f9153" stroke="#00000040" stroke-width=".8"/>
-<text x="506.3" y="266.0" font-size="8" fill="#333">green — audio signal path</text>
-<rect x="35.0" y="278.5" width="11.0" height="11.0" rx="2" fill="#7a4fbf" stroke="#00000040" stroke-width=".8"/>
-<text x="50.0" y="287.0" font-size="8" fill="#333">violet — VREF half-rail bias</text>
-<rect x="204.2" y="278.5" width="11.0" height="11.0" rx="2" fill="#2f77b0" stroke="#00000040" stroke-width=".8"/>
-<text x="219.2" y="287.0" font-size="8" fill="#333">blue — SPI to the ADF4351</text>
-<rect x="358.70000000000005" y="278.5" width="11.0" height="11.0" rx="2" fill="#8a5a2b" stroke="#00000040" stroke-width=".8"/>
-<text x="373.70000000000005" y="287.0" font-size="8" fill="#333">brown — stepper STEP / DIR / EN</text>
-<rect x="542.6" y="278.5" width="11.0" height="11.0" rx="2" fill="#e0669a" stroke="#00000040" stroke-width=".8"/>
-<text x="557.6" y="287.0" font-size="8" fill="#333">pink — SYNC to the sound card</text>
+<text x="35.0" y="242.5" font-size="11" font-weight="bold" fill="#14181d">Step 13 of 17 — The ESP32 header and its series resistors</text>
+<rect x="35.0" y="249.5" width="11.0" height="11.0" rx="2" fill="#14181d" stroke="#00000040" stroke-width=".8"/>
+<text x="50.0" y="258.0" font-size="8" fill="#333">black — GND</text>
 </svg>

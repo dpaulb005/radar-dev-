@@ -29,16 +29,9 @@ KIND = {"res": "resistor", "cer": "ceramic capacitor", "film": "film capacitor",
         "bead": "ferrite bead", "dip8": "op-amp, DIP-8", "hdr2": "2-pin header", "hdr5": "5-pin header", "hdr6": "6-pin header", "hdr10": "10-pin header"}
 UNITS = {"res": "Ω", "cer": "F", "film": "F", "elec": "F"}
 
-STEPS = [
-    ("Rails", "Bridge each rail at columns 31|32 if your board's rails are split. Tie the two GND rails together at column 1."),
-    ("Op-amps", "Seat U1 (pin 1 at e5) and U2 (pin 1 at e30), notch toward the low column number. Add their V+ and V− wires and the 100 n caps C3/C7."),
-    ("Signal chain", "Left to right on the top bank: J1, R1, C20, C1, R2, then R3/C2/R4/R6 around U1, R7/R8/R12/C9, then U2's R13/C10/R14/J2."),
-    ("Bias", "R9, R10, C5 (VDIV), R11 and C6 (VREF) around U2. Then the four violet VREF wires."),
-    ("Power", "Bottom bank: J3, D1, C11, J4, R15, C13, J5, C12. Then the VANA feed to the bottom red rail and the V5 feed to the top red rail."),
-    ("5 V feeds", "FB1–FB3 with their 10 µ + 100 n pairs and J6–J8, top bank columns 38, 41, 44."),
-    ("Digital", "J9, R16–R18 across the channel, J10, R19/JP3, J11, R20–R22, R23/R24, J12, then the blue, yellow, white and grey wires."),
-    ("Check", "Ohm-meter: GND to VANA, GND to V5, GND to +3V3 must all read open (> 1 kΩ) before power. Then run hardware/spice test cards against the built board."),
-]
+# The build order now lives in layout.py, beside the placement it describes, and
+# arrives here through layout.json -- so a part added to the board cannot go
+# missing from the guide. layout.py's check_steps() refuses to write if it does.
 
 
 DIP8 = {"1": "OUT A", "2": "IN- A", "3": "IN+ A", "4": "V-", "5": "IN+ B", "6": "IN- B", "7": "OUT B", "8": "V+"}
@@ -174,7 +167,7 @@ def modules_md():
 
 def build():
     data = dict(parts=D["parts"], wires=D["wires"], rails=D["rails"], nets=D["nets"], group_net=D["group_net"],
-                alias=ALIAS, net_desc=NET_DESC, kind=KIND, steps=STEPS, dip8=DIP8, modules=MODULES, used=USED)
+                alias=ALIAS, net_desc=NET_DESC, kind=KIND, steps=D["steps"], dip8=DIP8, modules=MODULES, used=USED)
     js_data = json.dumps(data, separators=(",", ":"))
     n_parts, n_wires, n_nets = len(D["parts"]), len(D["wires"]), len(D["nets"])
     html = f"""<title>ESP-FLY Radar Breadboard</title>
@@ -255,6 +248,15 @@ tbody tr.done td {{ color:var(--ink-3) }} tbody tr.done td .h {{ text-decoration
 .steps li {{ display:grid; grid-template-columns:34px 1fr; gap:10px; padding:10px 12px; border:1px solid var(--line); border-radius:6px; background:var(--card) }}
 .steps li::before {{ counter-increment:s; content:counter(s); font:700 18px var(--cond); color:var(--accent) }}
 .steps b {{ display:block; font-family:var(--cond); font-size:15px; margin-bottom:2px }}
+.steps li {{ cursor:pointer }}
+.steps li.cur {{ border-color:var(--accent); box-shadow:0 0 0 1px var(--accent) }}
+.sline {{ margin-top:5px; font-size:12px }}
+.sline .k {{ display:inline-block; min-width:44px; color:var(--mut); font-family:var(--cond) }}
+.scheck {{ margin-top:6px; padding:6px 8px; border-left:3px solid var(--accent); background:#0000000d; font-size:12.5px }}
+.stepbar {{ display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap }}
+.stepbar #sLabel {{ font-family:var(--cond); font-weight:700; min-width:24ch }}
+#board [data-ref].built, #board .wire.built {{ opacity:.3; filter:saturate(.08) }}
+#board [data-ref].todo, #board .wire.todo {{ opacity:.06 }}
 .modgrid {{ display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:14px }}
 .mod {{ background:var(--card); border:1px solid var(--line); border-radius:6px; padding:12px 14px; min-width:0 }}
 .mod h3 {{ font-family:var(--cond); font-size:16px; margin:0 0 2px }}
@@ -283,9 +285,9 @@ kbd {{ font-family:var(--mono); font-size:11px; padding:1px 5px; border:1px soli
     <input id="find" type="search" placeholder="find: R3, b14, VREF, J9 …" aria-label="find a part, hole or net">
     <button id="zin" type="button">Zoom +</button><button id="zout" type="button">Zoom −</button><button id="clear" type="button">Clear</button>
     <div class="legend">
-      <span><i style="background:#111"></i>GND</span><span><i style="background:#d33"></i>VANA</span><span><i style="background:#e07a20"></i>V5</span>
-      <span><i style="background:#2a9d5c"></i>signal</span><span><i style="background:#7a4fbf"></i>VREF</span><span><i style="background:#2f77b0"></i>SPI</span>
-      <span><i style="background:#e0b020"></i>3V3</span><span><i style="background:#ddd;border:1px solid #999"></i>step/dir/en</span><span><i style="background:#8a8f96"></i>sync</span>
+      <span><i style="background:#14181d"></i>GND</span><span><i style="background:#cc2b2b"></i>VANA</span><span><i style="background:#e2701a"></i>V5</span>
+      <span><i style="background:#1f9153"></i>signal</span><span><i style="background:#7a4fbf"></i>VREF</span><span><i style="background:#2f77b0"></i>SPI</span>
+      <span><i style="background:#c8951a"></i>3V3</span><span><i style="background:#8a5a2b"></i>step/dir/en</span><span><i style="background:#e0669a"></i>sync</span>
     </div>
   </div>
   <div class="scroller"><svg class="board" id="board" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 235" role="img" aria-label="breadboard top view"></svg></div>
@@ -307,7 +309,15 @@ kbd {{ font-family:var(--mono); font-size:11px; padding:1px 5px; border:1px soli
     </div>
     <div class="tab" id="tab-wires"><div class="tablewrap"><table><thead><tr><th>✓</th><th>#</th><th>From</th><th>To</th><th>Colour</th><th>Length</th><th>Purpose</th></tr></thead><tbody id="wires"></tbody></table></div></div>
     <div class="tab" id="tab-nets"><div class="tablewrap"><table><thead><tr><th>Net</th><th>What it is</th><th>Strips / rails</th><th>Pins</th></tr></thead><tbody id="nets"></tbody></table></div></div>
-    <div class="tab" id="tab-steps"><ol class="steps" id="steps"></ol>
+    <div class="tab" id="tab-steps">
+      <div class="stepbar">
+        <button id="sPrev" title="previous step">&larr;</button>
+        <span id="sLabel">All 17 steps</span>
+        <button id="sNext" title="next step">&rarr;</button>
+        <button id="sAll" title="show the finished board">Show all</button>
+        <span class="mut">Pick a step and the board above dims to it: grey is already built, colour is what this step adds.</span>
+      </div>
+      <ol class="steps" id="steps"></ol>
       <p class="mut" style="max-width:70ch">Hole names: row letter then column number, <span class="h">b14</span> = row b, column 14. The five holes a–e of a column are one strip (top bank), f–j another (bottom bank). <span class="h">TR-@12</span> = the top blue rail, hole nearest column 12; on a real board use the closest free rail hole. Rails: top red V5, top blue GND, bottom red VANA, bottom blue GND. Checkboxes are remembered in this browser only.</p></div>
   </section>
   <aside><div class="card" id="detail"><h2>Nothing selected</h2><p class="sub">Hover the board or a table row. Click to keep a selection; <kbd>Esc</kbd> or Clear releases it.</p></div></aside>
@@ -317,7 +327,7 @@ kbd {{ font-family:var(--mono); font-size:11px; padding:1px 5px; border:1px soli
 const D = {js_data};
 const S = 5;
 const RAIL_Y = {{"TR+":2.0,"TR-":4.54,"BR+":38.6,"BR-":41.1}};
-const COL = {{black:"#111",red:"#d33",blue:"#2f77b0",yellow:"#e0b020",green:"#2a9d5c",orange:"#e07a20",white:"#e8e8e8",grey:"#8a8f96",violet:"#7a4fbf"}};
+const COL = {{black:"#14181d",red:"#cc2b2b",orange:"#e2701a",yellow:"#c8951a",green:"#1f9153",violet:"#7a4fbf",blue:"#2f77b0",brown:"#8a5a2b",pink:"#e0669a"}};
 const KCOL = {{res:"#d9c39a",film:"#d8b53a",cer:"#d08a3a",elec:"#2a3140",diode:"#222",bead:"#666"}};
 const ROWS = "abcdefghij";
 const alias = n => D.alias[n] || n;
@@ -507,7 +517,41 @@ Object.keys(D.nets).sort((a,b)=>alias(a).localeCompare(alias(b))).forEach(n => {
   const strips = Object.keys(D.group_net).filter(k=>D.group_net[k]===n);
   const tr = row(tn, {{net:n}}, [N(n)+(alias(n)!==n?`<br><span class="mut">${{n}}</span>`:""), `<span class="mut">${{D.net_desc[alias(n)]||""}}</span>`, strips.map(H).join(" "), D.nets[n].map(([r,p])=>`${{r}}.${{p}}`).join(", ")]);
   tr.onmouseenter = () => {{ if (!locked) selectNet(n); }}; tr.onclick = () => {{ locked = {{type:"net",id:n}}; selectNet(n); }}; }});
-document.getElementById("steps").innerHTML = D.steps.map(([t,d]) => `<li><div><b>${{t}}</b>${{d}}</div></li>`).join("");
+document.getElementById("steps").innerHTML = D.steps.map(st => {{
+  const parts = st.parts.length ? `<div class="sline"><span class="k">parts</span> ${{st.parts.map(H).join(" ")}}</div>` : "";
+  const wires = st.wires.length ? `<div class="sline"><span class="k">wires</span> ${{st.wires.map(w=>H(w[0])+"&rarr;"+H(w[1])).join(" &middot; ")}}</div>` : "";
+  const chk = st.check ? `<div class="scheck"><b>Check.</b> ${{st.check}}</div>` : "";
+  return `<li data-step="${{st.n}}"><div><b>${{st.title}}</b>${{st.why}}${{parts}}${{wires}}${{chk}}</div></li>`;
+}}).join("");
+
+// ---------- step-through: dim the board to one assembly step ----------
+// Membership comes from the same table layout.py renders the step PNGs from,
+// so the page and the pictures can never disagree about what belongs where.
+let curStep = null;
+const stepOfPart = {{}}, stepOfWire = {{}};
+D.steps.forEach(st => {{ st.parts.forEach(r => stepOfPart[r] = st.n);
+                        st.wires.forEach(w => stepOfWire[w[0]+"|"+w[1]] = st.n); }});
+function applyStep() {{
+  const lab = document.getElementById("sLabel");
+  lab.textContent = curStep === null ? `All ${{D.steps.length}} steps`
+                  : `Step ${{curStep}} of ${{D.steps.length}} — ${{D.steps[curStep-1].title}}`;
+  document.querySelectorAll("#steps li").forEach(li =>
+    li.classList.toggle("cur", curStep !== null && +li.dataset.step === curStep));
+  document.querySelectorAll("#board [data-ref]").forEach(g => {{
+    const n = stepOfPart[g.dataset.ref];
+    g.classList.remove("built","todo");
+    if (curStep !== null && n !== undefined && n !== curStep) g.classList.add(n > curStep ? "todo" : "built");
+  }});
+  document.querySelectorAll("#board .wire[data-wire]").forEach(g => {{
+    const w = D.wires[+g.dataset.wire]; const n = w && stepOfWire[w.a+"|"+w.b];
+    g.classList.remove("built","todo");
+    if (curStep !== null && n !== undefined && n !== curStep) g.classList.add(n > curStep ? "todo" : "built");
+  }});
+}}
+document.getElementById("sPrev").onclick = () => {{ curStep = curStep === null ? D.steps.length : Math.max(1, curStep-1); applyStep(); }};
+document.getElementById("sNext").onclick = () => {{ curStep = curStep === null ? 1 : Math.min(D.steps.length, curStep+1); applyStep(); }};
+document.getElementById("sAll").onclick  = () => {{ curStep = null; applyStep(); }};
+document.querySelectorAll("#steps li").forEach(li => li.onclick = () => {{ curStep = +li.dataset.step; applyStep(); }});
 updateProgress();
 const fitAside = () => {{ document.querySelector("aside").style.top = (document.querySelector(".boardwrap").offsetHeight + 12) + "px"; }}; fitAside(); window.addEventListener("resize", fitAside);
 document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => {{

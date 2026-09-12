@@ -1337,25 +1337,25 @@
   {
    "a": "g50",
    "b": "g60",
-   "colour": "white",
+   "colour": "brown",
    "why": "J9 pin 7 STEP (col 50) -> J11 pin 3 (col 60)"
   },
   {
    "a": "g51",
    "b": "g61",
-   "colour": "white",
+   "colour": "brown",
    "why": "J9 pin 8 DIR (col 51) -> J11 pin 4 (col 61)"
   },
   {
    "a": "g52",
    "b": "g62",
-   "colour": "white",
+   "colour": "brown",
    "why": "J9 pin 9 EN (col 52) -> J11 pin 5 (col 62)"
   },
   {
    "a": "h49",
    "b": "a60",
-   "colour": "grey",
+   "colour": "pink",
    "why": "J9 pin 6 SYNC (bottom col 49) up to R23 (top col 60)"
   }
  ],
@@ -2112,5 +2112,436 @@
   "BR+R": "VANA",
   "BR-L": "GND",
   "BR-R": "GND"
+ },
+ "steps": [
+  {
+   "n": 1,
+   "title": "Rails, bridged and tied",
+   "why": "Nothing works until the four rails carry what they claim. Many 830-point boards split every rail at the middle, so the right-hand half of each is dead until you bridge it \u2014 and a split you did not notice is the classic reason half a board is unpowered. The last wire ties the two GND rails into one ground.",
+   "parts": [],
+   "wires": [
+    [
+     "TR+@31",
+     "TR+@32"
+    ],
+    [
+     "TR-@31",
+     "TR-@32"
+    ],
+    [
+     "BR+@31",
+     "BR+@32"
+    ],
+    [
+     "BR-@31",
+     "BR-@32"
+    ],
+    [
+     "TR-@1",
+     "BR-@1"
+    ]
+   ],
+   "check": "Continuity from each rail's far left hole to its far right hole. If your board's rails are continuous, these four bridges are harmless."
+  },
+  {
+   "n": 2,
+   "title": "12 V in, and the diode that saves the board",
+   "why": "J3 takes the 12 V supply. D1 is a series Schottky: get the supply backwards and it simply does not conduct, instead of taking the op-amps and the electrolytics with it. The band on the diode body is the cathode and it faces RIGHT, toward column 13. C11 is the bulk reservoir on the protected side.",
+   "parts": [
+    "J3",
+    "D1",
+    "C11",
+    "J4"
+   ],
+   "wires": [
+    [
+     "f11",
+     "BR-@11"
+    ],
+    [
+     "f14",
+     "BR-@14"
+    ]
+   ],
+   "check": "D1's band toward column 13. C11's + leg toward column 13, its - to the GND rail."
+  },
+  {
+   "n": 3,
+   "title": "The VANA rail \u2014 clean 12 V for the op-amps",
+   "why": "R15 and C13 are an RC filter, not a resistor someone forgot to remove: 10 ohms into 100 uF rolls off at about 160 Hz, which keeps supply noise out of an amplifier whose whole job is a signal down at 20 mV. The output of that filter is what feeds the bottom red rail.",
+   "parts": [
+    "R15",
+    "C13"
+   ],
+   "wires": [
+    [
+     "f16",
+     "BR+@16"
+    ]
+   ],
+   "check": "Bottom red rail now sits at 12 V minus the diode drop, about 11.6 V."
+  },
+  {
+   "n": 4,
+   "title": "5 V in from the buck converter",
+   "why": "J5 brings 5 V back from the LM2596 after you have set it with nothing else connected. C12 decouples it and the orange wire carries it up to the top red rail, which is what the three RF modules will feed from.",
+   "parts": [
+    "J5",
+    "C12"
+   ],
+   "wires": [
+    [
+     "f19",
+     "BR-@19"
+    ],
+    [
+     "g18",
+     "TR+@18"
+    ]
+   ],
+   "check": "Set the buck to 5.00 V BEFORE this wire goes in. Top red rail = 5.00 V."
+  },
+  {
+   "n": 5,
+   "title": "Seat the two op-amps",
+   "why": "U1 is the two gain stages, U2 the reference buffer and the output. Both straddle the centre channel so the two sides of the package land on separate strips. The notch and the pin-1 dot face RIGHT, toward the higher column. C3 and C7 are the 100 nF decouplers and they go right at pin 8 of each chip, not somewhere tidier.",
+   "parts": [
+    "U1",
+    "U2",
+    "C3",
+    "C7"
+   ],
+   "wires": [
+    [
+     "a5",
+     "TR-@5"
+    ],
+    [
+     "a30",
+     "TR-@30"
+    ],
+    [
+     "h8",
+     "BR+@8"
+    ],
+    [
+     "h33",
+     "BR+@33"
+    ]
+   ],
+   "check": "Pin 1 at e8 (U1) and e33 (U2). Power the board: both chips should sit at room temperature. A warm op-amp means V+ and V- are swapped."
+  },
+  {
+   "n": 6,
+   "title": "The half-rail reference",
+   "why": "This amplifier runs on a single supply, so 'zero' has to be manufactured: R9 and R10 divide VANA in half at column 31, C5 holds it still, and U2's second half buffers it so the divider is not loaded by everything downstream. R11 and C6 carry that buffered VREF to the node the whole signal chain hangs off.",
+   "parts": [
+    "R9",
+    "R10",
+    "C5",
+    "R11",
+    "C6"
+   ],
+   "wires": [
+    [
+     "e36",
+     "BR+@36"
+    ],
+    [
+     "j32",
+     "j31"
+    ],
+    [
+     "a33",
+     "a32"
+    ],
+    [
+     "b29",
+     "b26"
+    ]
+   ],
+   "check": "VREF (column 26) should read half of VANA, about 5.8 V, and be steady."
+  },
+  {
+   "n": 7,
+   "title": "Spread VREF along the board",
+   "why": "Four violet wires, and they are the reason the amplifier has a zero to swing about. The long one runs the length of row a to reach the input stage at column 1. Do them as a set so none is forgotten \u2014 a stage whose VREF is missing is not dead, it is railed, which is a more confusing symptom.",
+   "parts": [],
+   "wires": [
+    [
+     "a26",
+     "a24"
+    ],
+    [
+     "b24",
+     "c16"
+    ],
+    [
+     "d16",
+     "d17"
+    ],
+    [
+     "a1",
+     "a16"
+    ]
+   ],
+   "check": "Every violet wire end reads the same 5.8 V."
+  },
+  {
+   "n": 8,
+   "title": "The input: mixer IF, terminated",
+   "why": "R1 is the 49.9 ohm load the mixer's IF port wants; without it the conversion loss and the flatness wander. C20 shunts the LO that leaks out of that same port at 2.4 GHz, which a TL072 would otherwise rectify into a DC offset. C1 and R2 are the first high-pass, and they are what stop the TX leakage tone from saturating the gain.",
+   "parts": [
+    "J1",
+    "R1",
+    "C20",
+    "C1",
+    "R2"
+   ],
+   "wires": [
+    [
+     "e3",
+     "TR-@4"
+    ],
+    [
+     "a4",
+     "a6"
+    ]
+   ],
+   "check": "R1 across the IF input reads 49.9 ohms to ground."
+  },
+  {
+   "n": 9,
+   "title": "Gain stage A, times 101",
+   "why": "R3 over R4 sets the gain. R4 is 1k for the full 40 dB, but fit 4.7k on first power-up for a gain of 22: if the TX leakage is stronger than you expected, a lower first gain is the difference between seeing it and clipping on it. C2 and R6 are the second high-pass into stage B.",
+   "parts": [
+    "R3",
+    "C2",
+    "R4",
+    "R6"
+   ],
+   "wires": [
+    [
+     "a8",
+     "a10"
+    ],
+    [
+     "a14",
+     "a7"
+    ]
+   ],
+   "check": "Inject 10 mV at 1 kHz: about 107 mV out of stage A with R4 at 4.7k."
+  },
+  {
+   "n": 10,
+   "title": "Gain stage B, times 11, and the anti-alias corner",
+   "why": "R7 over R8 gives the second 21 dB. R12 with C9 is the 15.9 kHz low-pass that limits the noise bandwidth reaching the sound card. The last wire takes that filtered node across the channel into U2's spare half.",
+   "parts": [
+    "R7",
+    "R8",
+    "R12",
+    "C9"
+   ],
+   "wires": [
+    [
+     "d12",
+     "g5"
+    ],
+    [
+     "g7",
+     "a19"
+    ],
+    [
+     "a23",
+     "i6"
+    ],
+    [
+     "e22",
+     "h30"
+    ]
+   ],
+   "check": "Total gain now about 61 dB. Sweep it: -3 dB at 15.9 kHz, -6 dB at 159 Hz."
+  },
+  {
+   "n": 11,
+   "title": "Output, isolated and bled to ground",
+   "why": "R13 and C10 hand the signal to the sound card through a series resistor, so a cable capacitance does not hang directly off an op-amp output. R14 bleeds the coupling cap so the jack is not left holding a charge, and J2 is the audio-left output to the interface.",
+   "parts": [
+    "R13",
+    "C10",
+    "R14",
+    "J2"
+   ],
+   "wires": [
+    [
+     "j37",
+     "BR-@37"
+    ]
+   ],
+   "check": "Output DC near 0 V after C10. Finger on the input gives a hum: the amp is alive."
+  },
+  {
+   "n": 12,
+   "title": "Three 5 V feeds for the RF modules",
+   "why": "The ADF4351, the PA and the LNA each get a ferrite bead and their own 10 uF plus 100 nF pair, so one module's switching noise does not arrive at the next one along the rail. Identical blocks at columns 38, 41 and 44 \u2014 build one, check it, then repeat it twice.",
+   "parts": [
+    "FB1",
+    "C14",
+    "C15",
+    "J6",
+    "FB2",
+    "C16",
+    "C17",
+    "J7",
+    "FB3",
+    "C18",
+    "C19",
+    "J8"
+   ],
+   "wires": [
+    [
+     "e39",
+     "TR-@41"
+    ],
+    [
+     "e42",
+     "TR-@44"
+    ],
+    [
+     "e45",
+     "TR-@47"
+    ]
+   ],
+   "check": "5.00 V at all three of J6, J7, J8 with nothing plugged into them."
+  },
+  {
+   "n": 13,
+   "title": "The ESP32 header and its series resistors",
+   "why": "J9 is where the radar's ESP32 lands. R16 to R18 are 33 ohm series resistors on SCK, MOSI and LE: they damp the edges so a 2.54 mm breadboard run does not ring into the PLL's logic inputs. Each one hops the centre channel into the top bank.",
+   "parts": [
+    "J9",
+    "R16",
+    "R17",
+    "R18"
+   ],
+   "wires": [
+    [
+     "f44",
+     "BR-@44"
+    ]
+   ],
+   "check": "Each resistor reads 33 ohms between its two strips, and nothing else."
+  },
+  {
+   "n": 14,
+   "title": "SPI across to the ADF4351",
+   "why": "Four blue wires carry the damped SPI and the lock-detect line up to J10. R19 pulls CE down so the synthesiser's output stays OFF until something deliberately enables it, and JP3 is the link that enables it. The yellow wire brings 3V3 over from the ESP32 \u2014 the ADF4351 board is 3.3 V logic and needs no level shifting.",
+   "parts": [
+    "J10",
+    "R19",
+    "JP3"
+   ],
+   "wires": [
+    [
+     "e52",
+     "TR-@52"
+    ],
+    [
+     "a46",
+     "b53"
+    ],
+    [
+     "a47",
+     "b54"
+    ],
+    [
+     "a48",
+     "b55"
+    ],
+    [
+     "f48",
+     "b56"
+    ],
+    [
+     "f53",
+     "e58"
+    ]
+   ],
+   "check": "With JP3 off, CE reads 0 V. The radar must boot with RF off."
+  },
+  {
+   "n": 15,
+   "title": "The A4988 stepper header",
+   "why": "Only for the optional turntable; skip the whole step if you are not fitting one. R20 pulls EN up so the driver is disabled until the ESP32 says otherwise, and R21 and R22 pull STEP and DIR down so a floating input cannot make the motor twitch at power-up. The three brown wires are the control lines.",
+   "parts": [
+    "J11",
+    "R20",
+    "R21",
+    "R22"
+   ],
+   "wires": [
+    [
+     "f58",
+     "BR-@58"
+    ],
+    [
+     "g53",
+     "g59"
+    ],
+    [
+     "g50",
+     "g60"
+    ],
+    [
+     "g51",
+     "g61"
+    ],
+    [
+     "g52",
+     "g62"
+    ]
+   ],
+   "check": "EN sits at 3V3, STEP and DIR at 0 V, with the ESP32 unplugged."
+  },
+  {
+   "n": 16,
+   "title": "The SYNC divider back to the sound card",
+   "why": "The last block, and the one that makes the whole radar measurable: R23 and R24 divide the ESP32's 3.3 V chirp marker down to about 0.3 V, which is a line-level signal the sound card's right channel can take. Without it the laptop cannot cut the beat signal into chirps and there is no range axis at all.",
+   "parts": [
+    "R23",
+    "R24",
+    "J12"
+   ],
+   "wires": [
+    [
+     "e62",
+     "TR-@62"
+    ],
+    [
+     "h49",
+     "a60"
+    ]
+   ],
+   "check": "A 135 Hz square wave of about 0.3 V at J12 once radar_ctl is running."
+  },
+  {
+   "n": 17,
+   "title": "Before you power anything",
+   "why": "The board is finished. These are the measurements that catch a build error while it is still cheap, with the supply DISCONNECTED and nothing plugged into the headers.",
+   "parts": [],
+   "wires": [],
+   "check": "Ohm-meter, all with power off: GND to VANA, GND to V5 and GND to 3V3 must each read open (over 1 kohm). Any of them near zero is a short \u2014 find it before you connect 12 V. Then work the test cards in hardware/spice/."
+  }
+ ],
+ "wire_function": {
+  "black": "GND",
+  "red": "VANA (+12 V analogue)",
+  "orange": "V5",
+  "yellow": "3V3 logic",
+  "green": "audio signal path",
+  "violet": "VREF half-rail bias",
+  "blue": "SPI to the ADF4351",
+  "brown": "stepper STEP / DIR / EN",
+  "pink": "SYNC to the sound card"
  }
 }

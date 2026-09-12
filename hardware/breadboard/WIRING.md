@@ -129,10 +129,10 @@ Rails are assumed split at columns 31|32; four bridge wires are included (harmle
 | 42 | **f48** | **b56** | blue | J9 pin 5 LD (bottom col 48) -> J10 pin 5 LD (top col 56) |
 | 43 | **f53** | **e58** | yellow | J9 pin 10 3V3 (bottom col 53) -> JP3 pin 2 (top col 58) |
 | 44 | **g53** | **g59** | yellow | 3V3 -> J11 pin 2 / R20 (bottom col 59) |
-| 45 | **g50** | **g60** | white | J9 pin 7 STEP (col 50) -> J11 pin 3 (col 60) |
-| 46 | **g51** | **g61** | white | J9 pin 8 DIR (col 51) -> J11 pin 4 (col 61) |
-| 47 | **g52** | **g62** | white | J9 pin 9 EN (col 52) -> J11 pin 5 (col 62) |
-| 48 | **h49** | **a60** | grey | J9 pin 6 SYNC (bottom col 49) up to R23 (top col 60) |
+| 45 | **g50** | **g60** | brown | J9 pin 7 STEP (col 50) -> J11 pin 3 (col 60) |
+| 46 | **g51** | **g61** | brown | J9 pin 8 DIR (col 51) -> J11 pin 4 (col 61) |
+| 47 | **g52** | **g62** | brown | J9 pin 9 EN (col 52) -> J11 pin 5 (col 62) |
+| 48 | **h49** | **a60** | pink | J9 pin 6 SYNC (bottom col 49) up to R23 (top col 60) |
 
 ## Nets as built (what each strip carries)
 

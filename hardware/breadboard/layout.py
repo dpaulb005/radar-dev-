@@ -113,7 +113,24 @@ part("J12", "hdr2", "AUDIO R", [("1", "d63"), ("2", "d62")], "1=AUDIO_R (col 63)
 # ----------------------------------------------------------------------
 W = []
 def wire(a, b, colour, why): W.append(dict(a=a, b=b, colour=colour, why=why))
-BK, RD, BL, YL, GN, OR, WH, GY, VI = "black", "red", "blue", "yellow", "green", "orange", "white", "grey", "violet"
+# Jumper colours are a CODE, one hue per function, so the finished board can be
+# read at a glance and a mis-plugged wire stands out. Nothing electrical depends
+# on them; if your jumper kit is short of a colour, substitute and note it.
+# There is deliberately no WHITE and no GREY: on a cream breadboard both vanish,
+# which is exactly what made the old STEP/DIR/EN and SYNC wires unreadable.
+BK = "black"     # GND
+RD = "red"       # VANA, the +12 V analogue rail
+OR = "orange"    # V5
+YL = "yellow"    # 3V3 logic supply
+GN = "green"     # the audio signal path, mixer IF through to the sound card
+VI = "violet"    # VREF, the half-rail bias
+BL = "blue"      # SPI from the ESP32 to the ADF4351
+BR = "brown"     # stepper control: STEP, DIR, EN
+PK = "pink"      # SYNC, the chirp marker going back to the sound card
+WIRE_FUNCTION = {BK: "GND", RD: "VANA (+12 V analogue)", OR: "V5", YL: "3V3 logic",
+                 GN: "audio signal path", VI: "VREF half-rail bias",
+                 BL: "SPI to the ADF4351", BR: "stepper STEP / DIR / EN",
+                 PK: "SYNC to the sound card"}
 # ground stubs of the headers to the rails
 wire("e3", "TR-@4", BK, "J1 GND")
 wire("j37", "BR-@37", BK, "J2 GND")
@@ -160,10 +177,192 @@ wire("a48", "b55", BL, "R18 out (top col 48) -> J10 pin 4 LE_O (col 55)")
 wire("f48", "b56", BL, "J9 pin 5 LD (bottom col 48) -> J10 pin 5 LD (top col 56)")
 wire("f53", "e58", YL, "J9 pin 10 3V3 (bottom col 53) -> JP3 pin 2 (top col 58)")
 wire("g53", "g59", YL, "3V3 -> J11 pin 2 / R20 (bottom col 59)")
-wire("g50", "g60", WH, "J9 pin 7 STEP (col 50) -> J11 pin 3 (col 60)")
-wire("g51", "g61", WH, "J9 pin 8 DIR (col 51) -> J11 pin 4 (col 61)")
-wire("g52", "g62", WH, "J9 pin 9 EN (col 52) -> J11 pin 5 (col 62)")
-wire("h49", "a60", GY, "J9 pin 6 SYNC (bottom col 49) up to R23 (top col 60)")
+wire("g50", "g60", BR, "J9 pin 7 STEP (col 50) -> J11 pin 3 (col 60)")
+wire("g51", "g61", BR, "J9 pin 8 DIR (col 51) -> J11 pin 4 (col 61)")
+wire("g52", "g62", BR, "J9 pin 9 EN (col 52) -> J11 pin 5 (col 62)")
+wire("h49", "a60", PK, "J9 pin 6 SYNC (bottom col 49) up to R23 (top col 60)")
+
+# ----------------------------------------------------------------------
+# assembly steps — the build, one small verifiable move at a time
+#
+# Every part and every wire belongs to exactly one step; check_steps() proves it,
+# so a part added to the placement above cannot be silently left out of the guide.
+# Wires are keyed by their two holes, which the hole-reuse check already forces
+# to be unique. Order is power first, then the op-amps, then signal left to
+# right, then the digital side: each step is testable before the next one goes in.
+# ----------------------------------------------------------------------
+STEPS = []
+def step(title, why, parts=(), wires=(), check=""):
+    STEPS.append(dict(n=len(STEPS) + 1, title=title, why=why,
+                      parts=list(parts), wires=[list(w) for w in wires], check=check))
+
+step("Rails, bridged and tied",
+     "Nothing works until the four rails carry what they claim. Many 830-point boards "
+     "split every rail at the middle, so the right-hand half of each is dead until you "
+     "bridge it — and a split you did not notice is the classic reason half a board is "
+     "unpowered. The last wire ties the two GND rails into one ground.",
+     wires=[("TR+@31", "TR+@32"), ("TR-@31", "TR-@32"), ("BR+@31", "BR+@32"),
+            ("BR-@31", "BR-@32"), ("TR-@1", "BR-@1")],
+     check="Continuity from each rail's far left hole to its far right hole. "
+           "If your board's rails are continuous, these four bridges are harmless.")
+
+step("12 V in, and the diode that saves the board",
+     "J3 takes the 12 V supply. D1 is a series Schottky: get the supply backwards and "
+     "it simply does not conduct, instead of taking the op-amps and the electrolytics "
+     "with it. The band on the diode body is the cathode and it faces RIGHT, toward "
+     "column 13. C11 is the bulk reservoir on the protected side.",
+     parts=["J3", "D1", "C11", "J4"],
+     wires=[("f11", "BR-@11"), ("f14", "BR-@14")],
+     check="D1's band toward column 13. C11's + leg toward column 13, its - to the GND rail.")
+
+step("The VANA rail — clean 12 V for the op-amps",
+     "R15 and C13 are an RC filter, not a resistor someone forgot to remove: 10 ohms "
+     "into 100 uF rolls off at about 160 Hz, which keeps supply noise out of an "
+     "amplifier whose whole job is a signal down at 20 mV. The output of that filter "
+     "is what feeds the bottom red rail.",
+     parts=["R15", "C13"], wires=[("f16", "BR+@16")],
+     check="Bottom red rail now sits at 12 V minus the diode drop, about 11.6 V.")
+
+step("5 V in from the buck converter",
+     "J5 brings 5 V back from the LM2596 after you have set it with nothing else "
+     "connected. C12 decouples it and the orange wire carries it up to the top red "
+     "rail, which is what the three RF modules will feed from.",
+     parts=["J5", "C12"], wires=[("f19", "BR-@19"), ("g18", "TR+@18")],
+     check="Set the buck to 5.00 V BEFORE this wire goes in. Top red rail = 5.00 V.")
+
+step("Seat the two op-amps",
+     "U1 is the two gain stages, U2 the reference buffer and the output. Both straddle "
+     "the centre channel so the two sides of the package land on separate strips. The "
+     "notch and the pin-1 dot face RIGHT, toward the higher column. C3 and C7 are the "
+     "100 nF decouplers and they go right at pin 8 of each chip, not somewhere tidier.",
+     parts=["U1", "U2", "C3", "C7"],
+     wires=[("a5", "TR-@5"), ("a30", "TR-@30"), ("h8", "BR+@8"), ("h33", "BR+@33")],
+     check="Pin 1 at e8 (U1) and e33 (U2). Power the board: both chips should sit at "
+           "room temperature. A warm op-amp means V+ and V- are swapped.")
+
+step("The half-rail reference",
+     "This amplifier runs on a single supply, so 'zero' has to be manufactured: R9 and "
+     "R10 divide VANA in half at column 31, C5 holds it still, and U2's second half "
+     "buffers it so the divider is not loaded by everything downstream. R11 and C6 "
+     "carry that buffered VREF to the node the whole signal chain hangs off.",
+     parts=["R9", "R10", "C5", "R11", "C6"],
+     wires=[("e36", "BR+@36"), ("j32", "j31"), ("a33", "a32"), ("b29", "b26")],
+     check="VREF (column 26) should read half of VANA, about 5.8 V, and be steady.")
+
+step("Spread VREF along the board",
+     "Four violet wires, and they are the reason the amplifier has a zero to swing "
+     "about. The long one runs the length of row a to reach the input stage at column "
+     "1. Do them as a set so none is forgotten — a stage whose VREF is missing is not "
+     "dead, it is railed, which is a more confusing symptom.",
+     wires=[("a26", "a24"), ("b24", "c16"), ("d16", "d17"), ("a1", "a16")],
+     check="Every violet wire end reads the same 5.8 V.")
+
+step("The input: mixer IF, terminated",
+     "R1 is the 49.9 ohm load the mixer's IF port wants; without it the conversion "
+     "loss and the flatness wander. C20 shunts the LO that leaks out of that same port "
+     "at 2.4 GHz, which a TL072 would otherwise rectify into a DC offset. C1 and R2 "
+     "are the first high-pass, and they are what stop the TX leakage tone from "
+     "saturating the gain.",
+     parts=["J1", "R1", "C20", "C1", "R2"],
+     wires=[("e3", "TR-@4"), ("a4", "a6")],
+     check="R1 across the IF input reads 49.9 ohms to ground.")
+
+step("Gain stage A, times 101",
+     "R3 over R4 sets the gain. R4 is 1k for the full 40 dB, but fit 4.7k on first "
+     "power-up for a gain of 22: if the TX leakage is stronger than you expected, a "
+     "lower first gain is the difference between seeing it and clipping on it. C2 and "
+     "R6 are the second high-pass into stage B.",
+     parts=["R3", "C2", "R4", "R6"],
+     wires=[("a8", "a10"), ("a14", "a7")],
+     check="Inject 10 mV at 1 kHz: about 107 mV out of stage A with R4 at 4.7k.")
+
+step("Gain stage B, times 11, and the anti-alias corner",
+     "R7 over R8 gives the second 21 dB. R12 with C9 is the 15.9 kHz low-pass that "
+     "limits the noise bandwidth reaching the sound card. The last wire takes that "
+     "filtered node across the channel into U2's spare half.",
+     parts=["R7", "R8", "R12", "C9"],
+     wires=[("d12", "g5"), ("g7", "a19"), ("a23", "i6"), ("e22", "h30")],
+     check="Total gain now about 61 dB. Sweep it: -3 dB at 15.9 kHz, -6 dB at 159 Hz.")
+
+step("Output, isolated and bled to ground",
+     "R13 and C10 hand the signal to the sound card through a series resistor, so a "
+     "cable capacitance does not hang directly off an op-amp output. R14 bleeds the "
+     "coupling cap so the jack is not left holding a charge, and J2 is the audio-left "
+     "output to the interface.",
+     parts=["R13", "C10", "R14", "J2"], wires=[("j37", "BR-@37")],
+     check="Output DC near 0 V after C10. Finger on the input gives a hum: the amp is alive.")
+
+step("Three 5 V feeds for the RF modules",
+     "The ADF4351, the PA and the LNA each get a ferrite bead and their own 10 uF plus "
+     "100 nF pair, so one module's switching noise does not arrive at the next one "
+     "along the rail. Identical blocks at columns 38, 41 and 44 — build one, check it, "
+     "then repeat it twice.",
+     parts=["FB1", "C14", "C15", "J6", "FB2", "C16", "C17", "J7", "FB3", "C18", "C19", "J8"],
+     wires=[("e39", "TR-@41"), ("e42", "TR-@44"), ("e45", "TR-@47")],
+     check="5.00 V at all three of J6, J7, J8 with nothing plugged into them.")
+
+step("The ESP32 header and its series resistors",
+     "J9 is where the radar's ESP32 lands. R16 to R18 are 33 ohm series resistors on "
+     "SCK, MOSI and LE: they damp the edges so a 2.54 mm breadboard run does not ring "
+     "into the PLL's logic inputs. Each one hops the centre channel into the top bank.",
+     parts=["J9", "R16", "R17", "R18"], wires=[("f44", "BR-@44")],
+     check="Each resistor reads 33 ohms between its two strips, and nothing else.")
+
+step("SPI across to the ADF4351",
+     "Four blue wires carry the damped SPI and the lock-detect line up to J10. R19 "
+     "pulls CE down so the synthesiser's output stays OFF until something deliberately "
+     "enables it, and JP3 is the link that enables it. The yellow wire brings 3V3 over "
+     "from the ESP32 — the ADF4351 board is 3.3 V logic and needs no level shifting.",
+     parts=["J10", "R19", "JP3"],
+     wires=[("e52", "TR-@52"), ("a46", "b53"), ("a47", "b54"), ("a48", "b55"),
+            ("f48", "b56"), ("f53", "e58")],
+     check="With JP3 off, CE reads 0 V. The radar must boot with RF off.")
+
+step("The A4988 stepper header",
+     "Only for the optional turntable; skip the whole step if you are not fitting one. "
+     "R20 pulls EN up so the driver is disabled until the ESP32 says otherwise, and "
+     "R21 and R22 pull STEP and DIR down so a floating input cannot make the motor "
+     "twitch at power-up. The three brown wires are the control lines.",
+     parts=["J11", "R20", "R21", "R22"],
+     wires=[("f58", "BR-@58"), ("g53", "g59"), ("g50", "g60"), ("g51", "g61"), ("g52", "g62")],
+     check="EN sits at 3V3, STEP and DIR at 0 V, with the ESP32 unplugged.")
+
+step("The SYNC divider back to the sound card",
+     "The last block, and the one that makes the whole radar measurable: R23 and R24 "
+     "divide the ESP32's 3.3 V chirp marker down to about 0.3 V, which is a line-level "
+     "signal the sound card's right channel can take. Without it the laptop cannot cut "
+     "the beat signal into chirps and there is no range axis at all.",
+     parts=["R23", "R24", "J12"], wires=[("e62", "TR-@62"), ("h49", "a60")],
+     check="A 135 Hz square wave of about 0.3 V at J12 once radar_ctl is running.")
+
+step("Before you power anything",
+     "The board is finished. These are the measurements that catch a build error while "
+     "it is still cheap, with the supply DISCONNECTED and nothing plugged into the "
+     "headers.",
+     check="Ohm-meter, all with power off: GND to VANA, GND to V5 and GND to 3V3 must "
+           "each read open (over 1 kohm). Any of them near zero is a short — find it "
+           "before you connect 12 V. Then work the test cards in hardware/spice/.")
+
+
+def check_steps():
+    """Every part and every wire in exactly one step, and every reference real."""
+    errs = []
+    refs = {p["ref"] for p in P}
+    holes = {(w["a"], w["b"]) for w in W}
+    seen_p, seen_w = {}, {}
+    for st in STEPS:
+        for r in st["parts"]:
+            if r not in refs: errs.append(f"step {st['n']} lists unknown part {r}")
+            elif r in seen_p: errs.append(f"{r} is in step {seen_p[r]} and step {st['n']}")
+            else: seen_p[r] = st["n"]
+        for a, b in st["wires"]:
+            if (a, b) not in holes: errs.append(f"step {st['n']} lists unknown wire {a}-{b}")
+            elif (a, b) in seen_w: errs.append(f"wire {a}-{b} is in step {seen_w[(a,b)]} and step {st['n']}")
+            else: seen_w[(a, b)] = st["n"]
+    for r in sorted(refs - set(seen_p)): errs.append(f"{r} is in no assembly step")
+    for a, b in sorted(holes - set(seen_w)): errs.append(f"wire {a}-{b} is in no assembly step")
+    return errs
+
 
 # ----------------------------------------------------------------------
 # model + checks
@@ -268,10 +467,66 @@ def hole_xy(h):   # mm, board coordinates; column pitch 2.54; top-left origin
         y = {"TR+": 2.0, "TR-": 4.54, "BR+": 38.6, "BR-": 41.1}[k[1]]
     return x, y
 
-COLOURS = {"black": "#111", "red": "#d33", "blue": "#2f77b0", "yellow": "#e0b020", "green": "#2a9d5c", "orange": "#e07a20", "white": "#eee", "grey": "#8a8f96", "violet": "#7a4fbf"}
-def svg():
-    S = 5.0; W_, H_ = 170, 47
+# Rendered hues, chosen to stay apart from each other AND from the #f4f1e8 board.
+COLOURS = {"black": "#14181d", "red": "#cc2b2b", "orange": "#e2701a", "yellow": "#c8951a",
+           "green": "#1f9153", "violet": "#7a4fbf", "blue": "#2f77b0", "brown": "#8a5a2b",
+           "pink": "#e0669a"}
+LEAD = "#5f6670"          # component leads and DIP legs: dark enough to read on cream
+GHOST = 0.38              # "already built": faded AND desaturated, like a Lego manual
+HALO  = "#ffd24a"         # highlight behind whatever this step adds
+
+
+def swatch(o, S, x, y, name):
+    """One colour-key entry. Returns the x to start the next one at.
+
+    The advance is measured from the label, not guessed: at font-size 8 on a
+    5 px/mm grid a monospace character is about 0.98 mm wide. Guessing is what
+    made the step legends print on top of each other."""
+    label = f"{name} — {WIRE_FUNCTION[name]}"
+    o.append(f'<rect x="{x*S}" y="{(y-1.7)*S}" width="{2.2*S}" height="{2.2*S}" rx="2" '
+             f'fill="{COLOURS[name]}" stroke="#00000040" stroke-width=".8"/>')
+    o.append(f'<text x="{(x+3.0)*S}" y="{y*S}" font-size="8" fill="#333">{esc(label)}</text>')
+    return x + 3.0 + 0.98 * len(label) + 3.4
+
+
+def legend(o, S, W_, H_, active):
+    """Colour key along the bottom: one swatch per function, plus the step caption."""
+    y = 49.5 if active is None else 48.5
+    if active is not None:
+        st = STEPS[active - 1]
+        o.append(f'<text x="{7*S}" y="{y*S}" font-size="11" font-weight="bold" fill="#14181d">'
+                 f'Step {st["n"]} of {len(STEPS)} — {esc(st["title"])}</text>')
+        used = {w["colour"] for w in W if [w["a"], w["b"]] in st["wires"]}
+        if used:
+            x = 7.0
+            for name in [c for c in WIRE_FUNCTION if c in used]:
+                x = swatch(o, S, x, y + 3.1, name)
+        return
+    o.append(f'<text x="{7*S}" y="{y*S}" font-size="9" font-weight="bold" fill="#14181d">'
+             f'JUMPER COLOUR CODE — one hue per function. No white, no grey: both vanish on a cream board.</text>')
+    x, yy = 7.0, y + 3.7
+    for i, name in enumerate(WIRE_FUNCTION):
+        if i == 5: x, yy = 7.0, yy + 4.2
+        x = swatch(o, S, x, yy, name)
+
+
+def esc(t):
+    return str(t).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+def svg(active=None, path=None):
+    """Top view. active=None draws the finished board; active=N draws assembly
+    step N: everything from earlier steps ghosted back, this step's parts and
+    wires in full colour with a halo, and later steps not drawn at all."""
+    step_of_part = {r: st["n"] for st in STEPS for r in st["parts"]}
+    step_of_wire = {(a, b): st["n"] for st in STEPS for a, b in st["wires"]}
+    def state(n):
+        if active is None: return "on"
+        if n is None or n > active: return "off"
+        return "on" if n == active else "ghost"
+    S = 5.0; W_, H_ = 170, 47 + (12 if active is None else 9)
     o = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W_*S} {H_*S}" width="{W_*S}" height="{H_*S}" font-family="IBM Plex Mono, DejaVu Sans Mono, monospace">',
+         '<defs><filter id="built" color-interpolation-filters="sRGB">'
+         '<feColorMatrix type="saturate" values="0.08"/></filter></defs>',
          f'<rect width="{W_*S}" height="{H_*S}" fill="#f4f1e8" rx="8"/>']
     # rails stripes
     for r, y, c in (("TR+", 2.0, "#d33"), ("TR-", 4.54, "#2f77b0"), ("BR+", 38.6, "#d33"), ("BR-", 41.1, "#2f77b0")):
@@ -293,19 +548,42 @@ def svg():
     o.append(f'<line x1="{(xs+xe)/2*S}" y1="{37*S}" x2="{(xs+xe)/2*S}" y2="{43*S}" stroke="#bbb" stroke-dasharray="3 3"/>')
     # wires (under parts)
     for w in W:
+        st = state(step_of_wire.get((w["a"], w["b"])))
+        if st == "off": continue
         (x1, y1), (x2, y2) = hole_xy(w["a"]), hole_xy(w["b"]); c = COLOURS[w["colour"]]
         sag = -max(1.5, abs(x2 - x1) * 0.12) if (y1 + y2) / 2 < 22 else max(1.5, abs(x2 - x1) * 0.12)
-        o.append(f'<path d="M{x1*S},{y1*S} Q{(x1+x2)/2*S},{((y1+y2)/2+sag)*S} {x2*S},{y2*S}" fill="none" stroke="{c}" stroke-width="3" stroke-linecap="round" opacity=".9"/>')
-        o.append(f'<circle cx="{x1*S}" cy="{y1*S}" r="2.2" fill="{c}"/><circle cx="{x2*S}" cy="{y2*S}" r="2.2" fill="{c}"/>')
+        # Parallel runs (STEP/DIR/EN, the SPI group) share a row and a span, so
+        # one sag draws them all on top of each other and a bundle of three
+        # looks like one wire. Fan them by a hole's worth, keyed off the start
+        # column so the fan is stable between renders.
+        sag += (parse(w["a"])[3] % 3 - 1) * (0.9 if sag > 0 else -0.9)
+        d = f'M{x1*S},{y1*S} Q{(x1+x2)/2*S},{((y1+y2)/2+sag)*S} {x2*S},{y2*S}'
+        o.append(f'<g opacity="{GHOST}" filter="url(#built)">' if st == "ghost" else '<g>')
+        if st == "on" and active is not None:      # halo so the new wire reads instantly
+            o.append(f'<path d="{d}" fill="none" stroke="{HALO}" stroke-width="8" stroke-linecap="round" opacity=".55"/>')
+        # a thin dark casing keeps every hue apart from the cream board
+        o.append(f'<path d="{d}" fill="none" stroke="#00000030" stroke-width="4.6" stroke-linecap="round"/>')
+        o.append(f'<path d="{d}" fill="none" stroke="{c}" stroke-width="3" stroke-linecap="round"/>')
+        o.append(f'<circle cx="{x1*S}" cy="{y1*S}" r="2.4" fill="{c}" stroke="#00000040" stroke-width=".8"/>'
+                 f'<circle cx="{x2*S}" cy="{y2*S}" r="2.4" fill="{c}" stroke="#00000040" stroke-width=".8"/>')
+        o.append('</g>')
     # parts
     for p in P:
+        st = state(step_of_part.get(p["ref"]))
+        if st == "off": continue
         pts = [hole_xy(h) for _, h in p["pins"]]
+        if st == "on" and active is not None:      # halo behind the part being added
+            hx = [q[0] for q in pts]; hy = [q[1] for q in pts]
+            o.append(f'<rect x="{(min(hx)-2.6)*S}" y="{(min(hy)-2.6)*S}" '
+                     f'width="{(max(hx)-min(hx)+5.2)*S}" height="{(max(hy)-min(hy)+5.2)*S}" '
+                     f'fill="{HALO}" opacity=".5" rx="{2.4*S}"/>')
+        o.append(f'<g opacity="{GHOST}" filter="url(#built)">' if st == "ghost" else '<g>')
         if p["kind"] == "dip8":
             # true to life: 9.9 x 6.4 mm body on 7.62 mm row spacing, notch at the pin-1/pin-8 end (right), dot beside pin 1
             xs_ = [q[0] for q in pts]; xc = (min(xs_) + max(xs_)) / 2; x0, x1 = xc - 4.95, xc + 4.95
             yc = (pts[0][1] + pts[4][1]) / 2; y0, y1 = yc - 3.2, yc + 3.2
             for (pin, h), (x, y) in zip(p["pins"], pts):     # legs from the body edge into the holes
-                o.append(f'<line x1="{x*S}" y1="{(y0 if h[0]=="e" else y1)*S}" x2="{x*S}" y2="{y*S}" stroke="#9a9a9a" stroke-width="3"/>')
+                o.append(f'<line x1="{x*S}" y1="{(y0 if h[0]=="e" else y1)*S}" x2="{x*S}" y2="{y*S}" stroke="{LEAD}" stroke-width="3"/>')
             o.append(f'<rect x="{x0*S}" y="{y0*S}" width="{(x1-x0)*S}" height="{(y1-y0)*S}" fill="#1b1f24" rx="1.5"/>')
             o.append(f'<path d="M{x1*S},{(yc-1.1)*S} A{1.1*S},{1.1*S} 0 0 0 {x1*S},{(yc+1.1)*S} Z" fill="#efe9d6"/>')   # notch, right end
             o.append(f'<circle cx="{(x1-1.3)*S}" cy="{(y0+1.2)*S}" r="2.2" fill="#ddd"/>')                             # pin-1 dot (row e end)
@@ -318,11 +596,19 @@ def svg():
             x0, x1 = pts[0][0] - 1.27, pts[-1][0] + 1.27; y = pts[0][1]
             o.append(f'<rect x="{x0*S}" y="{(y-1.27)*S}" width="{(x1-x0)*S}" height="{2.54*S}" fill="#222" rx="2"/>')
             for (pin, h), (x, yy) in zip(p["pins"], pts): o.append(f'<rect x="{(x-0.45)*S}" y="{(yy-0.45)*S}" width="{0.9*S}" height="{0.9*S}" fill="#d4b25a"/>')
-            lab = p["ref"] + (" " + p["value"] if len(p["pins"]) >= 5 else "")
-            o.append(f'<text x="{(x0+x1)/2*S}" y="{(y + (3.4 if y > 22 else -2.2))*S}" font-size="7.5" fill="#222" text-anchor="middle" font-weight="bold">{lab}</text>')
+            # A wide header has room for its own name; putting it inside the body
+            # is the only way to stop J9/J10/J11 colliding with the resistors
+            # packed around them. Narrow 2-pin headers keep the label outside.
+            if len(p["pins"]) >= 4:
+                o.append(f'<text x="{(x0+x1)/2*S}" y="{(y+0.5)*S}" font-size="6.6" fill="#f4f1e8" '
+                         f'text-anchor="middle" font-weight="bold">{esc(p["ref"] + " " + p["value"])}</text>')
+            else:
+                o.append(f'<text x="{(x0+x1)/2*S}" y="{(y + (3.4 if y > 22 else -2.2))*S}" font-size="7.5" '
+                         f'fill="#222" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" '
+                         f'stroke-width="2.6" paint-order="stroke">{esc(p["ref"])}</text>')
         else:
             (x1, y1), (x2, y2) = pts; col = {"res": "#d9c39a", "film": "#d8b53a", "cer": "#d08a3a", "elec": "#2a3140", "diode": "#222", "bead": "#666"}[p["kind"]]
-            o.append(f'<line x1="{x1*S}" y1="{y1*S}" x2="{x2*S}" y2="{y2*S}" stroke="#999" stroke-width="1.5"/>')
+            o.append(f'<line x1="{x1*S}" y1="{y1*S}" x2="{x2*S}" y2="{y2*S}" stroke="{LEAD}" stroke-width="1.5"/>')
             mx, my = (x1 + x2) / 2, (y1 + y2) / 2; ang = 0 if abs(x2 - x1) >= abs(y2 - y1) else 90
             bw, bh = (5.5, 2.2) if p["kind"] in ("res", "diode") else (3.4, 2.4)
             o.append(f'<g transform="translate({mx*S},{my*S}) rotate({ang})"><rect x="{-bw/2*S}" y="{-bh/2*S}" width="{bw*S}" height="{bh*S}" fill="{col}" rx="{2 if p["kind"]!="film" else 0}" stroke="#333" stroke-width=".6"/></g>')
@@ -331,13 +617,79 @@ def svg():
             if p["kind"] == "diode":
                 o.append(f'<g transform="translate({mx*S},{my*S}) rotate({ang})"><rect x="{1.4*S}" y="{-bh/2*S}" width="{0.5*S}" height="{bh*S}" fill="#ddd"/></g>')
             if ang == 0:
-                o.append(f'<text x="{mx*S}" y="{(my-1.9)*S}" font-size="7" fill="#111" text-anchor="middle" font-weight="bold">{p["ref"]}</text>')
-                o.append(f'<text x="{mx*S}" y="{(my-0.7)*S}" font-size="6.5" fill="#333" text-anchor="middle">{p["value"]}</text>')
+                o.append(f'<text x="{mx*S}" y="{(my-1.9)*S}" font-size="7" fill="#111" text-anchor="middle" font-weight="bold" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">{p["ref"]}</text>')
+                o.append(f'<text x="{mx*S}" y="{(my-0.7)*S}" font-size="6.5" fill="#333" text-anchor="middle" stroke="#f4f1e8" stroke-width="2.6" paint-order="stroke">{p["value"]}</text>')
             else:
                 fill = "#fff" if p["kind"] in ("elec", "diode") else "#111"
-                o.append(f'<text transform="translate({mx*S},{my*S}) rotate(-90)" font-size="6.5" fill="{fill}" text-anchor="middle" dominant-baseline="middle" font-weight="bold">{p["ref"]} {p["value"]}</text>')
+                o.append(f'<text transform="translate({mx*S},{my*S}) rotate(-90)" font-size="6.5" fill="{fill}" text-anchor="middle" dominant-baseline="middle" font-weight="bold" stroke="{"#1b1f24" if fill == "#fff" else "#f4f1e8"}" stroke-width="2.2" paint-order="stroke">{p["ref"]} {p["value"]}</text>')
+        o.append('</g>')
+    legend(o, S, W_, H_, active)
     o.append('</svg>')
-    (OUT / "breadboard.svg").write_text("\n".join(o))
+    (path or (OUT / "breadboard.svg")).write_text("\n".join(o))
+
+def assembly_md():
+    """ASSEMBLY.md — the build as numbered steps, one picture each.
+
+    Each picture shows the board as it should look when that step is done: what
+    you already built ghosted back, what this step adds in full colour. Nothing
+    here is hand-written twice — the parts, the wires and the holes all come from
+    the same placement the netlist check runs against."""
+    by_ref = {q["ref"]: q for q in P}
+    by_holes = {(w["a"], w["b"]): w for w in W}
+    L = ["# Building the breadboard, step by step\n",
+         "Seventeen steps. Each one adds a handful of parts, ends with something you can",
+         "measure, and has a picture of the board as it should look when you are done.",
+         "**Build in this order**: power first so every later stage has something to run",
+         "on, then the op-amps, then the signal left to right, then the digital side.\n",
+         "Generated by `layout.py` from the same placement the schematic check runs",
+         "against, so these steps cannot drift from [`WIRING.md`](WIRING.md) or from the",
+         "board. `python3 layout.py` rebuilds the lot.\n",
+         "## Before you start\n",
+         "| | |",
+         "|---|---|",
+         "| board | 830-point breadboard. Columns **1–63** left to right; rows **a–e** are the top bank, **f–j** the bottom. The five holes of one column in one bank are a single strip. |",
+         "| hole names | `b14` = row b, column 14. `TR-@12` = the **top blue** rail, hole nearest column 12 — on a real board just use the closest free rail hole. |",
+         "| rails | top red **V5**, top blue **GND**, bottom red **VANA** (+12 V analogue), bottom blue **GND**. |",
+         "| tools | a fine pair of snips, tweezers, a multimeter. No soldering: everything here pushes in. |",
+         "\n### The jumper colour code\n",
+         "One hue per function, so a finished board can be read at a glance and a wire in",
+         "the wrong place stands out. Nothing electrical depends on it — if your jumper",
+         "kit is short of a colour, substitute one and note it on the sheet.\n",
+         "| colour | carries |", "|---|---|"]
+    for c, what in WIRE_FUNCTION.items():
+        n = sum(1 for w in W if w["colour"] == c)
+        L.append(f"| **{c}** | {what} — {n} wire{'s' if n != 1 else ''} |")
+    L += ["", "There is deliberately **no white and no grey wire** anywhere in this build: on a",
+          "cream breadboard both disappear, and the three stepper lines and the SYNC line",
+          "used to be exactly that. They are brown and pink now.\n", "---\n"]
+    for st in STEPS:
+        L.append(f"## Step {st['n']} — {st['title']}\n")
+        L.append(f"![step {st['n']}](steps/step-{st['n']:02d}.png)\n")
+        L.append(st["why"] + "\n")
+        if st["parts"]:
+            L += ["| part | value | push it in at |", "|---|---|---|"]
+            for r in st["parts"]:
+                q = by_ref[r]
+                where = ", ".join(f"{pin}→**{h}**" for pin, h in q["pins"])
+                L.append(f"| {r} | {q['value']} | {where} |")
+            L.append("")
+        if st["wires"]:
+            L += ["| wire | colour | from → to | what it does |", "|---|---|---|---|"]
+            for i, (a, b) in enumerate(st["wires"], 1):
+                w = by_holes[(a, b)]
+                L.append(f"| {i} | {w['colour']} | **{a}** → **{b}** | {w['why']} |")
+            L.append("")
+        if st["check"]:
+            L.append(f"> **Check before moving on.** {st['check']}\n")
+        L.append("---\n")
+    L += ["## When it is all in\n",
+          "The finished board: [`breadboard.png`](breadboard.png), every hole and net in",
+          "[`WIRING.md`](WIRING.md), and [`breadboard.html`](breadboard.html) if you want",
+          "to hover a part and see what it touches.\n",
+          "Simulate before you trust it — `../spice/README.md` has one test card per block,",
+          "with the stimulus and the reading to expect.\n"]
+    (OUT / "ASSEMBLY.md").write_text("\n".join(L) + "\n")
+
 
 def wiring_md(exp, pin_node, find):
     L = ["# Breadboard wiring — every hole, every wire\n",
@@ -384,6 +736,14 @@ if __name__ == "__main__":
         for half in "LR":
             n = root_net.get(find(("rail", rail, half)))
             if n: groups[rail + half] = n
-    (OUT / "layout.json").write_text(json.dumps(dict(parts=P, wires=W, rails=RAILS, nets=exp, group_net=groups), indent=1))
+    (OUT / "layout.json").write_text(json.dumps(dict(parts=P, wires=W, rails=RAILS, nets=exp, group_net=groups, steps=STEPS, wire_function=WIRE_FUNCTION), indent=1))
+    if errs := check_steps():
+        for e in errs: print("STEP ERROR:", e)
+        sys.exit(1)
+    print(f"{len(STEPS)} assembly steps cover every part and every wire exactly once")
     svg(); wiring_md(exp, pin_node, find)
-    print("wrote layout.json, breadboard.svg, WIRING.md")
+    sd = OUT / "steps"; sd.mkdir(exist_ok=True)
+    for st in STEPS:
+        svg(active=st["n"], path=sd / f"step-{st['n']:02d}.svg")
+    assembly_md()
+    print(f"wrote layout.json, breadboard.svg, WIRING.md, ASSEMBLY.md, steps/ ({len(STEPS)} svg)")
