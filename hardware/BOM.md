@@ -6,6 +6,11 @@
 > in SMA *and* RP-SMA (you need SMA — its 3 dB edges are 2380/2500 MHz, which
 > the full-band sweep fits inside). This page is the reasoning; that one is the
 > shopping.
+>
+> **The interface is the one row that depends on how far you are going.** Stage 1
+> records two channels and any line-level 2-in interface does it, including one
+> you already own. Stage 2 needs four on one sample clock and that is the
+> UMC404HD at $139. Row 13 and row 26.
 
 Researched September 2026 (Mini-Circuits store checked directly; Amazon /
 FPV retailers for the rest). Prices are US street, rounded. Order in the
@@ -46,14 +51,15 @@ Dimensions: aperture 263.8 × 193.1 mm, WR-340 throat 86.4 × 43.2 mm, flare
 91.5 mm, probe 43.7 mm from the back wall. Cut list in
 [`../docs/radar-hardware.md`](../docs/radar-hardware.md) §2.
 
-## C. Baseband, control, power — ~$192
+## C. Baseband, control, power — ~$43
 
 | # | item | qty | ~$ | notes |
 |---|---|---|---|---|
-| 13 | **Behringer UMC404HD** 4-input USB interface | 1 | 139 | the ADC. Four inputs and 192 kHz: stage 2 needs both, and two UCA202s cannot measure phase. Was priced at $100; re-checked Sept 2026 |
+| 13 | USB audio interface, 2 inputs — **owned: Behringer Xenyx 302USB** | 1 | 0 | the ADC. Stage 1 records two channels, beat and sync, so any line-level 2-in interface does it. On the 302USB that is the stereo RCA line channel, beat left and sync right, mic channel down and the Line/USB switch on LINE IN. See row 26 for what stage 2 changes |
 | 14 | ESP32 devkit (WROOM-32) | 1 | 10 | runs `firmware/radar_ctl` |
 | 15 | TL072 ×2, breadboard, resistors/capacitors kit | 1 | 25 | video amp (`radar-hardware.md` §5) |
-| 16 | 12 V 3 A supply + LM2596 buck ×2 | 1 | 18 | 12 V for the op-amp/stepper, 5 V for RF modules + ESP32 |
+| 16a | 12 V 3 A supply — **owned** | 1 | 0 | 12 V for the op-amp and the stepper |
+| 16b | LM2596 buck ×2 | 1 | 8 | 5.00 V for the RF modules and the ESP32; set it before anything is connected |
 
 ## D. Mechanical — frame, and an optional turntable — ~$53
 
@@ -94,7 +100,7 @@ skip section H entirely** and fly from the phone on WiFi channel 1 with a
 fraction of a large scene. It is only a bedroom that makes this $122 worth
 spending.
 
-## F. Stage 2 — azimuth interferometer — ~$151
+## F. Stage 2 — azimuth interferometer — ~$290
 
 Bearing from the phase difference between two receivers, in one 0.47 s dwell,
 which is the only way to get it on a *moving* drone. See
@@ -106,7 +112,7 @@ which is the only way to get it on a *moving* drone. See
 | 23 | second 2-way splitter (LO to both mixers) | 1 | 13 | |
 | 24 | second 2400–2500 band-pass filter | 1 | 29 | in front of the second LNA; same part as row 7b |
 | 25 | third horn — materials already in B | — | 0 | **beside** the first RX at 193 mm centres, all three horns rotated 90° |
-| 26 | 4-input USB interface — **already bought in row 13** | — | 0 | beat A, beat B, sync on one sample clock. This is why row 13 is the UMC404HD and not a UCA202: two UCA202s have independent clocks and cannot measure phase |
+| 26 | **Behringer UMC404HD** 4-input USB interface | 1 | 139 | the one part stage 2 forces you to replace. It needs beat A, beat B and sync on **one sample clock**: two 2-in interfaces have independent clocks and a phase measurement between independently clocked converters means nothing. Nothing else in the baseband section changes |
 | 27 | third + fourth TL072, second passives set, second breadboard | 1 | 18 | row 15's two TL072 are fully used by U1A/U1B/U2B/U2A; a second video amp needs three more channels |
 | 28 | second LNA (SPF5189Z 4-pack, row 3) | — | 0 | |
 | 29 | 2 more SMA jumper 3-packs | 2 | 18 | the second receive chain adds four coax runs. Buy them together: the two RX chains must be phase-matched, and identical cables from one batch is the cheap way to do it |
@@ -149,9 +155,9 @@ worth of chain, and buys nothing you will have to replace.
 | frame: plywood, L-brackets, M3 hardware, standoffs | 28 |
 | ESP32 devkit | 10 |
 | **two** TL072, breadboard, passives kit | 25 |
-| 12 V 3 A supply + LM2596 ×2 | 18 |
-| **UMC404HD 4-input interface** — not the UCA202 | 139 |
-| | **433** |
+| LM2596 ×2 (12 V supply already owned) | 8 |
+| USB audio interface — **already owned**, any 2-in does stage 1 | 0 |
+| | **284** |
 
 **Order 1b — the drone's control link, $122.** Only if you are flying in a
 small room; see § E. RadioMaster Pocket 65, Bandit Nano 915 40, BetaFPV ELRS
@@ -228,36 +234,40 @@ weak. That one substitution is $96 of the saving.
 
 If none of the above compromises are acceptable.
 
-Buy the **UMC404HD from the start and skip the UCA202** — the 4-input interface
-does everything the 2-input one does, and a phase measurement needs both beat
-channels on one sample clock. That is the only change from buying in stages.
+If you know from the start that you are going to azimuth, buy the **UMC404HD
+once** and skip the two-input interface entirely — it does everything the
+two-input one does, and it is the only part of the baseband section stage 2
+touches. That is the single change from buying in stages.
 
 | | | running |
 |---|---|---|
 | A. RF chain, first receiver | 205 | 205 |
 | B. Horns, materials for all three | 95 | 300 |
-| C. Baseband, control, power (**less the UCA202**) | 53 | 353 |
-| D. Turntable | 53 | 406 |
-| F. Second receiver and interferometer | 251 | **657** |
-| G. Test gear (buy none) | 0 | 657 |
-| shipping (Mini-Circuits direct) + 6 % tax | ~55 | **~712** |
+| C. Baseband, control, power | 43 | 343 |
+| D. Turntable | 53 | 396 |
+| F. Second receiver and interferometer (UMC404HD included) | 290 | **686** |
+| G. Test gear (buy none) | 0 | 686 |
+| shipping (Mini-Circuits direct) + 6 % tax | ~55 | **~741** |
 
-**Parts only: ~$657. Delivered: ~$712.**
+**Parts only: ~$686. Delivered: ~$741.**
 
-Already owned, not counted: the laptop, the phone, and the ESP-FLY drone.
+Already owned and priced at zero above: the laptop, the 12 V supply, and a
+two-input USB interface (a Behringer Xenyx 302USB). Also the ESP-FLY drone.
 
 ### If you build it in stages instead
 
 | | | running |
 |---|---|---|
-| Stage 1 — range and velocity (A + B + C, the UMC404HD included) | 492 | 492 |
-| + Stage 2 — azimuth (F, the interface already bought) | 151 | 643 |
-| + optional turntable (D) | 53 | 696 |
+| Stage 1 — range and velocity (A + B + C) | 343 | 343 |
+| + Stage 2 — azimuth (F, including the 4-input interface it forces) | 290 | 633 |
+| + optional turntable (D) | 53 | 686 |
 
 
-Staged this way nothing is wasted and nothing is rebuilt: stage 1 buys the
-4-input interface up front and puts up the three-horn frame, and stage 2 is
-purely additive.
+Staged this way nothing is rebuilt: stage 1 puts up the three-horn frame and
+stage 2 is purely additive. One thing *is* written off — the two-input
+interface, once stage 2 needs four channels on one clock. That is the right
+trade when the two-input one is already on the shelf; it is not a reason to
+spend $139 up front on a capability you have not decided to build.
 
 ### The cheaper azimuth path
 

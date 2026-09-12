@@ -903,8 +903,56 @@ function umc404hd(){
   g.userData.plugs2=plugs2; return g;
 }
 const umc=umc404hd(); umc.position.set(0.30,0,0.33); umc.rotation.y=Math.PI; world.add(umc);
-reg('C13',umc,'Behringer UMC404HD — beat A + sync on one sample clock now, beat B into IN2 in stage 2','dsp');
-addLabel(umc,'UMC404HD · 4-in interface','dsp',new THREE.Vector3(0,0.075,0),true);
+reg('F26',umc,'Behringer UMC404HD — stage 2 only: beat A, beat B and sync on one sample clock','dsp');
+
+// Stage 1 records two channels, beat and sync, so it runs on the two-input
+// interface already on the shelf — a Xenyx 302USB. Its stereo RCA line channel
+// takes beat on the left and sync on the right, and the USB send is the main
+// mix. Stage 2 is what replaces it: four channels on ONE sample clock, which no
+// pair of two-input boxes can give, because their clocks are independent.
+function xenyx302(){
+  const g=new THREE.Group(), W=0.129, H=0.046, D=0.133;
+  const bodyG=new THREE.Group(); g.add(bodyG); g.userData.body=bodyG;
+  bodyG.add(at(box(W,H,D,mat({color:0x2b2e33,roughness:.52})),0,H/2,0));
+  bodyG.add(at(box(W-0.005,0.0012,D-0.005,mat({color:0x33373c,roughness:.6})),0,H,0));
+  bodyG.add(at(box(W,0.0016,0.0012,mat({color:0xc9ced3,metalness:.6,roughness:.35})),0,H-0.006,-D/2-0.0006));
+  // the combo mic jack and the 3.5 mm one, on the top panel at the left
+  const ring=cyl(0.0115,0.004,mat({color:0x111316,roughness:.5}),24); ring.position.set(-0.040,H+0.001,-0.040); g.add(ring);
+  ring.userData.name='Xenyx 302USB — XLR/TRS combo mic input (unused here)';
+  const tip=cyl(0.0034,0.005,M.gold,16); tip.position.set(-0.040,H+0.002,-0.040); g.add(tip);
+  g.add(at(cyl(0.0035,0.003,M.black,14),-0.040,H+0.001,-0.014));
+  // knobs: mic level, HI, LO, line level, main mix, phones
+  [[-0.040,0.014,'MIC LEVEL'],[-0.016,0.030,'HI'],[-0.016,0.006,'LO'],
+   [0.010,0.018,'LINE LEVEL'],[0.034,0.018,'MAIN MIX'],[0.054,0.018,'PHONES']]
+   .forEach(([x,z,n])=>{ const k=cyl(0.0062,0.008,mat({color:0x1a1d21,roughness:.5}),18);
+     k.position.set(x,H+0.004,z); g.add(k); k.userData.name='Xenyx 302USB '+n;
+     g.add(at(box(0.0012,0.0009,0.0052,mat({color:0xe8e8e8,roughness:.6})),x,H+0.008,z+0.0026)); });
+  g.add(at(box(0.0016,0.0016,0.0010,M.ledRed),0.044,H+0.0012,-0.030));
+  // rear: line in, 2-track in, main out, USB-B, DC
+  const rca=(x,n,col,label)=>{
+    const r=cyl(0.0046,0.007,mat({color:0x15181c,roughness:.55}),16); r.rotation.x=Math.PI/2;
+    r.position.set(x,0.020,-D/2-0.0015); g.add(r);
+    const c=cyl(0.0030,0.004,mat({color:col,roughness:.5}),14); c.rotation.x=Math.PI/2;
+    c.position.set(x,0.020,-D/2-0.0035); g.add(c); c.userData.name='Xenyx 302USB '+label;
+    if(n){ const pin=box(0.001,0.001,0.001,M.gold);
+      addPin(g,n,x,0.020,-D/2-0.005,pin,new THREE.Vector3(0,0,-1));
+      pin.userData.pinOut=0.014; pin.userData.name='Xenyx 302USB '+label; } };
+  rca(-0.046,'LIN_L',0xd8d8d8,'LINE IN L — beat A from J2');
+  rca(-0.033,'LIN_R',0xc0392b,'LINE IN R — sync from J12');
+  rca(-0.014,null,0xd8d8d8,'2-TRACK IN L (unused)');
+  rca(-0.001,null,0xc0392b,'2-TRACK IN R (unused)');
+  rca(0.018,null,0xd8d8d8,'MAIN OUT L (unused)');
+  rca(0.031,null,0xc0392b,'MAIN OUT R (unused)');
+  const usbSock=box(0.012,0.011,0.004,mat({color:0x8f979e,metalness:.7,roughness:.35}));
+  usbSock.position.set(0.052,0.020,-D/2-0.0005); g.add(usbSock);
+  const usb=box(0.006,0.005,0.002,M.dark); addPin(g,'USB',0.052,0.020,-D/2-0.003,usb,new THREE.Vector3(0,0,-1));
+  usb.userData.pinOut=0.012; usb.userData.name='Xenyx 302USB USB-B → laptop (the main mix, 2 channels)';
+  return g;
+}
+const xen=xenyx302(); xen.position.set(0.300,0,0.318); world.add(xen);
+reg('C13',xen,'Xenyx 302USB — stage 1: beat A on LINE IN L, sync on LINE IN R, main mix over USB','dsp');
+addLabel(xen,'Xenyx 302USB · 2-in (owned)','dsp',new THREE.Vector3(0,0.070,0),true);
+addLabel(umc,'UMC404HD · 4-in (stage 2)','dsp',new THREE.Vector3(0,0.075,0),true);
 
 // stage-3 second receive chain: RX B → band-pass → LNA → mixer, mirroring the first
 const bpf2=rfBarrel(0.042,0.0065,M.alu,[{name:'out',side:'l'},{name:'in',side:'r'}]);
@@ -914,9 +962,10 @@ reg('F28',lna2,'2nd LNA — from the SPF5189Z 4-pack (stage 2)','rf');
 const mix2=mcCase(0.022,0.014,0.020,[{name:'lo',side:'b'},{name:'rf',side:'r'},{name:'if',side:'f'}]);
 putRF(mix2,-0.045,ZRX2); bench.add(mix2); reg('F22',mix2,'2nd mixer ZX05-43MH-S+ (stage 2)','rf');
 const spl2=mcCase(0.032,0.014,0.024,[{name:'s',side:'l'},{name:'o1',side:'f',off:-0.008},{name:'o2',side:'f',off:0.008}]);
-putRF(spl2,-0.120,-0.112); bench.add(spl2); reg('F23',spl2,'2nd splitter — LO to both mixers (stage 2)','rf');
+putRF(spl2,-0.005,-0.030); bench.add(spl2);   // between the two mixers it feeds, and clear of the ADF loom reg('F23',spl2,'2nd splitter — LO to both mixers (stage 2)','rf');
 addLabel(bpf2,'band-pass 2','rf'); addLabel(lna2,'LNA 2','rf'); addLabel(mix2,'mixer 2','rf'); addLabel(spl2,'splitter 2','rf');
-const stage2Only=[bpf2,lna2,mix2,spl2,...umc.userData.plugs2];
+const stage2Only=[bpf2,lna2,mix2,spl2,umc,...umc.userData.plugs2];
+const stage1Only=[xen];        // the two-input interface stage 2 replaces
 
 // =====================================================================
 // the harness — every wire runs between two real pins
@@ -1118,14 +1167,26 @@ link('12 V supply -> terminal block T3',P(psu,'OUT'),P(term,'T3'),'brown',
 // ESP32's jumpers and J11. Beat A (J2 -> IN1, the far jack) drops to the
 // table and runs in front of the bench; sync (J12 -> IN3) stays on the bench.
 {
+  // stage 2 — 1/4" TS plugs into the UMC404HD's front combo jacks
   const A2=P(bbParts.J2,'1'), B1=P(umc,'IN1'), s1=stub(B1);
   const p2=[A2.pos.clone(),stub(A2),V(A2.pos.x,BBUP,A2.pos.z),V(A2.pos.x,BBUP,BBFRONT),V(A2.pos.x,WY,0.1145),
             V(0.1178,WY,0.1145),V(0.1178,WY,0.1905),V(0.1178,0.0011,0.199),V(s1.x,0.0011,0.199),V(s1.x,0.011,0.206),s1,B1.pos.clone()];
-  link('J2 pin 1 AUDIO_L -> UMC404HD IN1 (TS tip, beat A)',A2,B1,'white',p2,wireG,0.0011);
+  stage2Only.push(link('J2 pin 1 AUDIO_L -> UMC404HD IN1 (TS tip, beat A)',A2,B1,'white',p2,wireG,0.0011));
   const A12=P(bbParts.J12,'1'), B3=P(umc,'IN3'), s3=stub(B3);
   const edge12=[A12.pos.clone(),stub(A12),V(A12.pos.x,BBUP,A12.pos.z),V(A12.pos.x,BBUP,BBFRONT),V(A12.pos.x,WY,0.113),
                 V(0.1204,WY,0.113),V(0.1204,WY,0.187),V(s3.x,WY,0.187),V(s3.x,WY,0.1905),s3,B3.pos.clone()];
-  link('J12 pin 1 AUDIO_R -> UMC404HD IN3 (TS tip, sync)',A12,B3,'red',edge12,wireG,0.0011);
+  stage2Only.push(link('J12 pin 1 AUDIO_R -> UMC404HD IN3 (TS tip, sync)',A12,B3,'red',edge12,wireG,0.0011));
+
+  // stage 1 — RCA phono leads into the Xenyx's stereo line channel, same route
+  // out of the board, then along the table to the mixer's rear panel
+  const C2=P(xen,'LIN_L'), c2=stub(C2);
+  const q2=[A2.pos.clone(),stub(A2),V(A2.pos.x,BBUP,A2.pos.z),V(A2.pos.x,BBUP,BBFRONT),V(A2.pos.x,WY,0.1145),
+            V(0.1178,WY,0.1145),V(0.1178,WY,0.1905),V(0.1178,0.0011,0.199),V(c2.x,0.0011,0.199),V(c2.x,0.0200,0.216),c2,C2.pos.clone()];
+  stage1Only.push(link('J2 pin 1 AUDIO_L -> Xenyx LINE IN L (beat A)',A2,C2,'white',q2,wireG,0.0011));
+  const C12=P(xen,'LIN_R'), c12=stub(C12);
+  const q12=[A12.pos.clone(),stub(A12),V(A12.pos.x,BBUP,A12.pos.z),V(A12.pos.x,BBUP,BBFRONT),V(A12.pos.x,WY,0.113),
+             V(0.1204,WY,0.113),V(0.1204,WY,0.187),V(0.1204,0.0011,0.205),V(c12.x,0.0011,0.205),V(c12.x,0.0200,0.221),c12,C12.pos.clone()];
+  stage1Only.push(link('J12 pin 1 AUDIO_R -> Xenyx LINE IN R (sync)',A12,C12,'red',q12,wireG,0.0011));
 }
 
 // ---- USB and mains: without these the bench does not actually run ---------
@@ -1135,9 +1196,13 @@ link('12 V supply -> terminal block T3',P(psu,'OUT'),P(term,'T3'),'brown',
        [A.pos.clone(),a1,V(a1.x,a1.y,0.1905),V(a1.x,0.0016,0.205),V(0.437,0.0016,0.205),V(0.437,0.0016,b1.z),b1,B.pos.clone()],
        wireG,0.0013);
   const C=P(umc,'USB'), D=P(lap,'USB2'), c1=stub(C), d1=stub(D);
-  link('UMC404HD USB-B -> laptop USB2',C,D,'black',
+  stage2Only.push(link('UMC404HD USB-B -> laptop USB2',C,D,'black',
        [C.pos.clone(),c1,V(c1.x,0.0016,0.425),V(0.455,0.0016,0.425),V(0.455,0.0016,0.130),V(0.485,0.0016,0.130),d1,D.pos.clone()],
-       wireG,0.0016);
+       wireG,0.0016));
+  const E=P(xen,'USB'), e1=stub(E);
+  stage1Only.push(link('Xenyx 302USB USB-B -> laptop USB2',E,D,'black',
+       [E.pos.clone(),e1,V(e1.x,0.0016,0.236),V(0.395,0.0016,0.236),V(0.395,0.0016,0.126),V(0.485,0.0016,0.126),d1,D.pos.clone()],
+       wireG,0.0016));
 }
 link('12 V supply -> mains',P(psu,'AC'),PV(V(-0.560,0.004,0.010),1,0,0),'black',
      sideToSide(P(psu,'AC'),PV(V(-0.560,0.004,0.010),1,0,0),[[-0.440,0.100],[-0.500,0.040]]),
@@ -1292,9 +1357,9 @@ const BOM=[
   ['B8','Copper sheet 24 ga 12" × 24"','2','$45','= the horns'],['B9','SMA female 4-hole flange, solder cup','10','$12','the feed on each horn'],
   ['B10','Brass rod 1/16"','1','$5','the 28 mm probe'],['B11','60/40 solder + paste flux','1','$15','consumable'],['B12','Aviation snips','1','$18','tool']]],
  ['C · Baseband, control, power',[
-  ['C13','Behringer UMC404HD 4-in interface','1','$139','beat A + sync now, beat B in stage 2 — one sample clock'],['C13b','Laptop','1','—','you have it'],['C14','ESP32 devkit (WROOM-32)','1','$10','30-pin DOIT pinout'],
+  ['C13','USB interface, 2-in — Xenyx 302USB','1','$0','owned. Stage 1 needs two channels: beat on LINE IN L, sync on LINE IN R'],['C13b','Laptop','1','—','you have it'],['C14','ESP32 devkit (WROOM-32)','1','$10','30-pin DOIT pinout'],
   ['C15a','830-point breadboard','1','—','in the kit'],['C15b','TL072 ×2 + passives, headers, jumper wire','1','$25','every part and wire from WIRING.md'],
-  ['C16a','12 V 3 A supply','1','$18'],['C16b','LM2596 buck ×2','1','—','one shown']]],
+  ['C16a','12 V 3 A supply','1','$0','owned'],['C16b','LM2596 buck ×2','1','$8','one shown']]],
  ['D · Mechanical — frame, turntable optional',[
   ['D17','Plywood 18" × 15", masts, saddles, terminal block','1','$28'],['D18a','NEMA-17 stepper','1','$25','with the A4988'],
   ['D18b','Lazy-susan bearing 150 mm','1','—'],['D18c','A4988 driver','1','—','1/16 microstep']]],
@@ -1308,7 +1373,7 @@ const BOM=[
   ['F23','2nd 2-way splitter','1','$13','LO to both mixers'],
   ['F24','2nd 2400–2500 band-pass','1','$29','in front of the second LNA'],
   ['F25','3rd horn (materials in B)','1','$0','beside RX A at 193 mm centres, all three rolled 90°'],
-  ['F26','4-in interface — already bought as C13','1','$0','its IN2 takes beat B'],
+  ['F26','Behringer UMC404HD 4-in interface','1','$139','the part stage 2 replaces C13 with: beat A, beat B and sync on one sample clock'],
   ['F27','3rd + 4th TL072, 2nd passives set, 2nd breadboard','1','$18','U1/U2 are fully used; a 2nd video amp needs three more channels'],
   ['F28','2nd LNA (SPF5189Z 4-pack)','1','$0','from row A3b'],
   ['F29','2 more SMA jumper 3-packs','2','$18','the two RX chains must be phase-matched — buy one batch']]],
@@ -1325,7 +1390,7 @@ BOM.forEach(([title,rows])=>{ const h=document.createElement('h2'); h.textConten
     r.innerHTML=`<span class="n">${id}</span><span>${name}${note?`<small>${note}</small>`:''}</span><span class="q">${qty} · ${price}</span>`;
     if(!NOTMODELLED.has(id)) r.onclick=()=>selectBom(id,r); bomEl.appendChild(r); }); });
 const tot=document.createElement('div'); tot.className='total';
-tot.innerHTML='Stage 1 ≈ $492 · + stage 2 ≈ $643 · + turntable ≈ $696<br><span class="legend"><span class="sw" style="background:#c2622a"></span>RF <span class="sw" style="background:#2f77b0"></span>baseband/ADC <span class="sw" style="background:#2c9c68"></span>control <span class="sw" style="background:#b8860b"></span>power <span class="sw" style="background:#6a4fbf"></span>drone</span>';
+tot.innerHTML='Stage 1 ≈ $343 · + stage 2 ≈ $633 · + turntable ≈ $686<br><span class="legend"><span class="sw" style="background:#c2622a"></span>RF <span class="sw" style="background:#2f77b0"></span>baseband/ADC <span class="sw" style="background:#2c9c68"></span>control <span class="sw" style="background:#b8860b"></span>power <span class="sw" style="background:#6a4fbf"></span>drone</span>';
 bomEl.appendChild(tot);
 
 let highlight=[], hlT=0;
@@ -1350,6 +1415,7 @@ let stage=1;
 function setStage(s){ stage=s;
   layoutHorns(s);
   stage2Only.forEach(o=>o.visible=(s>=2));
+  stage1Only.forEach(o=>o.visible=(s<2));
   beams.forEach(b=>b.visible=(viewKey==='room'));
   document.querySelectorAll('[data-stage]').forEach(b=>b.classList.toggle('on',+b.dataset.stage===s));
   buildCoax(s);
@@ -1370,7 +1436,7 @@ const views={ bench:{t:new THREE.Vector3(0.00,0.30,-0.06),d:1.62,a:-0.68,e:0.28}
               // screenshot-only views (no button): plan of the whole bench, the ADF corner, the desk in front
               top:{t:new THREE.Vector3(0.02,TOP,0.00),d:0.62,a:0.00,e:1.52},
               back:{t:new THREE.Vector3(-0.10,TOP,-0.13),d:0.26,a:2.60,e:0.75},
-              desk:{t:new THREE.Vector3(0.28,0.01,0.19),d:0.36,a:-0.35,e:0.62} };
+              desk:{t:new THREE.Vector3(0.33,0.03,0.26),d:0.46,a:-0.42,e:0.50} };
 let viewKey='bench';
 function setView(k){ viewKey=k; ['bench','bb','room'].forEach(v=>document.getElementById('b-'+v).classList.toggle('on',v===k));
   const v=views[k]; flyTo(v.t,v.d,v.a,v.e); beams.forEach((b,i)=>b.visible=(k==='room') && ((i===0)===(stage===1))); }
@@ -1439,7 +1505,7 @@ function frame(now){ const dt=Math.min((now-t0)/1000,0.05); t0=now;
 // than a wire can actually take. Both are checked here against the real scene
 // graph, and verify_model.py --render reads the result.
 const OBSTACLES=[['ESP32',esp],['A4988',a49],['LM2596',buck],['terminal block',term],
-  ['UMC404HD',umc.userData.body],['NEMA-17',nema],['ADF4351',adf],['PA',pa],['LNA',lna],
+  ['UMC404HD',umc.userData.body],['Xenyx 302USB',xen.userData.body],['NEMA-17',nema],['ADF4351',adf],['PA',pa],['LNA',lna],
   ['mixer',mix],['splitter',spl],['band-pass',bpf],['3 dB pad',att],['breadboard',bbBody],
   ['12 V supply',psu],['laptop',lap],['turntable plate',plate],['lazy susan',susan],
   ['band-pass 2',bpf2],['LNA 2',lna2],['mixer 2',mix2],['splitter 2',spl2]];
@@ -1492,8 +1558,14 @@ function selfTestGeometry(){
   return problems;
 }
 window.__selfTest=function(){
-  let out;
-  try{ out=selfTestGeometry(); }catch(e){ out=['selfTest threw: '+e.message]; }
+  let out=[];
+  try{
+    // each stage fits a different interface and different audio leads, and the
+    // hidden set is skipped, so both have to be walked
+    [1,2].forEach(function(st){ setStage(st);
+      selfTestGeometry().forEach(function(p){ out.push('stage'+st+': '+p); }); });
+    setStage(1);
+  }catch(e){ out=['selfTest threw: '+e.message]; }
   const uniq=[]; out.forEach(function(s){ if(uniq.indexOf(s)<0) uniq.push(s); });
   if(String(document.title).indexOf('JSERROR')<0)
     document.title=uniq.length? ('GEOM FAIL('+uniq.length+'): '+uniq.slice(0,14).join(' ~ '))

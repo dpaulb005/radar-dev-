@@ -6,7 +6,7 @@ three.js r128 from cdnjs). Between them they draw every row of
 
 | page | what it is |
 |---|---|
-| [`radar-bench.html`](radar-bench.html) | the radar: the three-horn frame, the RF chain, the 830-point breadboard wired hole by hole, the UMC404HD and laptop, both build stages, the optional turntable, and the room with the drone 3 m out |
+| [`radar-bench.html`](radar-bench.html) | the radar: the three-horn frame, the RF chain, the 830-point breadboard wired hole by hole, the USB interface and laptop, both build stages, the optional turntable, and the room with the drone 3 m out |
 | [`drone.html`](drone.html) | the target: a Seeed ESP-FLY with the 915 MHz receiver fitted — every part, every pad, every wire, and what each one weighs |
 
 Both share the same conventions: click a panel row and the camera flies to the
@@ -46,10 +46,21 @@ is the reverse of J9's and no lane assignment can undo that.
 
 Everything a lead plugs into is modelled: header sockets under the ESP32 and
 A4988 (which is what lifts their pins clear of the plywood), a 4-pin JST on the
-stepper, a DC barrel jack and plug plus a mains inlet on the supply, the
-UMC404HD's four front combo jacks with ¼" TS plugs seated in them and its rear
-USB-B, and three USB-A sockets on the laptop. The ESP32 and the interface are
-both corded to the laptop — without those the bench has no power and no serial.
+stepper, a DC barrel jack and plug plus a mains inlet on the supply, the RCA
+line inputs on the stage-1 mixer, the UMC404HD's four front combo jacks with
+¼" TS plugs seated in them, and three USB-A sockets on the laptop. The ESP32 and
+the interface are both corded to the laptop — without those the bench has no
+power and no serial.
+
+**The interface changes with the stage, and so do its leads.** Stage 1 records
+two channels, beat and sync, so the model fits the two-input mixer already on
+the shelf, a Xenyx 302USB, with RCA phono leads into its stereo line channel.
+Stage 2 needs four channels on one sample clock, so the mixer comes off the desk
+and a UMC404HD takes its place on ¼" TS plugs. Because each stage has its own
+interface and its own audio leads, the geometry self-test walks **both** stages
+rather than the one on screen — which is how it caught the second splitter
+sitting in the middle of the ADF4351's logic loom, a fault that had been in the
+layout since stage 2 was drawn.
 
 **The breadboard is the real one.** Every part sits in the holes
 `hardware/breadboard/WIRING.md` gives it, and all 48 jumpers are drawn between
@@ -75,7 +86,7 @@ turntable fitted, because then the frame has to bolt to something that turns.
 | button | what the model shows |
 |---|---|
 | 1 · TX + RX A | two horns fitted, the RX B position built and left empty — range and radial velocity |
-| 2 · + RX B → azimuth | RX B and its chain added (band-pass 2 → LNA 2 → mixer 2 into INPUT 2) — azimuth from phase in one dwell |
+| 2 · + RX B → azimuth | RX B and its chain added (band-pass 2 → LNA 2 → mixer 2), and the UMC404HD replacing the 2-in mixer — azimuth from phase in one dwell |
 | Turntable | optional at either stage: motor on the board shaft **up**, four standoffs carrying the bearing's fixed race at shaft height, a printed hub clamping the D-shaft to the frame — direct 1:1, which is what `STEPS_PER_DEG 8.889` assumes |
 
 The roll is what makes the baseline legal, per

@@ -10,8 +10,9 @@ just where to click.
 > 1. **ZX05-43MH-S+ mixer is now $79.31 and hard to get** — DigiKey stock-notify
 >    only, Mouser backorder. It is the critical path. Order it first, or take
 >    the $25 generic module the budget build already specifies.
-> 2. **UMC404HD is $139, not the $100 in the BOM.** That is the single biggest
->    price move and it pushes the stage-1 order to ~$433.
+> 2. **UMC404HD is $139, not the $100 in the BOM** — but it is no longer a
+>    stage-1 purchase. Stage 1 records two channels and runs on the two-input
+>    interface already owned; the $139 lands only if you go to stage 2.
 > 3. **The GPIO Labs filter comes in SMA *and* RP-SMA.** You need **plain SMA**.
 >    RP-SMA reverses the pin gender and will not mate with the rest of the chain.
 >    Its 3 dB edges are **2380 / 2500 MHz**, so the full-band 2400–2483.5 sweep
@@ -48,10 +49,11 @@ just where to click.
 
 | # | item | $ | where |
 |---|---|---|---|
-| 13 | **Behringer UMC404HD** 4-in interface | **139.00** confirmed | [Sweetwater](https://www.sweetwater.com/store/detail/UMC404HD--behringer-u-phoria-umc404hd-usb-audio-interface) · [Amazon B00QHURLHM](https://www.amazon.com/BEHRINGER-Audio-Interface-4-Channel-UMC404HD/dp/B00QHURLHM) · [Thomann](https://www.thomannmusic.com/behringer_umc404hd.htm) — **not the UCA202**; two UCA202s cannot measure phase, and you need 192 kHz |
+| 13 | USB audio interface, 2 inputs — **owned, do not buy** | **0** | a Behringer Xenyx 302USB is on the shelf. Stage 1 wants two channels, beat and sync, and its stereo RCA line channel carries them: beat left, sync right, mic channel down, Line/USB switch on LINE IN. Buy the **UMC404HD** ([Sweetwater](https://www.sweetwater.com/store/detail/UMC404HD--behringer-u-phoria-umc404hd-usb-audio-interface) · [Amazon B00QHURLHM](https://www.amazon.com/BEHRINGER-Audio-Interface-4-Channel-UMC404HD/dp/B00QHURLHM), $139) only when you commit to stage 2, which needs four channels on one sample clock |
 | 14 | ESP32 devkit (WROOM-32) | ~10 est. | any Amazon/AliExpress devkit |
 | 15 | TL072 ×2, breadboard, R/C kit | ~25 est. | any electronics supplier |
-| 16 | 12 V 3 A supply + LM2596 buck ×2 | ~18 est. | any Amazon |
+| 16a | 12 V 3 A supply — **owned, do not buy** | **0** | already on the shelf |
+| 16b | LM2596 buck ×2 | ~8 est. | any Amazon |
 
 ## D. Mechanical
 
@@ -110,13 +112,13 @@ antenna. The horn is tuned against detection SNR instead — see
 
 ## Revised totals
 
-| | originally priced | with prices checked Sept 2026 |
+| | originally priced | with prices checked Sept 2026, less what is owned |
 |---|---|---|
-| stage 1 order | 394 | **433** (UMC404HD +39) |
-| stage 2 order | 70 | 74 (filter +4) |
+| stage 1 order | 394 | **284** (interface and 12 V supply owned) |
+| stage 2 order | 70 | 213 (74 + the UMC404HD stage 2 forces) |
 | 915 MHz link | — | 122 |
-| parts | 464 | **507** |
-| **delivered, indoor build** | — | **~667** |
+| parts | 464 | **497** |
+| **delivered, indoor build, stage 1 only** | — | **~430** |
 
 Dropping the SMA adapter assortment and the turntable takes it to **~$630**.
 Using the $25 generic mixer instead of the ZX05 is already assumed in these

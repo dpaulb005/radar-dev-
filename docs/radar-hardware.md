@@ -22,7 +22,7 @@ bench as a 3-D model, every BOM row an object and every wire routed pin to pin.
             │                                    │  ZX05-43MH-S+ mixer
   ESP32 ────┤  SYNC ──► 10k/1k ──► sound card R  │
  radar_ctl  │                                    │ IF ──► video amp ──► sound card L
-            └──► STEP/DIR ──► A4988 ──► turntable│                       (UMC404HD → USB)
+            └──► STEP/DIR ──► A4988 ──► turntable│                     (USB interface → laptop)
                                  (optional)      │
                                                  │
  RX HORN ──►[BPF 2400–2500]──►[LNA SPF5189Z +12 dB]──► RF ─┘
@@ -80,9 +80,16 @@ checked; nothing on Amazon replaces it. Order it first.
 
 **Checkpoint 1:** mixer, ADF4351 board, SPF5189Z ×2 (buy the 4-pack), splitter,
 attenuator, band-pass filter, SMA jumpers ×6, SMA flange connectors ×10, copper
-sheet ×2, **UMC404HD**, ESP32 devkit, TL072 ×2 + passives, 12 V supply +
-LM2596 ×2 are all on the bench. Buy the four-input interface now, not a
-two-input one — § 7 says why, and a UCA202 bought today is wasted money.
+sheet ×2, a **2-input USB audio interface**, ESP32 devkit, TL072 ×2 + passives,
+12 V supply + LM2596 ×2 are all on the bench.
+
+The interface is the one item whose answer depends on how far you intend to go.
+Stage 1 records two channels — beat and sync — so any line-level two-input
+interface does it, including one you already own. Stage 2 needs **four channels
+on one sample clock** and that means the UMC404HD; § 8 says why, and two
+separate two-input boxes never work, because a phase measurement between
+independently clocked converters means nothing. Buy the four-input one up front
+only if you have already decided on azimuth.
 
 ---
 
@@ -302,11 +309,20 @@ same 107 mV out that the simulation predicted.
   retrace. `radar_acquire.py` measures the chirp time and the PRI from it —
   the software never assumes either.
 - Video amp output → sound card **LEFT**.
-- On the UMC404HD those two are the front-panel combo jacks **INPUT 1** (beat A)
-  and **INPUT 3** (sync), on ¼" TS plugs; stage 2's second beat channel goes
-  into INPUT 2, which is why the four-input interface is bought in stage 1. Set
-  the input gains so the leakage tone sits well below clip and never touch them
-  again — a gain change between the two beat channels is a phase error.
+- On a **UMC404HD** those two are the front-panel combo jacks **INPUT 1**
+  (beat A) and **INPUT 3** (sync), on ¼" TS plugs, and stage 2's second beat
+  channel goes into INPUT 2.
+- On a **two-input interface** they are simply left and right. On a small USB
+  mixer such as the Xenyx 302USB that is the stereo RCA line channel — beat into
+  its left, sync into its right, the mic channel all the way down, and its
+  Line/USB switch on **LINE IN**, or you record the computer's own playback
+  instead of the radar. What reaches the computer is the main mix, so the main
+  level control is part of your calibration.
+- Either way, set the gain once so the leakage tone sits well below clip and
+  never touch it again. The video amp is designed around this: about 61 dB of
+  gain puts the leakage at ~200 mV and a 10 m drone echo at ~20 mV against a
+  316 mV line nominal, so nothing clips and nothing needs riding. In stage 2 a
+  gain change between the two beat channels is a phase error.
 - In the OS disable every "enhancement", AGC and noise suppression. 44.1 or
   48 kHz, 16-bit. Both work; tell the software which (`--fs`).
 
@@ -371,7 +387,7 @@ Build the frame for three horns and populate two of them.
 | Frame holds three horns; leave the RX B position empty | otherwise the whole mast is rebuilt | $0 |
 | Build all three horns in one session | the two RX horns must match | $0, materials are for three |
 | Rotate all horns 90°, b1 horizontal | a rotated pair is unambiguous, an un-rotated pair is not | $0 |
-| Buy the **4-input** UMC404HD, not the UCA202 | phase needs both beat channels on one sample clock; a UCA202 bought now is wasted | +$70 |
+| Decide whether azimuth is in the plan **before** buying the interface | phase needs both beat channels on one sample clock, so stage 2 means a 4-input interface. If azimuth is the goal, buy it once now; if stage 1 is the goal, run stage 1 on any 2-in interface and write it off later | $0 or +$139 |
 | Buy the SPF5189Z **4-pack** | 2 used, 1 becomes the second LNA, 1 becomes the LO amplifier | $0, already the 4-pack |
 | Buy SMA jumpers as one batch | the two receive chains want phase-matched cables, and one batch is the cheap way | $0 |
 | Put two TL072s on the board and wire only one video amp | the second channel then drops into empty rows | +$4 |
@@ -438,12 +454,15 @@ track on the floor plane, which is what the console and the tracker draw.
 | third horn | 0 | copper for three is already in BOM section B |
 | second LNA | 0 | the SPF5189Z 4-pack covers it |
 | second TL072 video channel | 0 | parts already in section C |
-| 4-input interface | 0 | bought in stage 1, and its INPUT 2 is what takes beat B |
-| **total** | **~$151** | |
+| **4-input interface (UMC404HD)** | 139 | beat A, beat B and sync on one sample clock |
+| **total** | **~$290** | |
 
-The four-input interface is the one part that cannot be substituted. Two UCA202s
-have independent sample clocks, and a phase measurement between two
-independently clocked converters means nothing.
+The four-input interface is the one part that cannot be substituted, and the one
+part of the baseband section stage 2 replaces rather than adds to. Two separate
+two-input interfaces have independent sample clocks, and a phase measurement
+between independently clocked converters means nothing. If you knew from the
+start that azimuth was the goal, buying it once in stage 1 is $139 either way;
+if you did not, the two-input interface stage 1 ran on is what you write off.
 
 **Option B, two simultaneous channels** (recommended):
 
