@@ -21,16 +21,17 @@ table order — the mixer is the critical path.
 > **What changed from the MIT list, and why.** Three of MIT's six coax parts
 > are no longer buyable at retail: the **ZX95-2536C+ VCO is a non-catalog
 > part**, and the ZX60-272LN-S+ amplifier ($119, ×2) and ZX10-2-42-S+
-> splitter ($61) showed **stock 0**. Amazon carries no coaxial VCO and no
-> 2.4 GHz mixer at all. The list below keeps the one part with no substitute
-> (the mixer) and replaces the rest with parts that are in stock, for ~$200
-> of RF instead of ~$577.
+> splitter ($61) showed **stock 0**. Amazon carries no coaxial VCO. The list below
+> replaces all of them with parts that are in stock, for ~$200 of RF instead of
+> ~$577. The mixer was the one part with no substitute when this was written;
+> there is one now — row 1-alt, ~$25, and it is specified rather than hoped for.
 
 ## A. RF chain — ~$205 (the one receive chain this radar has)
 
 | # | item | qty | ~$ | source | notes |
 |---|---|---|---|---|---|
-| 1 | **ZX05-43MH-S+** double-balanced mixer, 824–4200 MHz, LO +13 dBm | 1 | 73 | Mini-Circuits (direct; 9 in stock when checked) | **no substitute — order first** |
+| 1 | **ZX05-43MH-S+** double-balanced mixer, 824–4200 MHz, IF DC–1500 MHz, LO +13 dBm | 1 | 73 | Mini-Circuits (direct; 9 in stock when checked) | the reference part, and the fallback. Lowest conversion loss, but $79 at DigiKey now and thin stock — **order it first if you want it** |
+| 1-alt | **generic 1.5–4.5 GHz SMA mixer module**, IF DC–1500 MHz, LO +13 dBm | 1 | 25 | Amazon, several sellers | **the substitute, and it is a real one.** Costs ~0.5 dB of system noise figure and has *better* LO–IF isolation. Not level 7 — same +13 dBm LO as the ZX05. See *About the cheap mixer* below |
 | 2 | **ADF4351 PLL board**, 35 MHz–4.4 GHz, SMA out, 25 MHz TCXO | 1 | 27 | Amazon | replaces the VCO; stepped over SPI by `radar_ctl` |
 | 3 | **SPF5189Z LNA module**, 50–4000 MHz, NF 0.6 dB, 4-pack | 1 | 24 | Amazon | 2 used (PA + LNA), 2 spares; ~12 dB gain at 2.4 GHz, P1dB ~+18 dBm. **The chip is EOL** (Qorvo PCN 21-0060, last buy Sept 2021; replacement QPL9547) — the modules are built from remaining stock, which is why you buy the 4-pack now. Its 0.6 dB NF is the bare-die figure at 900 MHz; expect ~1 dB at 2.4 GHz on a module |
 | 4 | 2-way SMA power splitter, 800–2500 MHz | 1 | 13 | Amazon / eBay | replaces ZX10-2-42-S+ |
@@ -114,7 +115,7 @@ sections B and A bought them in multiples on purpose.
 |---|---|---|---|---|
 | 22 | second ZX05-43MH-S+ mixer | 1 | 73 | second receive channel. Critical path — order first |
 | 23 | second 2-way splitter (LO to both mixers) | 1 | 13 | |
-| 23b | **6 dB SMA pad** | 1 | 9 | **only with the ZX05 mixer.** Splitting the LO again leaves +7 dBm per mixer, 6 dB under the ZX05's +13 dBm rating, so the spare SPF5189Z from row 3 goes in as an LO amplifier — and it needs this pad in front of it or it is driven past its +18 dBm P1dB. The $25 generic modules are level-7 parts that take +7 dBm directly: skip this row. [`../stage2/README.md`](../stage2/README.md) has the LO budget |
+| 23b | **6 dB SMA pad** | 1 | 9 | Splitting the LO again leaves +7 dBm per mixer, 6 dB under the **+13 dBm both candidate mixers want**, so the spare SPF5189Z from row 3 goes in as an LO amplifier — and it needs this pad in front of it or it is driven past its +18 dBm P1dB. **This row is needed on either mixer path**; the generic 1.5–4.5 GHz module is a Level 13 part too, not level 7. [`../stage2/README.md`](../stage2/README.md) has the LO budget |
 | 24 | second 2400–2500 band-pass filter | 1 | 29 | in front of the second LNA; same part as row 7b |
 | 25 | third horn — materials already in B, cut in the same session | — | 0 | drops into the empty bay **beside** the fitted RX at 193 mm centres, all three horns rotated 90° |
 | 26 | **Behringer UMC404HD** 4-input USB interface | 1 | 139 | the one part the upgrade forces you to replace rather than add to. It needs beat A, beat B and sync on **one sample clock**: two 2-in interfaces have independent clocks and a phase measurement between independently clocked converters means nothing. Nothing else in the baseband section changes |
@@ -238,13 +239,48 @@ beam. It measures nothing now: it points the beam at a wider sector, and it
 sweeps a reflector past boresight when you want the horn's real pattern. Add it
 later for $53 if you want either.
 
-**About the cheap mixer.** Several 1.5–4.5 GHz double-balanced SMA modules sell
-for ~$25 with 8.5 dB conversion loss against the ZX05-43MH's 7 dB, which costs
-1.5 dB out of a 54 dB margin and does not matter. What the listings do *not*
-state is the LO drive level they need. This chain delivers +10 dBm, which suits
-a level-7 diode mixer; confirm that before ordering, and keep the $73
-Mini-Circuits part as the fallback if the leakage tone at checkpoint 3 comes out
-weak. That one substitution is $96 of the saving.
+**About the cheap mixer.** The **generic 1.5–4.5 GHz double-balanced SMA module**,
+~$25 from several Amazon sellers, is a real substitute and it is what the budget
+build assumes. Sold as a GaAs Schottky double-balanced mixer — the specs match
+the Analog Devices HMC213 family, whose IF pin is internally DC-coupled while LO
+and RF are AC-coupled.
+
+| | ZX05-43MH-S+ | generic 1.5–4.5 GHz module |
+|---|---|---|
+| RF / LO | 824–4200 MHz | 1500–4500 MHz |
+| **IF** | **DC–1500 MHz** | **DC–1500 MHz** |
+| LO drive | +13 dBm (Level 13) | **+13 dBm** |
+| conversion loss at 2.4 GHz | 5.1 dB (6.3 dB band typ) | 8.5 dB |
+| LO–RF isolation | 31.9 dB | 40 dB typ |
+| LO–IF isolation at 2.4 GHz | **14.4 dB** | 35 dB typ |
+| input P1dB | +9 dBm | +8 dBm |
+| price / stock | $79.31, thin | ~$25, several sellers |
+
+**The one spec that decides it is the IF range, and it must reach DC.** This is
+FMCW: the beat is an audio tone, 261 Hz at 3 m and 870 Hz at 10 m. A mixer whose
+IF port is transformer- or capacitor-coupled — which is most of them, including
+every "IF from 5 MHz" part — produces exactly nothing here, and the datasheet
+line that saves you is *IF response to DC*. Check it before you check the price.
+
+**It is not a level-7 part.** Both of these want **+13 dBm** of LO, this chain
+delivers +10.5 dBm, and both are therefore 2.5 dB light in stage 1 and 6 dB light
+per mixer once the LO is split in stage 2. The generic module does **not** let
+you skip the LO amplifier — see row 23b.
+
+What the extra 3.4 dB of conversion loss actually costs is **about 0.5 dB of
+system noise figure**, not 3.4 dB, because the LNA's 12 dB of gain sits in front
+of the mixer and suppresses its contribution: 4.36 dB with the ZX05 against
+4.86 dB with the generic. Out of ~54 dB of margin that is nothing.
+
+Where the generic module is **better** is LO–IF isolation: 35 dB against the
+ZX05's 14.4 dB at 2.4 GHz. At +10.5 dBm of LO that is −24 dBm of 2.4 GHz coming
+out of the IF port instead of −4 dBm. Both are handled by the 49.9 Ω + 1 nF at
+the breadboard input (§ C, and `docs/radar-hardware.md` § 5), but with the ZX05
+that shunt is doing real work rather than sitting there as insurance.
+
+Keep the Mini-Circuits part as the fallback if the leakage tone at checkpoint 7
+comes out weak, or if a seller's module arrives with no spec sheet. That one
+substitution is $54 of the saving.
 
 ---
 

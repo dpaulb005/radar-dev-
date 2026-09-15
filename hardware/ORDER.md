@@ -8,8 +8,10 @@ just where to click.
 > **Three things changed since the BOM was priced.** Read these before ordering.
 >
 > 1. **ZX05-43MH-S+ mixer is now $79.31 and hard to get** — DigiKey stock-notify
->    only, Mouser backorder. It is the critical path. Order it first, or take
->    the $25 generic module the budget build already specifies.
+>    only, Mouser backorder. Order it first — **or take the ~$25 generic
+>    1.5–4.5 GHz module** (row 1-alt), which is specified, in stock from several
+>    sellers, and costs about 0.5 dB of system noise figure. It is a Level 13
+>    part like the ZX05, so it does not change the LO budget either way.
 > 2. **UMC404HD is $139, not the $100 in the BOM** — and it is not a purchase
 >    for this radar at all. Two channels, beat and sync, run on the two-input
 >    interface already owned; the $139 lands only if you go after azimuth
@@ -27,7 +29,7 @@ just where to click.
 | # | item | $ | where |
 |---|---|---|---|
 | 1 | **ZX05-43MH-S+** mixer, 824–4200 MHz | **79.31** confirmed | [DigiKey](https://www.digikey.com/en/products/detail/mini-circuits/ZX05-43MH-S/21727733) · [Mouser](https://www.mouser.com/ProductDetail/Mini-Circuits/ZX05-43MH-S+?qs=Imq1NPwxi75nb0uK%2FtVCPQ%3D%3D) (backorder) · [Mini-Circuits direct](https://www.minicircuits.com/pdfs/ZX05-43MH-S+.pdf) |
-| 1-alt | generic 1.5–4.5 GHz SMA mixer module | ~25 est. | what the under-$500 build uses instead |
+| 1-alt | **generic 1.5–4.5 GHz SMA mixer module** | ~25 est. | **the substitute that actually works**, and what the under-$500 build uses. Amazon, several sellers (e.g. ASIN B0D8KNXVQH, B0F1Z6LKFT, B07X5LLW9N). Confirm the listing states **IF DC–1.5 GHz** and **LO +13 dBm** before ordering — the DC-coupled IF is the spec this radar lives or dies on, and a module that starts its IF at 5 MHz produces nothing. 8.5 dB conversion loss, LO–RF 40 dB, LO–IF 35 dB. [`BOM.md`](BOM.md) compares them |
 | 2 | **ADF4351 PLL board**, 35 MHz–4.4 GHz, SMA out | ~27 est. | [Amazon B0BCWVHFT1](https://us.amazon.com/Frequency-Synthesizer-Development-Generator-35M-4-4GHz/dp/B0BCWVHFT1) · [B078NRD8V6](https://www.amazon.com/35M-4-4GHz-Frequency-Synthesizer-Development-Generator/dp/B078NRD8V6) — get the plain **SPI** board, not a USB-controlled signal generator |
 | 3 | **SPF5189Z LNA**, 4-pack | ~24 est. | [Amazon B08244LD9S](https://www.amazon.com/SPF5189Z-SPF-5189Z-5189Z-50MHz-4000MHz-Amplifier/dp/B08244LD9S) (4pcs) · singles: [B0H4CH543K](https://www.amazon.com/SPF5189Z-50-4000MHz-Ultra-Wideband-Wireless-Communication/dp/B0H4CH543K) |
 | 4 | 2-way SMA splitter, 380–2500 MHz | ~13 est. | [eBay 156232418130](https://www.ebay.com/itm/156232418130) · lab-grade: [Pasternack PE2074](https://www.pasternack.com/2-way-sma-reactive-power-divider-0.8-ghz-2.5-ghz-30-watts-pe2074-p.aspx) |

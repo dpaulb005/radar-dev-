@@ -76,6 +76,16 @@ and then imports normally. There is no package, no installation step and no
    sync (one UMC404HD, not two UCA202s — two cards cannot hold
    phase). The switched variant instead needs one chain plus an RF switch, and
    `radar_ctl` flashed with `SWMODE 1` so the sync carries the frame marker.
+
+   **The LO budget is the part that does not simply scale.** The chain delivers
+   about +10.5 dBm into one mixer today, already 2.5 dB under the +13 dBm both
+   candidate mixers want. Split it two ways and each gets +7 dBm — 6 dB light,
+   and conversion loss rises. The fix is the spare SPF5189Z from the 4-pack as an
+   LO amplifier, with a 6 dB pad in front of it so it is not driven past its
+   +18 dBm P1dB: `splitter → 6 dB pad → SPF5189Z → 2-way → +13 dBm each`.
+   This applies on **either** mixer path. The cheap 1.5–4.5 GHz generic module is
+   a Level 13 part like the ZX05-43MH-S+, not a level-7 one — see
+   [`../hardware/BOM.md`](../hardware/BOM.md), *About the cheap mixer*.
 2. Match the coax: `interferometer.py` reports 0.43° of bearing per mm of cable
    mismatch, so the 2.5° budget is about 6 mm.
 3. Calibrate once against a boresight reflector:

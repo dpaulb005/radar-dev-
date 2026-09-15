@@ -14,7 +14,7 @@ Read it once before you spend anything.
 | when | do | why now |
 |---|---|---|
 | **today, $0** | Phase 0 — run the simulator and the suite | Proves the DSP and teaches you the numbers before a single part is ordered |
-| **order day** | Phase 1 — the mixer first, then everything else | It is the one part with no substitute and the worst stock |
+| **order day** | Phase 1 — the mixer first, then everything else | Worst stock and longest lead time of anything on the list |
 | **while parts ship** | Phase 2 — horns, breadboard, power, firmware | All four need nothing from the RF order, and the horns are the longest job |
 | **as parts land** | Phase 3 — bench each block on its own | A block tested alone takes minutes; the same fault inside a finished chain takes an evening |
 | **first assembly** | Phase 4 — the chain, up to the leakage tone | One tone proves seven subsystems at once |
@@ -31,8 +31,12 @@ Read it once before you spend anything.
    **nothing in this repo can predict yours**. Measure it the day the chain first
    works — it costs nothing and it tells you whether to believe every other
    number here.
-2. **The ZX05-43MH-S+ mixer.** No substitute, and stock has been thin. Order it
-   before anything else, or commit to the $25 generic module up front.
+2. **The mixer.** The ZX05-43MH-S+ is $79 and stock has been thin, so order it
+   first — or take the **~$25 generic 1.5–4.5 GHz SMA module**, which is a real
+   substitute and in stock from several sellers. Whichever you pick, the spec
+   that decides it is **IF response to DC**: this is FMCW, the beat is an audio
+   tone, and a mixer whose IF port starts at 5 MHz produces silence.
+   [`hardware/BOM.md`](hardware/BOM.md) compares the two.
 
 ---
 
@@ -74,7 +78,7 @@ Deciding late costs you the 2-input interface, and nothing else.
 Full list with links and checked prices: [`hardware/ORDER.md`](hardware/ORDER.md).
 The reasoning behind each choice: [`hardware/BOM.md`](hardware/BOM.md).
 
-1. **The mixer.** Critical path. Order it on its own if that gets it moving.
+1. **The mixer.** Longest lead time, so order it on its own if that gets it moving. Either the ZX05-43MH-S+ or the generic 1.5–4.5 GHz module — check the IF reaches DC.
 2. **Everything else RF** — ADF4351 board, SPF5189Z 4-pack, splitter, 3 dB pad,
    band-pass filter, SMA jumpers **in one batch**, adapters.
 3. **Copper sheet, SMA flanges, brass rod, solder** — these arrive fast and
