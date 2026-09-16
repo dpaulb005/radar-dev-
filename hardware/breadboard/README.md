@@ -10,6 +10,8 @@ sheet `hardware/kicad/radar_breadboard.kicad_sch`).
 | **`ASSEMBLY.md`** | **generated step-by-step build guide — 17 steps, a picture of the board at each one, and something to measure before you move on. Start here.** |
 | `steps/` | one SVG + PNG per assembly step: grey is what you already built, colour is what that step adds |
 | `WIRING.md` | generated build sheet: component table (lead → hole), numbered jumper list, nets as built |
+| `PARTS.md` | generated pick list: every value, how many, what may be substituted. Take this to the stockroom |
+| `gen_parts.py` | builds `PARTS.md` from `layout.json`. Quantities are derived so they cannot drift; spares and substitution advice live in an `ADVICE` table, and the script refuses to write if a part has no entry |
 | `breadboard.svg` / `.png` | generated top view |
 | `layout.json` | machine-readable placement, wires and strip → net map |
 | `gen_page.py` → `breadboard.html` | interactive page: hover/click any part, wire, net or hole to see what it touches; build checklist; **Chips & modules** tab with the real TL072, ESP32 (30- and 38-pin), A4988, ADF4351 and UCA202 pinouts and where each used pin lands on the board |
