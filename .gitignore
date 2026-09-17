@@ -1,11 +1,11 @@
 __pycache__/
 *.pyc
-ground_station/recordings/
 
-# KiCad editor state
+# Multisim / KiCad editor state
+*.lck
 ~*.lck
 *.kicad_prl
 .history/
 
-# concurrent audit tooling
-.codex*
+# Office lock files
+~$*
