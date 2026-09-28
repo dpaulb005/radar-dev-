@@ -29,6 +29,26 @@ Accept the simulation if: gain 12.5–14 dBi at 2.45 GHz, S11 below −10 dB acr
 above, and gain below the aperture bound. A converged solution of a wrong model
 is still converged.
 
+## Building it
+
+[`horn-build-guide.pdf`](horn-build-guide.pdf) is the bench guide for cutting
+the three horns from 24 gauge copper sheet: every piece drawn flat to scale, a
+one-sheet cutting layout per horn, the fold angles, nine build steps with a
+check each, and a record page to fill in for all three.
+
+It is generated. [`tools/horn.py`](tools/horn.py) solves the horn, and
+[`tools/make_build_guide.py`](tools/make_build_guide.py) derives every panel,
+fold and layout from it, then refuses to write if the four flare panels would
+not meet at the corners or one horn's pieces would not fit one 12 × 24 in sheet.
+
+```
+cd tools
+python3 make_build_guide.py      # needs reportlab and shapely
+```
+
+One horn takes about 178 square inches of copper with its tabs, so three horns
+need three 12 × 24 in sheets.
+
 ## Results
 
 The HFSS output goes in [`results/`](results/), and the write-up is a LaTeX
@@ -37,8 +57,8 @@ E- and H-plane cuts, the probe sweep, and the final table against the accept-if
 line above. Until then the design numbers above are the only antenna data here.
 
 The study notes the procedure was written from (an antenna-basics primer and
-the twelve-step HFSS walkthrough for this horn) are on the `dev` branch under
-[`antenna/hfss/`](https://github.com/dpaulb005/radar-dev-/tree/dev/antenna/hfss).
+the twelve-step HFSS walkthrough for this horn) are in the history, at
+[`antenna/hfss/` as of 3f95c6d](https://github.com/dpaulb005/radar-dev-/tree/3f95c6d/antenna/hfss).
 
 ## What the solver is for
 
