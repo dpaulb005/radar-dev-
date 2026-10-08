@@ -14,6 +14,8 @@ frame and bench layout from the 3-D model's numbers, the parts status from the
 spreadsheet, and the breadboard steps from `breadboard/assembly/ASSEMBLY.md`,
 and writes LaTeX fragments into `generated/`.
 
+Waterjet cut files for the copper are in [`waterjet/`](waterjet/README.md) (`python3 tools/make_waterjet.py`, needs ezdxf).
+
 Rebuild (needs Python with shapely, reportlab, openpyxl and Pillow; LuaLaTeX with
 TikZ and circuitikz; `rsvg-convert`):
 
