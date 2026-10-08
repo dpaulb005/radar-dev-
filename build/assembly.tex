@@ -1,0 +1,540 @@
+% assembly.tex — Part 2 of the build: putting it together, in order, with a check after every stage.
+% Build:  python3 tools/make_figures.py && latexmk -lualatex assembly.tex
+\documentclass[10pt]{article}
+\newcommand{\doctitle}{Radar build, part 2: assembly and bring-up}
+\input{common}
+\usepackage{needspace}
+\graphicspath{{generated/}{../breadboard/assembly/steps/}}
+
+% a breadboard step: the banner, kept with its picture
+\newcommand{\bbstep}[2]{\par\needspace{85mm}\medskip
+  \noindent\begin{tikzpicture}[baseline=(t.base)]
+    \node[fill=logic,text=white,font=\bfseries,minimum width=9mm,minimum height=6mm,inner sep=2pt](n){B#1};
+    \node[right=3mm of n.east,anchor=west,font=\large\bfseries](t){#2};
+  \end{tikzpicture}\par\nopagebreak\smallskip}
+% a phase gate
+\newcommand{\gate}[1]{\begin{okbox}\textbf{\color{okgreen!70!black}Gate.}\ #1\end{okbox}}
+
+\begin{document}
+
+% ───────────────────────────────────────────────────────────── title page
+\thispagestyle{plain}
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[accent] (current page.north west) rectangle ([yshift=-9mm]current page.north east);
+\end{tikzpicture}
+\vspace*{6mm}
+{\color{muted}\small radar-dev \quad·\quad 2.4 GHz FMCW radar \quad·\quad part 2 of 2}\par
+\vspace{2mm}
+{\fontsize{26}{30}\selectfont\bfseries Assembly and bring-up\par}
+\vspace{1mm}
+{\Large\color{accent} How it all goes together, and how to prove each stage works\par}
+\vspace{5mm}
+\includegraphics[width=\linewidth]{desk_view.png}\par
+{\footnotesize\color{muted} The bench in use, from the 3-D model: horns on the frame, RF chain along the front of the board, the breadboard behind it, the sound card and laptop alongside.}
+\vspace{4mm}
+
+\begin{minipage}[t]{0.48\linewidth}
+\textbf{Part 1} (fabrication) has the parts list, the copper templates, the frame drawings and the schematics. This part assumes you have the parts in hand and the pieces cut.
+
+\smallskip
+Work in the order of the stages. Each one ends with a \textbf{gate}: a measurement that must pass before you go on. A fault found at its own gate takes minutes; the same fault found at the end takes an evening.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\linewidth}
+\textbf{Conventions}
+\begin{itemize}
+  \item sizes in millimetres
+  \item “left” and “right” are as you sit behind the bench, the horns pointing away from you into the room; “front” is the horn side
+  \item \code{SWEEP 1} is something you type into the ESP32's serial monitor
+  \item numbers like R4, C9, J12 match the schematics and the breadboard
+\end{itemize}
+\end{minipage}
+
+\newpage
+\tableofcontents
+\newpage
+
+% ───────────────────────────────────────────────────────────── 1 order
+\section{The order of work}\label{sec:order}
+
+Three jobs can run side by side while parts are arriving: the horns, the frame, and the breadboard. Everything after that is in series. The horns are the longest job; start them first.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  ph/.style={draw=black!60,fill=#1,rounded corners=1.5pt,minimum width=36mm,minimum height=11mm,align=center,font=\scriptsize},
+  ph/.default=faint,
+  g/.style={font=\tiny,text=okgreen!60!black,align=center},
+  ar/.style={-{Stealth[length=2mm]},line width=0.7pt,draw=black!60}]
+  \node[ph=cuout!50] (h) at (0,3.0) {\textbf{2. Three horns}\\a weekend};
+  \node[ph=wood!70] (f) at (0,1.2) {\textbf{3. The frame}\\an afternoon};
+  \node[ph=pcb] (b) at (0,-0.6) {\textbf{4. The breadboard}\\an evening};
+  \node[ph] (p) at (5.2,-0.6) {\textbf{5. Power}\\buck to 5.00\,V};
+  \node[ph] (fw) at (5.2,1.2) {\textbf{6. Firmware}\\\code{lock:1}};
+  \node[ph=rfmod] (m) at (5.2,3.0) {\textbf{7. Mount and cable}\\horns, modules, SMA};
+  \node[ph=okgreen!15] (l) at (10.4,3.0) {\textbf{8. First light}\\leakage tone, sync};
+  \node[ph=okgreen!15] (w) at (10.4,1.2) {\textbf{9. First measurement}\\walk test, range};
+  \node[ph=okgreen!15] (c) at (10.4,-0.6) {\textbf{10. Clutter, drone}\\the decision};
+  \draw[ar] (b) -- (p);
+  \draw[ar] (p) -- (fw);
+  \draw[ar] (fw) -- (m);
+  \draw[ar] (h.east) -- ++(0.5,0) |- ([yshift=2mm]m.west);
+  \draw[ar] (f.east) -- ++(0.8,0) |- ([yshift=-2mm]m.west);
+  \draw[ar] (m) -- (l);
+  \draw[ar] (l) -- (w);
+  \draw[ar] (w) -- (c);
+  \node[g,below=0.5mm of h] {gate: record sheet, seams under 0.5\,Ω};
+  \node[g,below=0.5mm of f] {gate: square, heights};
+  \node[g,below=0.5mm of b] {gate: no shorts, power off};
+  \node[g,below=0.5mm of p] {gate: 5.00\,V at J6, J7, J8};
+  \node[g,below=0.5mm of fw] {gate: \code{lock:1}, \code{rf:0}};
+  \node[g,below=0.5mm of m] {gate: every SMA torqued};
+  \node[g,below=0.5mm of l] {gate: 26\,Hz tone, 135\,Hz square};
+  \node[g,below=0.5mm of w] {gate: within 0.4\,m at 3, 5, 8\,m};
+  \node[g,below=0.5mm of c] {gate: over 50\,dB, link LQ 100};
+\end{tikzpicture}
+\caption{The build in stages. Stages 2, 3 and 4 can be done in any order or at the same time; from stage 5 on, each needs the one before it.}
+\end{figure}
+
+{\small
+\begin{tabularx}{\linewidth}{@{}p{6mm}P{0.22\linewidth}LP{0.25\linewidth}@{}}
+\toprule
+& \textbf{stage} & \textbf{what you end up with} & \textbf{the gate} \\ \midrule
+2 & Three horns & three identical copper horns with connectors & each passes the record sheet \\
+3 & The frame & plywood board, uprights, beams, saddles & square, beam tops at \beamRXtop\ and \beamTXtop \\
+4 & The breadboard & the amplifier and power board, fully wired & no shorts between rails, power off \\
+5 & Power & 5.00\,V to each module header, 12\,V to the op-amps & rail voltages in the table on page \pageref{sec:power} \\
+6 & Firmware & the ESP32 talking to the PLL & \code{lock:1} with RF off \\
+7 & Mount and cable & everything in place and connected & every SMA done up, still unpowered \\
+8 & First light & the transmitter heard leaking into the receiver & a low tone with a ~26\,Hz part; a ~135\,Hz square wave \\
+9 & First measurement & a person tracked across the room & range within 0.4\,m at 3, 5 and 8\,m \\
+10 & Clutter and drone & the number that decides what the radar can see & clutter cancellation over 50\,dB \\
+\bottomrule
+\end{tabularx}}
+
+\newpage
+% ───────────────────────────────────────────────────────────── 2 horns
+\section{Stage 2: the three horns}\label{sec:horns}
+
+Make all three at once, step by step: cut all three sets, then fold all three, and so on. You get faster with every piece, and the two receive horns come out as twins, which matters later. Use the full-size templates in part 1.
+
+\begin{figure}[H]
+\centering
+\input{generated/horn_exploded}
+\caption{How the nine pieces and the connector go together. The pipe comes first (C, D, E), then the connector (F), then the flare (A, B) on the collar formed by the pipe's front tabs.}
+\end{figure}
+
+\step{Mark, cut and deburr}
+\begin{enumerate}
+  \item Tape the paper templates to the copper, outside face up, and scribe round them. Write each piece's letter on its outside face.
+  \item Cut with the snips, blade just outside the line. Cut the angled ends of the B tabs and the notched corners of E last.
+  \item File every edge smooth and flatten any piece the snips curled: lay it flat and press it with a block of wood.
+\end{enumerate}
+\checkline{every piece against its size in part 1, with calipers. A within 1\,mm on both parallel edges; both slanted edges of A and B \seam\ within 1\,mm.}
+
+\step{Drill the feed hole while the top wall is flat}
+\begin{enumerate}
+  \item On \emph{one} C only, mark a point \probeZ\ up from the back edge and halfway across (\wideW/2 from either side). Centre-punch it.
+  \item Drill a small pilot, then open it to 4.5\,mm so it clears the connector's white insulator. Deburr both sides.
+  \item Hold the SMA flange over the hole, centred and square to the edges, and mark its four holes through it. Drill them 2.7\,mm.
+\end{enumerate}
+\checkline{the flange sits flat over the hole with its four screws through, and the centre pin is in the middle of the hole.}
+
+\step{Fold the tabs}
+Clamp the piece between two straight edges (angle iron or hardwood) with the fold line exactly on their edge, then press the tab over with a block of wood. Never fold by hand: it rounds the corner.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[x=1mm,y=1mm,font=\scriptsize]
+  % clamp
+  \fill[black!25] (0,0) rectangle (40,6);
+  \fill[black!25] (0,8.6) rectangle (40,14.6);
+  \fill[cuout] (0,6) rectangle (52,8.6);
+  \draw[cuedge] (0,6) -- (52,6) -- (52,8.6) -- (0,8.6);
+  \draw[fold] (40,4) -- (40,17);
+  \node[anchor=south] at (40,17) {fold line on the clamp edge};
+  \node at (20,3) {angle iron};
+  \node at (20,11.6) {angle iron};
+  \draw[-{Stealth[length=2mm]},accent,line width=0.8pt] (50,13) arc[start angle=60,end angle=10,radius=14];
+  \node[anchor=west,text=accent] at (54,10) {press the tab over with a block};
+  % fold directions
+  \begin{scope}[xshift=105mm]
+    \node[anchor=west,font=\scriptsize\bfseries] at (0,16) {which way each tab goes};
+    \node[anchor=west,align=left] at (0,6) {C side tabs, E tabs, B tabs: \textbf{away} from the outside face,\\so they wrap round the neighbouring wall.\\C and D front tabs: \textbf{towards} the outside face, flaring\\out like a funnel rim. That rim is the collar.};
+  \end{scope}
+\end{tikzpicture}
+\end{figure}
+
+\begin{tabularx}{\linewidth}{@{}P{0.2\linewidth}P{0.22\linewidth}L@{}}
+\toprule
+\textbf{piece} & \textbf{fold to} & \textbf{how to set it} \\ \midrule
+C side tabs, E tabs & 90° & square against the clamp \\
+B slanted-edge tabs & \cornerBend° & a card gauge cut to \cornerBend°; they lap over A at the corners \\
+C front tabs & \leanTop° out & the card gauge on page \pageref{sec:gauges}; set later, at step 7 \\
+D front tabs & \leanSide° out & the card gauge on page \pageref{sec:gauges}; set later, at step 7 \\
+\bottomrule
+\end{tabularx}
+
+\step{Build the pipe}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[x=1.15mm,y=1.15mm,font=\scriptsize]
+  \def\t{1.4}
+  % D walls (narrow), standing
+  \fill[cuin] (-43.2-\t,-21.6) rectangle (-43.2,21.6);
+  \fill[cuin] (43.2,-21.6) rectangle (43.2+\t,21.6);
+  % C walls (wide), with side tabs wrapping down over D
+  \fill[cuout] (-43.2-\t,21.6) rectangle (43.2+\t,21.6+\t);
+  \fill[cuout] (-43.2-\t,-21.6-\t) rectangle (43.2+\t,-21.6);
+  \fill[tabfill,draw=cuedge,line width=0.3pt] (-43.2-2*\t,21.6+\t) rectangle (-43.2-\t,21.6-6);
+  \fill[tabfill,draw=cuedge,line width=0.3pt] (43.2+\t,21.6+\t) rectangle (43.2+2*\t,21.6-6);
+  \fill[tabfill,draw=cuedge,line width=0.3pt] (-43.2-2*\t,-21.6-\t) rectangle (-43.2-\t,-21.6+6);
+  \fill[tabfill,draw=cuedge,line width=0.3pt] (43.2+\t,-21.6-\t) rectangle (43.2+2*\t,-21.6+6);
+  \draw[dim] (-43.2,0) -- (43.2,0) node[dimlabel]{\pipeW\ inside};
+  \draw[dim] (20,-21.6) -- (20,21.6) node[dimlabel]{\pipeH\ inside};
+  \node at (0,26.5) {C, wide wall (top, with the feed)};
+  \node at (0,-26.5) {C, wide wall (bottom)};
+  \node[rotate=90] at (-50,0) {D, narrow wall};
+  \node[rotate=90] at (50,0) {D, narrow wall};
+  \draw[callout] (-43.2-1.5*\t,18) -- (-60,26) node[left,align=right]{C side tab, soldered\\on the outside of D};
+  \fill[accent] (-43.2-\t,21.6) circle (0.8);
+  \draw[callout] (-43.2-\t,21.6) -- (-62,12) node[left]{solder runs here};
+\end{tikzpicture}
+\caption{Looking into the pipe from the front, copper thickness exaggerated. The wide walls lap over the edges of the narrow ones; that is why C is cut \wideW, a little over \pipeW.}
+\end{figure}
+\begin{enumerate}
+  \item Stand the two D walls on edge, \pipeW\ apart inside, and lay the bottom C across them with its side tabs folded down over their outsides. Clamp.
+  \item Turn the box over and fit the top C, feed hole up, the same way.
+  \item Measure inside at both ends with calipers: \pipeW\,×\,\pipeH, within half a millimetre, and the two diagonals equal. Adjust before any solder goes on.
+  \item Tack each corner with a spot of solder, check again, then run solder along every tab from the outside. Keep the inside clean: solder blobs inside change the pipe's size.
+\end{enumerate}
+
+\step{Close the back}
+Slide the back wall E over the back of the pipe, tabs forward over the outside, and solder all four tabs. The inside face of E is what the probe position is measured from, so it must sit flat and square across the whole end.
+\checkline{inside, from the face of E to the centre of the feed hole: \probeZ\ ± 0.5.}
+
+\step{Fit the connector and the probe}
+\begin{enumerate}
+  \item Cut \rodCut\ of brass rod and solder one end into the connector's centre cup, straight in line with it. If the rod will not enter the cup, file its end down until it does.
+  \item Scrape the copper bright around the hole. Push the rod in through the hole and bolt the flange down tight with M2.5 screws: it must touch bare copper all round.
+  \item Trim the rod so \probeLen\ stands inside, measured from the inside face of the wall. It must hang straight, square to the wall.
+\end{enumerate}
+\begin{note}[The probe is the one part worth tuning]
+Its length and its distance from the back wall decide how much signal goes into the horn instead of bouncing back down the cable. If the HFSS model settles on different numbers, use those. To trim later, unbolt the connector and lift it out with the rod attached.
+\end{note}
+
+\step{Add the flare}
+\begin{enumerate}
+  \item Set the collar with the card gauges (page \pageref{sec:gauges}): the two C front tabs lean out \leanTop°, the two D front tabs \leanSide°.
+  \item Set the top and bottom panels (A) on the C collar tabs, short edge to the pipe. Tack each at the middle of its short edge only.
+  \item Set the side panels (B) on the D collar tabs, their slanted tabs over the outside of the A panels. Tack each at its short edge.
+  \item Pull the corners together and tack each corner seam at the mouth.
+  \item Measure the mouth at the rim: \aperW\,×\,\aperH\ inside, diagonals equal. Squeeze or spread the corners until it is, then tack the middle of each corner seam.
+  \item Run the four corner seams and the collar, all from the outside, working from the pipe towards the mouth.
+\end{enumerate}
+
+\step{Check it, and fill in the record}
+With a multimeter on its lowest resistance range, check every seam piece to piece, the connector body to the copper, and the centre pin to the copper. Then measure everything below.
+
+{\small
+\begin{tabularx}{\linewidth}{@{}P{0.34\linewidth}P{0.2\linewidth}YYY@{}}
+\toprule
+\textbf{check} & \textbf{target} & \textbf{horn 1 (TX)} & \textbf{horn 2 (RX)} & \textbf{horn 3 (spare RX)} \\ \midrule
+mouth width, inside & \aperW\ ± 2 & & & \\
+mouth height, inside & \aperH\ ± 2 & & & \\
+mouth diagonals & equal ± 2 & & & \\
+flare depth, mouth to pipe & \flareL\ ± 1 & & & \\
+pipe inside & \pipeW\,×\,\pipeH\ ± 0.5 & & & \\
+pipe length, back wall to flare & \pipeL\ ± 2 & & & \\
+probe centre from back wall & \probeZ\ ± 0.5 & & & \\
+probe length inside & \probeLen\ ± 0.5 & & & \\
+every seam, piece to piece & under 0.5\,Ω & & & \\
+connector body to copper & under 0.5\,Ω & & & \\
+connector centre pin to copper & open & & & \\
+\bottomrule
+\end{tabularx}}
+
+\gate{all three horns pass every line. The two that come out closest to each other are the receive horns; the third is the transmitter.}
+
+\subsection*{Card gauges for the collar (full size)}\label{sec:gauges}
+Trace onto card and cut out. Lay the long edge along the pipe wall; the slanted edge is where the front tab should be.
+\begin{center}
+\input{generated/gauges}
+\end{center}
+
+\newpage
+% ───────────────────────────────────────────────────────────── 3 frame
+\section{Stage 3: the frame}\label{sec:frame}
+
+\begin{figure}[H]
+\centering
+\scalebox{0.8}{\input{generated/frame_front}}
+\caption{The frame from behind, from where you sit, with the horns in place (drawing from part 1, reduced).}
+\end{figure}
+
+\step{Cut and mark}
+\begin{enumerate}
+  \item Cut the parts on the cut list in part 1: two uprights \upH, the TX beam \beamLen, the RX beam \beamRXlen, two braces about \braceLen\ (leave them long; cut to fit at step 4).
+  \item On the plywood, draw the centre line front to back, and a line across \frontToFrame\ from the front edge. That is the frame line: the centre of both uprights sits on it, \upX\ either side of the centre line (\upCC\ apart).
+  \item On each upright, mark the top of the RX beam at \beamRXtop\ from the foot.
+\end{enumerate}
+
+\step{Stand the uprights}
+\begin{enumerate}
+  \item Screw an L-bracket to the front face and another to the back face of each upright foot, flush with the end.
+  \item Stand each upright on its mark and screw the brackets to the board. Check it is square to the board in both directions with a square, before the last screws go in.
+\end{enumerate}
+
+\step{Fit the beams}
+\begin{enumerate}
+  \item \textbf{RX beam:} cut a spacer stick exactly \beamRXbottom\ long. Stand it beside each upright to hold the beam at the right height while you fit it. The beam goes \emph{between} the uprights; drill a 3.5\,mm hole through each upright at the beam's centre, and drive a screw through it into a pilot hole in the beam's end.
+  \item \textbf{TX beam:} sits on top of both uprights, its ends flush with their outside faces. Drill 3.5\,mm through the beam \upCC\ apart, centred, and screw down into pilot holes in the upright tops.
+\end{enumerate}
+\checkline{both beam tops are level, the RX beam top is \beamRXtop\ above the board and the TX beam top \beamTXtop. The two diagonals of the frame (foot of one upright to the top of the other) are equal within 2\,mm.}
+
+\step{Braces, saddles and the screen}
+\begin{enumerate}
+  \item Hold each brace against the inside of its upright, top end \braceTop\ above the board, foot on the board \braceFootX\ from the centre line. Mark both ends, cut them, and screw them in.
+  \item Screw the saddles to the beams: on the RX beam two of them, centred 96.55 either side of the centre line (\hornBase\ apart); on the TX beam one, on the centre line. The U openings face up and run front to back.
+  \item Make the foil screen: card \screenW\,×\,\screenH, foil on one side. Stand it 50\,mm behind the frame, centred, foil towards the horns.
+\end{enumerate}
+\gate{the frame does not rock on the bench, the saddle centres are where the drawing says, and a horn pipe drops into each saddle without forcing.}
+
+\newpage
+% ───────────────────────────────────────────────────────────── 4 breadboard
+\section{Stage 4: the breadboard}\label{sec:bb}
+
+Seventeen steps. Each adds a handful of parts, ends with something you can measure, and has a picture of the board as it should look afterwards. Power first so later stages have something to run on, then the op-amps, then the signal left to right, then the logic. Nothing is soldered; everything pushes in.
+
+\begin{note}[Reading the hole names]
+Columns 1–63 run left to right; rows a–e are the top bank, f–j the bottom. The five holes of one column in one bank are joined. \code{b14} is row b, column 14. \code{TR-@12} is the \textbf{top blue} rail nearest column 12. The rails: top red 5\,V, top blue GND, bottom red VANA (12\,V analogue), bottom blue GND. Wire colours follow the colour code in part 1.
+\end{note}
+
+\input{generated/bb_steps}
+
+\gate{step B17's resistance checks pass, with the 12\,V supply disconnected.}
+
+\newpage
+% ───────────────────────────────────────────────────────────── 5 power
+\section{Stage 5: power}\label{sec:power}
+
+\begin{warn}[Set the buck converter before it touches anything]
+The LM2596 board arrives set to anything up to 12\,V out. Fed straight into the ADF4351 or an amplifier, that is an expensive few seconds. Set it to 5.00\,V first, with nothing on its output.
+\end{warn}
+
+\step{Set the buck converter to 5.00\,V}
+\begin{enumerate}
+  \item Wire J4 (pins 1 +, 2 −) to the buck's IN+ and IN−. Leave J5 and J6–J8 empty.
+  \item Plug the 12\,V supply into J3. Put the meter on the buck's OUT+ and OUT−.
+  \item Turn the small brass screw on the blue trimmer until the meter reads 5.00\,V. It is many turns end to end; be patient.
+  \item Unplug the supply. Wire the buck's OUT+ and OUT− to J5.
+\end{enumerate}
+
+\step{Measure the rails}
+Plug the 12\,V supply back in, with still nothing on J1, J2, J6–J12.
+
+{\small
+\begin{tabularx}{\linewidth}{@{}P{0.25\linewidth}P{0.25\linewidth}P{0.17\linewidth}L@{}}
+\toprule
+\textbf{rail} & \textbf{measure between} & \textbf{expect} & \textbf{if not} \\ \midrule
+VPROT & D1 cathode (col 13) and GND & 11.6–11.8\,V & 0\,V: D1 backwards or the supply plug is wired backwards \\
+VANA & bottom red rail and GND & 11.5–11.8\,V & low: R15 wrong value, or a short loading it \\
+VREF & violet node (col 26) and GND & half of VANA, about 5.8\,V & 0 or VANA: R9/R10 or U2 pin 1/3 wiring \\
+5\,V & top red rail and GND & 5.00\,V & re-set the buck \\
+J6, J7, J8 & pin 1 to pin 2 & 5.00\,V each & 0\,V: ferrite bead not in the column \\
+\bottomrule
+\end{tabularx}}
+
+\step{Connect the modules one at a time}
+Supply off. Connect J6 to the ADF4351's 5\,V and GND pins, supply on, check it still reads 5\,V and the supply is not straining; supply off. Repeat with J7 to the PA and J8 to the LNA. Use red and black 22\,AWG twisted together, as short as reaches.
+
+\gate{every rail in the table reads right, and all three modules powered together still leave 4.9–5.0\,V at their headers.}
+
+\newpage
+% ───────────────────────────────────────────────────────────── 6 firmware
+\section{Stage 6: firmware and software}\label{sec:fw}
+
+The firmware (\code{radar\_ctl}) and the laptop software (\code{ground\_station}) are in the repository's history rather than on this branch. Get a copy of both once:
+
+\begin{note}[Getting the code]
+\code{git archive 3f95c6d firmware ground\_station | tar -x -C \textasciitilde/radar-sw}\\[2pt]
+That puts \code{firmware/radar\_ctl/radar\_ctl.ino} and the \code{ground\_station/} folder in \code{\textasciitilde/radar-sw}.
+\end{note}
+
+\step{Wire the ESP32 and the PLL's logic}
+Only the logic, for now: no RF cables, PA and LNA unplugged.
+
+{\small
+\begin{tabularx}{\linewidth}{@{}P{0.16\linewidth}P{0.22\linewidth}P{0.22\linewidth}L@{}}
+\toprule
+\textbf{header} & \textbf{breadboard pin} & \textbf{goes to} & \textbf{note} \\ \midrule
+J9 (10 wires) & 1 GND & ESP32 GND & \\
+ & 2 SCK & ESP32 D18 & \\
+ & 3 MOSI & ESP32 D23 & \\
+ & 4 LE & ESP32 D5 & \\
+ & 5 LD & ESP32 D19 & lock detect, back to the ESP32 \\
+ & 6 SYNC & ESP32 D25 & \\
+ & 7, 8, 9 & ESP32 D26, D27, D14 & STEP, DIR, EN: turntable only, may be left off \\
+ & 10 3V3 & ESP32 3V3 & \\
+J10 (6 wires) & 1 GND, 2 CLK, 3 DATA, 4 LE, 5 LD, 6 CE & ADF4351 header & match by the \textbf{printed names}, not by position: boards differ \\
+JP3 & & a jumper cap & on = the PLL enabled \\
+\bottomrule
+\end{tabularx}}
+
+\step{Flash radar\_ctl}
+\begin{enumerate}
+  \item In the Arduino IDE, install the \emph{esp32} board package (Espressif, 2.x or 3.x) and pick the board \textbf{“ESP32 Dev Module”}.
+  \item Open \code{radar\_ctl.ino}. Check \code{F\_REF\_HZ} matches the crystal printed on your ADF4351 board's can: 25\,MHz on nearly all of them.
+  \item Plug the ESP32 into the laptop by USB, pick its port, and upload. If the upload stalls at “Connecting…”, hold the BOOT button until it starts.
+  \item Open the serial monitor at \textbf{115200} baud, line ending “Newline”, and type \code{?}.
+\end{enumerate}
+
+\checkline{the reply is a line of JSON ending in \code{"lock":1}, with \code{"rf":0} and \code{"sweep":0}. The board boots silent: it transmits nothing until you tell it to.}
+
+{\small
+\begin{tabularx}{\linewidth}{@{}P{0.3\linewidth}L@{}}
+\toprule
+\textbf{if you see} & \textbf{look at} \\ \midrule
+nothing at all & baud rate 115200; the right port; a charge-only USB cable \\
+\code{"lock":0} & \code{F\_REF\_HZ} against the crystal; CLK, DATA and LE swapped at J10; JP3 cap missing (CE low); 5\,V at J6 \\
+\bottomrule
+\end{tabularx}}
+
+\step{Install the laptop software}
+\begin{enumerate}
+  \item In \code{ground\_station/}: \code{pip install -r requirements.txt} (Python 3.10 or newer).
+  \item \code{python radar\_acquire.py --selftest}. It invents a target at 8\,m and should find it there. This proves the software before any hardware is involved.
+  \item Plug in the UMC404HD and run \code{python -m sounddevice}. Note the number next to the UMC404HD's input: that is \code{--device N} from now on.
+\end{enumerate}
+
+\gate{\code{lock:1} on \code{?}, and the self-test finds its 8\,m target.}
+
+\newpage
+% ───────────────────────────────────────────────────────────── 7 mount and cable
+\section{Stage 7: mount and cable}\label{sec:mount}
+
+\begin{figure}[H]
+\centering
+\scalebox{0.92}{\input{generated/board_plan}}
+\caption{Where everything goes on the board, seen from above (from part 1). Horns at the top, your seat at the bottom.}
+\end{figure}
+
+\step{Mount the horns}
+\begin{enumerate}
+  \item Roll each horn onto its side so the connector points \textbf{left}. The pipe's narrow wall now sits on the saddle and the long side of the mouth runs up and down.
+  \item Drop the pipe into its saddle and slide it until the saddle is \saddleBehind\ behind the throat (where flare meets pipe). Line the saddle cheeks with rubber or foam tape and tighten the two M4 clamp screws just until the horn will not slide.
+  \item RX horn: the left saddle on the lower beam. TX horn: the saddle on the top beam. The right saddle on the lower beam stays empty for the second receiver.
+  \item Lay a straightedge across the mouths: all three planes (RX, TX, and where the empty bay's mouth will be) should touch it. Adjust by sliding in the saddles.
+\end{enumerate}
+\checkline{RX horn centre \rxY\ above the board, \hornBase/2 = 96.6 left of the centre line; TX horn centre \txY\ above the board, on the centre line. The mouths overhang the board's front edge by about \overhang.}
+
+\step{Lay out the modules}
+Place the modules where the plan above puts them and fix them with foam tape or small brackets: the transmit chain (ADF4351, pad, PA, splitter) along the front, the receive chain (band-pass, LNA, mixer) behind it, the breadboard behind that. Keep the PA and LNA at least 10\,cm apart.
+
+\step{The SMA cables}
+Connect in this order, finger tight, then an eighth of a turn with the spanner. Look into each connector before mating it.
+
+{\small
+\begin{tabularx}{\linewidth}{@{}p{7mm}P{0.3\linewidth}P{0.3\linewidth}L@{}}
+\toprule
+\textbf{run} & \textbf{from} & \textbf{to} & \textbf{cable} \\ \midrule
+R1 & ADF4351 RF OUT A & 3\,dB pad & 20\,cm \\
+R2 & 3\,dB pad & PA in & 20\,cm (or pad straight on) \\
+R3 & PA out & splitter input (S) & 20\,cm \\
+R5 & splitter port 2 & mixer LO & 20\,cm \\
+R7 & band-pass out & LNA in & 20\,cm \\
+R8 & LNA out & mixer RF & 20\,cm \\
+R4 & splitter port 1 & TX horn, up the middle of the frame & 1\,m, tied every 10\,cm \\
+R6 & RX horn, down the middle of the frame & band-pass in & 60\,cm \\
+R9 & mixer IF & breadboard J1: centre to pin 1, braid to pin 2 & pigtail \\
+\bottomrule
+\end{tabularx}}
+
+\step{Audio and the last wires}
+\begin{enumerate}
+  \item J2 (beat) to the UMC404HD \textbf{INPUT 1}, J12 (sync) to \textbf{INPUT 2}, each with a shielded 1/4\,in TS cable: tip to pin 1, sleeve to pin 2.
+  \item On the UMC404HD: 48\,V phantom power \textbf{off}; both gain knobs low (about 9 o'clock) to start; direct monitor irrelevant.
+  \item In the laptop's sound settings: 44.1\,kHz, 16-bit, and every “enhancement”, automatic gain and noise suppression turned off.
+\end{enumerate}
+\begin{note}[Why sync goes on INPUT 2, not 3]
+The stage-1 software records the interface's \emph{first two} inputs: beat, then sync. Plugged into INPUT 3, the sync is never read and the software reports no sync. When the second receiver goes in (stage 2), its beat takes INPUT 2 and the sync moves to INPUT 3, and the software is told to read three channels.
+\end{note}
+
+\gate{the whole chain is cabled and every SMA done up, and nothing is powered yet. A finger-tight SMA costs about 1\,dB, and you will chase it for an evening once there is a signal to blame it on.}
+
+\newpage
+% ───────────────────────────────────────────────────────────── 8 bring-up
+\section{Stages 8 to 10: bring-up}\label{sec:bringup}
+
+Power on in this order: 12\,V supply, then the ESP32's USB, then the UMC404HD's USB. Point the horns at an open room, not a wall a metre away.
+
+\step{Checkpoint: the transmit power (if you can measure it)}
+\code{CW 2440} parks the PLL on one frequency with RF on. With a power meter, or an RTL-SDR behind a 30\,dB attenuator, at the splitter's port 2 (the LO arm) in place of the mixer: \textbf{+10.5 ± 2\,dBm}. Type \code{RFOFF} and put the cable back. No meter? Skip this: the next check covers the same ground.
+
+\step{First light: the leakage tone}
+Type \code{SWEEP 1}. Open any audio recorder (Audacity is fine) on the UMC404HD and watch INPUT 1.
+
+\checkline{a low tone with a strong part at about 26\,Hz. It is the transmitter leaking straight across the short gap into the receive horn, and it proves the PLL, the PA, the splitter, the LO, the LNA, the mixer and the amplifier all work, in one go. Set INPUT 1's gain so this tone peaks well below clipping, then never touch that knob again.}
+\checkline{INPUT 2 shows a clean square wave at about 135\,Hz (6.4\,ms high, 1\,ms low), about 0.3\,V. That is the sync.}
+
+\begin{note}[No leakage tone? Work backwards from the mixer]
+Sync present but no tone: check LO drive first (R5 done up, splitter port 2), then the IF pigtail to J1, then the amplifier (each stage's output should sit at VREF with no signal). No sync either: \code{SWEEP 1} not sent, or J12's wire not at INPUT 2.
+\end{note}
+
+\step{First measurement: the walk test}
+In \code{ground\_station/}, start the console and the acquisition (two terminals):
+
+\code{python server.py}\\
+\code{python radar\_acquire.py --device N --ctl /dev/ttyUSB0 --server http://localhost:8080}
+
+(on Windows the port is \code{COM3} or similar). Open \code{http://localhost:8080}. Walk towards the horns from about 5\,m.
+
+\checkline{range counts down as you approach and velocity reads negative, about your walking speed; walk away and it goes positive. Stand still and you vanish: that is not a fault, the radar subtracts everything that is not moving, along with the walls. Wave an arm and you come back.}
+
+\gate{stand still at 3, 5 and 8\,m from the mouths, measured with a tape, while waving an arm: the printed range is within 0.4\,m each time.}
+
+\step{The measurement that decides it: clutter cancellation}
+Do this the day the chain first works. Point the radar at a still room with nobody moving. Record one block, then another a few seconds later, and subtract the range profiles. The ratio of the strongest echo to what is left is the clutter cancellation, in dB.
+
+{\small
+\begin{tabularx}{\linewidth}{@{}P{0.2\linewidth}L@{}}
+\toprule
+\textbf{you measure} & \textbf{what it means} \\ \midrule
+over 50\,dB & the radar can find a small drone at 10\,m indoors: carry on \\
+40–50\,dB & marginal at 10\,m, fine closer in \\
+around 30\,dB & no amount of software will find the drone at 10\,m. The fix is mechanical: a rigid mount, more mass, no fan or air currents, nobody walking about \\
+\bottomrule
+\end{tabularx}}
+
+\step{The drone link}
+The drone's control link is on 915\,MHz so the radar can have the whole 2.4\,GHz band. Before the two are ever on together: with \code{SWEEP 1} running and the beam on the drone (props off), the link quality on the RadioMaster must stay at 100 and its signal strength must not move.
+
+\gate{clutter cancellation over 50\,dB, and the drone link unaffected by the sweep. Then fly, keeping the drone moving towards or away at 0.1\,m/s or more: a pure hover is subtracted along with the walls.}
+
+\newpage
+% ───────────────────────────────────────────────────────────── 11 troubleshooting
+\section{When something is wrong}\label{sec:trouble}
+
+{\small
+\begin{longtable}{@{}P{0.3\linewidth}P{0.66\linewidth}@{}}
+\toprule
+\textbf{symptom} & \textbf{likely cause, in order} \\ \midrule
+\endhead
+\code{"lock":0} & \code{F\_REF\_HZ} wrong; CLK/DATA/LE swapped at J10 (match the printed names); JP3 cap off; no 5\,V at J6 \\
+no sync on INPUT 2 & \code{SWEEP} not on; J12 at the wrong input; R23/R24 not at columns 60 and 63 \\
+sync present, no beat tone & LO cable R5; IF pigtail at J1 reversed; mixer RF/LO swapped; PA or LNA not powered \\
+beat tone clips & INPUT 1 gain too high; or R4 is 1\,k while something upstream is too strong: fit 4.7\,k at R4 (gain 22) to diagnose \\
+a steady hum, 50 or 60\,Hz & audio cables not shielded, or the laptop charger: try it on battery; star-ground everything at the terminal block \\
+range reads consistently long or short & \code{--fs} not matching the sound card's real rate; a different sweep from the one the software assumes (use \code{--ctl} so it reads the sweep back) \\
+a target at a fixed range that never moves & a reflection from the frame or the bench itself; check the foil screen is in place and nothing metal is near the mouths \\
+nothing detected beyond a few metres & horns not facing the same way; RX cable R6 loose; the RX probe bent; clutter cancellation too low (stage 10) \\
+the PA is very hot & normal is warm. Too hot to touch: check its supply is 5\,V, not 12 \\
+\bottomrule
+\end{longtable}}
+
+\subsection*{Finished}
+\begin{center}
+\includegraphics[width=0.9\linewidth]{bench_view.png}
+\end{center}
+That is the whole radar: range and radial speed of anything moving in the beam. The empty bay on the lower beam, the spare horn and the spare SPF5189Z are there for the second receiver, which adds direction.
+
+\end{document}

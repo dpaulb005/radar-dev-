@@ -1,0 +1,19 @@
+\begin{tikzpicture}[x=1.0mm,y=1.0mm]
+\path[tab] (96.57,0.00) -- (21.60,127.47) -- (29.81,125.34) -- (98.70,8.21) -- cycle;
+\path[wall,fill=cuout!35] (0.00,0.00) -- (96.57,0.00) -- (21.60,127.47) -- (0.00,127.47) -- cycle;
+\path[fold] (96.57,0.00) -- (21.60,127.47);
+\path[centre,line width=0.6pt] (0.00,-6.00) -- (0.00,133.47);
+\node[rotate=90,font=\footnotesize\bfseries,anchor=south] at (-2.00,63.73) {CENTRE LINE: flip the template here};
+\path[ext] (0.00,-1.20) -- (0.00,-10.00);
+\path[ext] (96.57,-1.20) -- (96.57,-10.00);
+\draw[dim] (0.00,-8.00) -- (96.57,-8.00) node[dimlabel]{96.6 (half of 193.1)};
+\path[ext] (0.00,128.67) -- (0.00,137.47);
+\path[ext] (21.60,128.67) -- (21.60,137.47);
+\draw[dim] (0.00,135.47) -- (21.60,135.47) node[dimlabel]{21.6 (half of 43.2)};
+\draw[dim] (112.58,0.00) -- (112.58,127.47) node[dimlabel]{127.5};
+\path[ext] (21.60,127.47) -- (115.57,127.47);
+\path[ext] (103.57,0.00) -- (115.57,0.00);
+\node[font=\Huge\bfseries,text=accent] at (42.28,50.99) {B};
+\node[font=\small] at (42.28,37.99) {side flare panel};
+\node[font=\scriptsize,text=muted] at (42.28,30.99) {6 mm tab, fold 64° away from you};
+\end{tikzpicture}

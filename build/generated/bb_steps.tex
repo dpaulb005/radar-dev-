@@ -1,0 +1,356 @@
+\bbstep{1}{Rails, bridged and tied}
+\begin{center}\includegraphics[width=\linewidth]{step-01.png}\end{center}
+\vspace{-4pt}Nothing works until the four rails carry what they claim. Many 830-point boards split every rail at the middle, so the right-hand half of each is dead until you bridge it — and a split you did not notice is the classic reason half a board is unpowered. The last wire ties the two GND rails into one ground.\par
+{\footnotesize \begin{tabular}{P{0.06\linewidth}P{0.12\linewidth}P{0.3\linewidth}P{0.42\linewidth}}
+\toprule
+\textbf{wire} & \textbf{colour} & \textbf{from → to} & \textbf{what it does}\\
+\midrule
+1 & orange & \textbf{TR+@31} → \textbf{TR+@32} & rail bridge (omit if your rails are continuous)\\
+2 & black & \textbf{TR-@31} → \textbf{TR-@32} & rail bridge\\
+3 & red & \textbf{BR+@31} → \textbf{BR+@32} & rail bridge\\
+4 & black & \textbf{BR-@31} → \textbf{BR-@32} & rail bridge\\
+5 & black & \textbf{TR-@1} → \textbf{BR-@1} & tie the two GND rails together\\
+\bottomrule
+\end{tabular}}\par
+\checkline{Continuity from each rail's far left hole to its far right hole. If your board's rails are continuous, these four bridges are harmless.}
+\bbstep{2}{12 V in, and the diode that saves the board}
+\begin{center}\includegraphics[width=\linewidth]{step-02.png}\end{center}
+\vspace{-4pt}J3 takes the 12 V supply. D1 is a series Schottky: get the supply backwards and it simply does not conduct, instead of taking the op-amps and the electrolytics with it. The band on the diode body is the cathode and it faces RIGHT, toward column 13. C11 is the bulk reservoir on the protected side.\par
+{\footnotesize \begin{tabular}{P{0.12\linewidth}P{0.22\linewidth}P{0.56\linewidth}}
+\toprule
+\textbf{part} & \textbf{value} & \textbf{push it in at}\\
+\midrule
+J3 & 12V IN & 1→\textbf{j10}, 2→\textbf{j11}\\
+D1 & 1N5822 & A→\textbf{i10}, K→\textbf{i13}\\
+C11 & 100u & 1→\textbf{h13}, 2→\textbf{BR-@13}\\
+J4 & TO BUCK IN & 1→\textbf{j13}, 2→\textbf{j14}\\
+\bottomrule
+\end{tabular}}\par
+{\footnotesize \begin{tabular}{P{0.06\linewidth}P{0.12\linewidth}P{0.3\linewidth}P{0.42\linewidth}}
+\toprule
+\textbf{wire} & \textbf{colour} & \textbf{from → to} & \textbf{what it does}\\
+\midrule
+1 & black & \textbf{f11} → \textbf{BR-@11} & J3 GND\\
+2 & black & \textbf{f14} → \textbf{BR-@14} & J4 GND\\
+\bottomrule
+\end{tabular}}\par
+\checkline{D1's band toward column 13. C11's + leg toward column 13, its - to the GND rail.}
+\bbstep{3}{The VANA rail — clean 12 V for the op-amps}
+\begin{center}\includegraphics[width=\linewidth]{step-03.png}\end{center}
+\vspace{-4pt}R15 and C13 are an RC filter, not a resistor someone forgot to remove: 10 ohms into 100 uF rolls off at about 160 Hz, which keeps supply noise out of an amplifier whose whole job is a signal down at 20 mV. The output of that filter is what feeds the bottom red rail.\par
+{\footnotesize \begin{tabular}{P{0.12\linewidth}P{0.22\linewidth}P{0.56\linewidth}}
+\toprule
+\textbf{part} & \textbf{value} & \textbf{push it in at}\\
+\midrule
+R15 & 10 & 1→\textbf{g13}, 2→\textbf{g16}\\
+C13 & 100u & 1→\textbf{h16}, 2→\textbf{BR-@16}\\
+\bottomrule
+\end{tabular}}\par
+{\footnotesize \begin{tabular}{P{0.06\linewidth}P{0.12\linewidth}P{0.3\linewidth}P{0.42\linewidth}}
+\toprule
+\textbf{wire} & \textbf{colour} & \textbf{from → to} & \textbf{what it does}\\
+\midrule
+1 & red & \textbf{f16} → \textbf{BR+@16} & VANA node (R15/C13) feeds the bottom red rail\\
+\bottomrule
+\end{tabular}}\par
+\checkline{Bottom red rail now sits at 12 V minus the diode drop, about 11.6 V.}
+\bbstep{4}{5 V in from the buck converter}
+\begin{center}\includegraphics[width=\linewidth]{step-04.png}\end{center}
+\vspace{-4pt}J5 brings 5 V back from the LM2596 after you have set it with nothing else connected. C12 decouples it and the orange wire carries it up to the top red rail, which is what the three RF modules will feed from.\par
+{\footnotesize \begin{tabular}{P{0.12\linewidth}P{0.22\linewidth}P{0.56\linewidth}}
+\toprule
+\textbf{part} & \textbf{value} & \textbf{push it in at}\\
+\midrule
+J5 & FROM BUCK 5V & 1→\textbf{j18}, 2→\textbf{j19}\\
+C12 & 100u & 1→\textbf{h18}, 2→\textbf{BR-@18}\\
+\bottomrule
+\end{tabular}}\par
+{\footnotesize \begin{tabular}{P{0.06\linewidth}P{0.12\linewidth}P{0.3\linewidth}P{0.42\linewidth}}
+\toprule
+\textbf{wire} & \textbf{colour} & \textbf{from → to} & \textbf{what it does}\\
+\midrule
+1 & black & \textbf{f19} → \textbf{BR-@19} & J5 GND\\
+2 & orange & \textbf{g18} → \textbf{TR+@18} & V5 (J5/C12, bottom col 18) up to the top red rail\\
+\bottomrule
+\end{tabular}}\par
+\checkline{Set the buck to 5.00 V BEFORE this wire goes in. Top red rail = 5.00 V.}
+\bbstep{5}{Seat the two op-amps}
+\begin{center}\includegraphics[width=\linewidth]{step-05.png}\end{center}
+\vspace{-4pt}U1 is the two gain stages, U2 the reference buffer and the output. Both straddle the centre channel so the two sides of the package land on separate strips. The notch and the pin-1 dot face RIGHT, toward the higher column. C3 and C7 are the 100 nF decouplers and they go right at pin 8 of each chip, not somewhere tidier.\par
+{\footnotesize \begin{tabular}{P{0.12\linewidth}P{0.22\linewidth}P{0.56\linewidth}}
+\toprule
+\textbf{part} & \textbf{value} & \textbf{push it in at}\\
+\midrule
+U1 & TL072CP & 4→\textbf{e5}, 3→\textbf{e6}, 2→\textbf{e7}, 1→\textbf{e8}, 5→\textbf{f5}, 6→\textbf{f6}, 7→\textbf{f7}, 8→\textbf{f8}\\
+U2 & TL072CP & 4→\textbf{e30}, 3→\textbf{e31}, 2→\textbf{e32}, 1→\textbf{e33}, 5→\textbf{f30}, 6→\textbf{f31}, 7→\textbf{f32}, 8→\textbf{f33}\\
+C3 & 100n & 1→\textbf{g8}, 2→\textbf{BR-@8}\\
+C7 & 100n & 1→\textbf{g33}, 2→\textbf{BR-@33}\\
+\bottomrule
+\end{tabular}}\par
+{\footnotesize \begin{tabular}{P{0.06\linewidth}P{0.12\linewidth}P{0.3\linewidth}P{0.42\linewidth}}
+\toprule
+\textbf{wire} & \textbf{colour} & \textbf{from → to} & \textbf{what it does}\\
+\midrule
+1 & black & \textbf{a5} → \textbf{TR-@5} & U1 pin 4 (V-, top col 5) to the GND rail\\
+2 & black & \textbf{a30} → \textbf{TR-@30} & U2 pin 4 (V-, top col 30) to the GND rail\\
+3 & red & \textbf{h8} → \textbf{BR+@8} & U1 pin 8 (V+, bottom col 8) to the VANA rail\\
+4 & red & \textbf{h33} → \textbf{BR+@33} & U2 pin 8 (V+, bottom col 33) to the VANA rail\\
+\bottomrule
+\end{tabular}}\par
+\checkline{Pin 1 at e8 (U1) and e33 (U2). Power the board: both chips should sit at room temperature. A warm op-amp means V+ and V- are swapped.}
+\bbstep{6}{The half-rail reference}
+\begin{center}\includegraphics[width=\linewidth]{step-06.png}\end{center}
+\vspace{-4pt}This amplifier runs on a single supply, so 'zero' has to be manufactured: R9 and R10 divide VANA in half at column 31, C5 holds it still, and U2's second half buffers it so the divider is not loaded by everything downstream. R11 and C6 carry that buffered VREF to the node the whole signal chain hangs off.\par
+{\footnotesize \begin{tabular}{P{0.12\linewidth}P{0.22\linewidth}P{0.56\linewidth}}
+\toprule
+\textbf{part} & \textbf{value} & \textbf{push it in at}\\
+\midrule
+R9 & 10k & 1→\textbf{a36}, 2→\textbf{a31}\\
+R10 & 10k & 1→\textbf{b31}, 2→\textbf{TR-@33}\\
+C5 & 10u & 1→\textbf{c31}, 2→\textbf{TR-@35}\\
+R11 & 47 & 1→\textbf{c33}, 2→\textbf{c29}\\
+C6 & 47u & 1→\textbf{d26}, 2→\textbf{TR-@26}\\
+\bottomrule
+\end{tabular}}\par
+{\footnotesize \begin{tabular}{P{0.06\linewidth}P{0.12\linewidth}P{0.3\linewidth}P{0.42\linewidth}}
+\toprule
+\textbf{wire} & \textbf{colour} & \textbf{from → to} & \textbf{what it does}\\
+\midrule
+1 & red & \textbf{e36} → \textbf{BR+@36} & R9's VANA end (top col 36) down to the VANA rail\\
+2 & green & \textbf{j32} → \textbf{j31} & U2 pin 7 (col 32) to pin 6 (col 31): unity-gain buffer\\
+3 & green & \textbf{a33} → \textbf{a32} & U2 pin 1 (col 33) to pin 2 (col 32): VREF buffer, unity gain\\
+4 & violet & \textbf{b29} → \textbf{b26} & R11's far end (col 29) to the VREF node (col 26)\\
+\bottomrule
+\end{tabular}}\par
+\checkline{VREF (column 26) should read half of VANA, about 5.8 V, and be steady.}
+\bbstep{7}{Spread VREF along the board}
+\begin{center}\includegraphics[width=\linewidth]{step-07.png}\end{center}
+\vspace{-4pt}Four violet wires, and they are the reason the amplifier has a zero to swing about. The long one runs the length of row a to reach the input stage at column 1. Do them as a set so none is forgotten — a stage whose VREF is missing is not dead, it is railed, which is a more confusing symptom.\par
+{\footnotesize \begin{tabular}{P{0.06\linewidth}P{0.12\linewidth}P{0.3\linewidth}P{0.42\linewidth}}
+\toprule
+\textbf{wire} & \textbf{colour} & \textbf{from → to} & \textbf{what it does}\\
+\midrule
+1 & violet & \textbf{a26} → \textbf{a24} & VREF -> C9's VREF end\\
+2 & violet & \textbf{b24} → \textbf{c16} & VREF -> R6's VREF end (col 16)\\
+3 & violet & \textbf{d16} → \textbf{d17} & VREF (col 16) -> R4's VREF end (col 17)\\
+4 & violet & \textbf{a1} → \textbf{a16} & VREF -> R2's VREF end (col 1): long run along row a\\
+\bottomrule
+\end{tabular}}\par
+\checkline{Every violet wire end reads the same 5.8 V.}
+\bbstep{8}{The input: mixer IF, terminated}
+\begin{center}\includegraphics[width=\linewidth]{step-08.png}\end{center}
+\vspace{-4pt}R1 is the 49.9 ohm load the mixer's IF port wants; without it the conversion loss and the flatness wander. C20 shunts the LO that leaks out of that same port at 2.4 GHz, which a TL072 would otherwise rectify into a DC offset. C1 and R2 are the first high-pass, and they are what stop the TX leakage tone from saturating the gain.\par
+{\footnotesize \begin{tabular}{P{0.12\linewidth}P{0.22\linewidth}P{0.56\linewidth}}
+\toprule
+\textbf{part} & \textbf{value} & \textbf{push it in at}\\
+\midrule
+J1 & MIXER IF & 1→\textbf{a2}, 2→\textbf{a3}\\
+R1 & 49.9 & 1→\textbf{b2}, 2→\textbf{TR-@2}\\
+C20 & 1n & 1→\textbf{c2}, 2→\textbf{TR-@3}\\
+C1 & 100n & 1→\textbf{d2}, 2→\textbf{d4}\\
+R2 & 10k & 1→\textbf{c4}, 2→\textbf{c1}\\
+\bottomrule
+\end{tabular}}\par
+{\footnotesize \begin{tabular}{P{0.06\linewidth}P{0.12\linewidth}P{0.3\linewidth}P{0.42\linewidth}}
+\toprule
+\textbf{wire} & \textbf{colour} & \textbf{from → to} & \textbf{what it does}\\
+\midrule
+1 & black & \textbf{e3} → \textbf{TR-@4} & J1 GND\\
+2 & green & \textbf{a4} → \textbf{a6} & AP (C1/R2 node) into U1 pin 3 (IN+ A, col 6)\\
+\bottomrule
+\end{tabular}}\par
+\checkline{R1 across the IF input reads 49.9 ohms to ground.}
+\bbstep{9}{Gain stage A, times 101}
+\begin{center}\includegraphics[width=\linewidth]{step-09.png}\end{center}
+\vspace{-4pt}R3 over R4 sets the gain. R4 is 1k for the full 40 dB, but fit 4.7k on first power-up for a gain of 22: if the TX leakage is stronger than you expected, a lower first gain is the difference between seeing it and clipping on it. C2 and R6 are the second high-pass into stage B.\par
+{\footnotesize \begin{tabular}{P{0.12\linewidth}P{0.22\linewidth}P{0.56\linewidth}}
+\toprule
+\textbf{part} & \textbf{value} & \textbf{push it in at}\\
+\midrule
+R3 & 100k & 1→\textbf{b14}, 2→\textbf{b10}\\
+C2 & 100n & 1→\textbf{c10}, 2→\textbf{c12}\\
+R4 & 1k & 1→\textbf{c14}, 2→\textbf{c17}\\
+R6 & 10k & 1→\textbf{b12}, 2→\textbf{b16}\\
+\bottomrule
+\end{tabular}}\par
+{\footnotesize \begin{tabular}{P{0.06\linewidth}P{0.12\linewidth}P{0.3\linewidth}P{0.42\linewidth}}
+\toprule
+\textbf{wire} & \textbf{colour} & \textbf{from → to} & \textbf{what it does}\\
+\midrule
+1 & green & \textbf{a8} → \textbf{a10} & U1 pin 1 (OUT A, col 8) to the AOUT node (col 10)\\
+2 & green & \textbf{a14} → \textbf{a7} & AM node (R3/R4) back to U1 pin 2 (IN- A, col 7)\\
+\bottomrule
+\end{tabular}}\par
+\checkline{Inject 10 mV at 1 kHz: about 107 mV out of stage A with R4 at 4.7k.}
+\bbstep{10}{Gain stage B, times 11, and the anti-alias corner}
+\begin{center}\includegraphics[width=\linewidth]{step-10.png}\end{center}
+\vspace{-4pt}R7 over R8 gives the second 21 dB. R12 with C9 is the 15.9 kHz low-pass that limits the noise bandwidth reaching the sound card. The last wire takes that filtered node across the channel into U2's spare half.\par
+{\footnotesize \begin{tabular}{P{0.12\linewidth}P{0.22\linewidth}P{0.56\linewidth}}
+\toprule
+\textbf{part} & \textbf{value} & \textbf{push it in at}\\
+\midrule
+R7 & 10k & 1→\textbf{b23}, 2→\textbf{b19}\\
+R8 & 1k & 1→\textbf{c23}, 2→\textbf{c26}\\
+R12 & 1k & 1→\textbf{c19}, 2→\textbf{c22}\\
+C9 & 10n & 1→\textbf{d22}, 2→\textbf{d24}\\
+\bottomrule
+\end{tabular}}\par
+{\footnotesize \begin{tabular}{P{0.06\linewidth}P{0.12\linewidth}P{0.3\linewidth}P{0.42\linewidth}}
+\toprule
+\textbf{wire} & \textbf{colour} & \textbf{from → to} & \textbf{what it does}\\
+\midrule
+1 & green & \textbf{d12} → \textbf{g5} & BP (C2/R6 node) across the channel into U1 pin 5 (IN+ B, bottom col 5)\\
+2 & green & \textbf{g7} → \textbf{a19} & U1 pin 7 (OUT B, bottom col 7) up to the BOUT node (col 19)\\
+3 & green & \textbf{a23} → \textbf{i6} & BM node (R7/R8) across to U1 pin 6 (IN- B, bottom col 6)\\
+4 & green & \textbf{e22} → \textbf{h30} & LP (R12/C9 node) across to U2 pin 5 (IN+ B, bottom col 30)\\
+\bottomrule
+\end{tabular}}\par
+\checkline{Total gain now about 61 dB. Sweep it: -3 dB at 15.9 kHz, -6 dB at 159 Hz.}
+\bbstep{11}{Output, isolated and bled to ground}
+\begin{center}\includegraphics[width=\linewidth]{step-11.png}\end{center}
+\vspace{-4pt}R13 and C10 hand the signal to the sound card through a series resistor, so a cable capacitance does not hang directly off an op-amp output. R14 bleeds the coupling cap so the jack is not left holding a charge, and J2 is the audio-left output to the interface.\par
+{\footnotesize \begin{tabular}{P{0.12\linewidth}P{0.22\linewidth}P{0.56\linewidth}}
+\toprule
+\textbf{part} & \textbf{value} & \textbf{push it in at}\\
+\midrule
+R13 & 100 & 1→\textbf{i32}, 2→\textbf{i35}\\
+C10 & 10u & 1→\textbf{h35}, 2→\textbf{h36}\\
+R14 & 100k & 1→\textbf{g36}, 2→\textbf{BR-@36}\\
+J2 & AUDIO L & 1→\textbf{f36}, 2→\textbf{f37}\\
+\bottomrule
+\end{tabular}}\par
+{\footnotesize \begin{tabular}{P{0.06\linewidth}P{0.12\linewidth}P{0.3\linewidth}P{0.42\linewidth}}
+\toprule
+\textbf{wire} & \textbf{colour} & \textbf{from → to} & \textbf{what it does}\\
+\midrule
+1 & black & \textbf{j37} → \textbf{BR-@37} & J2 GND\\
+\bottomrule
+\end{tabular}}\par
+\checkline{Output DC near 0 V after C10. Finger on the input gives a hum: the amp is alive.}
+\bbstep{12}{Three 5 V feeds for the RF modules}
+\begin{center}\includegraphics[width=\linewidth]{step-12.png}\end{center}
+\vspace{-4pt}The ADF4351, the PA and the LNA each get a ferrite bead and their own 10 uF plus 100 nF pair, so one module's switching noise does not arrive at the next one along the rail. Identical blocks at columns 38, 41 and 44 — build one, check it, then repeat it twice.\par
+{\footnotesize \begin{tabular}{P{0.12\linewidth}P{0.22\linewidth}P{0.56\linewidth}}
+\toprule
+\textbf{part} & \textbf{value} & \textbf{push it in at}\\
+\midrule
+FB1 & FB & 1→\textbf{TR+@38}, 2→\textbf{a38}\\
+C14 & 10u & 1→\textbf{b38}, 2→\textbf{TR-@39}\\
+C15 & 100n & 1→\textbf{c38}, 2→\textbf{TR-@40}\\
+J6 & ADF4351 5V & 1→\textbf{d38}, 2→\textbf{d39}\\
+FB2 & FB & 1→\textbf{TR+@41}, 2→\textbf{a41}\\
+C16 & 10u & 1→\textbf{b41}, 2→\textbf{TR-@42}\\
+C17 & 100n & 1→\textbf{c41}, 2→\textbf{TR-@43}\\
+J7 & PA 5V & 1→\textbf{d41}, 2→\textbf{d42}\\
+FB3 & FB & 1→\textbf{TR+@44}, 2→\textbf{a44}\\
+C18 & 10u & 1→\textbf{b44}, 2→\textbf{TR-@45}\\
+C19 & 100n & 1→\textbf{c44}, 2→\textbf{TR-@46}\\
+J8 & LNA 5V & 1→\textbf{d44}, 2→\textbf{d45}\\
+\bottomrule
+\end{tabular}}\par
+{\footnotesize \begin{tabular}{P{0.06\linewidth}P{0.12\linewidth}P{0.3\linewidth}P{0.42\linewidth}}
+\toprule
+\textbf{wire} & \textbf{colour} & \textbf{from → to} & \textbf{what it does}\\
+\midrule
+1 & black & \textbf{e39} → \textbf{TR-@41} & J6 GND\\
+2 & black & \textbf{e42} → \textbf{TR-@44} & J7 GND\\
+3 & black & \textbf{e45} → \textbf{TR-@47} & J8 GND\\
+\bottomrule
+\end{tabular}}\par
+\checkline{5.00 V at all three of J6, J7, J8 with nothing plugged into them.}
+\bbstep{13}{The ESP32 header and its series resistors}
+\begin{center}\includegraphics[width=\linewidth]{step-13.png}\end{center}
+\vspace{-4pt}J9 is where the radar's ESP32 lands. R16 to R18 are 33 ohm series resistors on SCK, MOSI and LE: they damp the edges so a 2.54 mm breadboard run does not ring into the PLL's logic inputs. Each one hops the centre channel into the top bank.\par
+{\footnotesize \begin{tabular}{P{0.12\linewidth}P{0.22\linewidth}P{0.56\linewidth}}
+\toprule
+\textbf{part} & \textbf{value} & \textbf{push it in at}\\
+\midrule
+J9 & ESP32 & 1→\textbf{j44}, 2→\textbf{j45}, 3→\textbf{j46}, 4→\textbf{j47}, 5→\textbf{j48}, 6→\textbf{j49}, 7→\textbf{j50}, 8→\textbf{j51}, 9→\textbf{j52}, 10→\textbf{j53}\\
+R16 & 33 & 1→\textbf{f45}, 2→\textbf{e46}\\
+R17 & 33 & 1→\textbf{f46}, 2→\textbf{e47}\\
+R18 & 33 & 1→\textbf{f47}, 2→\textbf{e48}\\
+\bottomrule
+\end{tabular}}\par
+{\footnotesize \begin{tabular}{P{0.06\linewidth}P{0.12\linewidth}P{0.3\linewidth}P{0.42\linewidth}}
+\toprule
+\textbf{wire} & \textbf{colour} & \textbf{from → to} & \textbf{what it does}\\
+\midrule
+1 & black & \textbf{f44} → \textbf{BR-@44} & J9 pin 1 GND\\
+\bottomrule
+\end{tabular}}\par
+\checkline{Each resistor reads 33 ohms between its two strips, and nothing else.}
+\bbstep{14}{SPI across to the ADF4351}
+\begin{center}\includegraphics[width=\linewidth]{step-14.png}\end{center}
+\vspace{-4pt}Four blue wires carry the damped SPI and the lock-detect line up to J10. R19 pulls CE down so the synthesiser's output stays OFF until something deliberately enables it, and JP3 is the link that enables it. The yellow wire brings 3V3 over from the ESP32 — the ADF4351 board is 3.3 V logic and needs no level shifting.\par
+{\footnotesize \begin{tabular}{P{0.12\linewidth}P{0.22\linewidth}P{0.56\linewidth}}
+\toprule
+\textbf{part} & \textbf{value} & \textbf{push it in at}\\
+\midrule
+J10 & ADF LOGIC & 1→\textbf{a52}, 2→\textbf{a53}, 3→\textbf{a54}, 4→\textbf{a55}, 5→\textbf{a56}, 6→\textbf{a57}\\
+R19 & 10k & 1→\textbf{b57}, 2→\textbf{TR-@57}\\
+JP3 & CE EN & 1→\textbf{d57}, 2→\textbf{d58}\\
+\bottomrule
+\end{tabular}}\par
+{\footnotesize \begin{tabular}{P{0.06\linewidth}P{0.12\linewidth}P{0.3\linewidth}P{0.42\linewidth}}
+\toprule
+\textbf{wire} & \textbf{colour} & \textbf{from → to} & \textbf{what it does}\\
+\midrule
+1 & black & \textbf{e52} → \textbf{TR-@52} & J10 pin 1 GND\\
+2 & blue & \textbf{a46} → \textbf{b53} & R16 out (top col 46) -> J10 pin 2 SCK\_O (col 53)\\
+3 & blue & \textbf{a47} → \textbf{b54} & R17 out (top col 47) -> J10 pin 3 MOSI\_O (col 54)\\
+4 & blue & \textbf{a48} → \textbf{b55} & R18 out (top col 48) -> J10 pin 4 LE\_O (col 55)\\
+5 & blue & \textbf{f48} → \textbf{b56} & J9 pin 5 LD (bottom col 48) -> J10 pin 5 LD (top col 56)\\
+6 & yellow & \textbf{f53} → \textbf{e58} & J9 pin 10 3V3 (bottom col 53) -> JP3 pin 2 (top col 58)\\
+\bottomrule
+\end{tabular}}\par
+\checkline{With JP3 off, CE reads 0 V. The radar must boot with RF off.}
+\bbstep{15}{The A4988 stepper header}
+\begin{center}\includegraphics[width=\linewidth]{step-15.png}\end{center}
+\vspace{-4pt}Only for the optional turntable; skip the whole step if you are not fitting one. R20 pulls EN up so the driver is disabled until the ESP32 says otherwise, and R21 and R22 pull STEP and DIR down so a floating input cannot make the motor twitch at power-up. The three brown wires are the control lines.\par
+{\footnotesize \begin{tabular}{P{0.12\linewidth}P{0.22\linewidth}P{0.56\linewidth}}
+\toprule
+\textbf{part} & \textbf{value} & \textbf{push it in at}\\
+\midrule
+J11 & A4988 LOGIC & 1→\textbf{j58}, 2→\textbf{j59}, 3→\textbf{j60}, 4→\textbf{j61}, 5→\textbf{j62}\\
+R20 & 10k & 1→\textbf{i59}, 2→\textbf{i62}\\
+R21 & 10k & 1→\textbf{h60}, 2→\textbf{BR-@60}\\
+R22 & 10k & 1→\textbf{h61}, 2→\textbf{BR-@61}\\
+\bottomrule
+\end{tabular}}\par
+{\footnotesize \begin{tabular}{P{0.06\linewidth}P{0.12\linewidth}P{0.3\linewidth}P{0.42\linewidth}}
+\toprule
+\textbf{wire} & \textbf{colour} & \textbf{from → to} & \textbf{what it does}\\
+\midrule
+1 & black & \textbf{f58} → \textbf{BR-@58} & J11 pin 1 GND\\
+2 & yellow & \textbf{g53} → \textbf{g59} & 3V3 -> J11 pin 2 / R20 (bottom col 59)\\
+3 & brown & \textbf{g50} → \textbf{g60} & J9 pin 7 STEP (col 50) -> J11 pin 3 (col 60)\\
+4 & brown & \textbf{g51} → \textbf{g61} & J9 pin 8 DIR (col 51) -> J11 pin 4 (col 61)\\
+5 & brown & \textbf{g52} → \textbf{g62} & J9 pin 9 EN (col 52) -> J11 pin 5 (col 62)\\
+\bottomrule
+\end{tabular}}\par
+\checkline{EN sits at 3V3, STEP and DIR at 0 V, with the ESP32 unplugged.}
+\bbstep{16}{The SYNC divider back to the sound card}
+\begin{center}\includegraphics[width=\linewidth]{step-16.png}\end{center}
+\vspace{-4pt}The last block, and the one that makes the whole radar measurable: R23 and R24 divide the ESP32's 3.3 V chirp marker down to about 0.3 V, which is a line-level signal the sound card's sync input (INPUT 2) can take. Without it the laptop cannot cut the beat signal into chirps and there is no range axis at all.\par
+{\footnotesize \begin{tabular}{P{0.12\linewidth}P{0.22\linewidth}P{0.56\linewidth}}
+\toprule
+\textbf{part} & \textbf{value} & \textbf{push it in at}\\
+\midrule
+R23 & 10k & 1→\textbf{b60}, 2→\textbf{b63}\\
+R24 & 1k & 1→\textbf{c63}, 2→\textbf{TR-@63}\\
+J12 & AUDIO R & 1→\textbf{d63}, 2→\textbf{d62}\\
+\bottomrule
+\end{tabular}}\par
+{\footnotesize \begin{tabular}{P{0.06\linewidth}P{0.12\linewidth}P{0.3\linewidth}P{0.42\linewidth}}
+\toprule
+\textbf{wire} & \textbf{colour} & \textbf{from → to} & \textbf{what it does}\\
+\midrule
+1 & black & \textbf{e62} → \textbf{TR-@62} & J12 GND\\
+2 & pink & \textbf{h49} → \textbf{a60} & J9 pin 6 SYNC (bottom col 49) up to R23 (top col 60)\\
+\bottomrule
+\end{tabular}}\par
+\checkline{A 135 Hz square wave of about 0.3 V at J12 once radar\_ctl is running.}
+\bbstep{17}{Before you power anything}
+\begin{center}\includegraphics[width=\linewidth]{step-17.png}\end{center}
+\vspace{-4pt}The board is finished. These are the measurements that catch a build error while it is still cheap, with the supply DISCONNECTED and nothing plugged into the headers.\par
+\checkline{Ohm-meter, all with power off: GND to VANA, GND to V5 and GND to 3V3 must each read open (over 1 kohm). Any of them near zero is a short — find it before you connect 12 V. Then work the test blocks in breadboard/multisim/.}

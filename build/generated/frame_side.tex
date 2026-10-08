@@ -1,0 +1,32 @@
+\begin{tikzpicture}[x=0.23mm,y=0.23mm]
+\path[woodpart] (-190.50,-18.00) rectangle (190.50,0.00);
+\path[woodpart] (-54.00,0.00) rectangle (-36.00,530.80);
+\path[woodpart] (-61.00,240.80) rectangle (-29.00,252.80);
+\path[woodpart] (-61.00,530.80) rectangle (-29.00,542.80);
+\path[alupart] (-62.00,252.80) rectangle (-28.00,284.80);
+\path[draw=cuedge,line width=0.7pt,fill=cuin!55] (-226.55,168.11) -- (-135.00,256.80) -- (-20.00,256.80) -- (-20.00,343.20) -- (-135.00,343.20) -- (-226.55,431.89) -- cycle;
+\path[draw=cuedge,line width=0.4pt] (-135.00,256.80) -- (-135.00,343.20);
+\path[draw=black!70,fill=alu,line width=0.4pt] (-70.05,293.65) rectangle (-57.35,306.35);
+\fill[black!70] (-63.70,300.00) circle[radius=2.4];
+\path[alupart] (-62.00,542.80) rectangle (-28.00,574.80);
+\path[draw=cuedge,line width=0.7pt,fill=cuin!55] (-226.55,458.11) -- (-135.00,546.80) -- (-20.00,546.80) -- (-20.00,633.20) -- (-135.00,633.20) -- (-226.55,721.89) -- cycle;
+\path[draw=cuedge,line width=0.4pt] (-135.00,546.80) -- (-135.00,633.20);
+\path[draw=black!70,fill=alu,line width=0.4pt] (-70.05,583.65) rectangle (-57.35,596.35);
+\fill[black!70] (-63.70,590.00) circle[radius=2.4];
+\path[draw=black!60,fill=alu!60,line width=0.5pt] (5.00,235.00) rectangle (8.00,365.00);
+\node[font=\tiny,text=muted] at (19.00,375.00) {foil screen};
+\node[font=\scriptsize\bfseries] at (-160.50,-28.00) {front};
+\node[font=\scriptsize\bfseries] at (160.50,-28.00) {back};
+\draw[dim] (-226.55,745.90) -- (-135.00,745.90) node[dimlabel]{91.5};
+\draw[dim] (-135.00,745.90) -- (-20.00,745.90) node[dimlabel]{115};
+\path[ext,dash pattern=on 1pt off 1pt] (-226.55,630.00) -- (-226.55,749.89);
+\path[ext,dash pattern=on 1pt off 1pt] (-135.00,630.00) -- (-135.00,749.89);
+\path[ext,dash pattern=on 1pt off 1pt] (-20.00,630.00) -- (-20.00,749.89);
+\draw[dim] (-190.50,-51.99) -- (-45.00,-51.99) node[dimlabel]{145.5 to frame};
+\draw[dim] (-226.55,-77.99) -- (-190.50,-77.99) node[dimlabel]{36};
+\path[ext,dash pattern=on 1pt off 1pt] (-226.55,168.11) -- (-226.55,-82.00);
+\path[ext] (-190.50,-18.00) -- (-190.50,-82.00);
+\path[ext] (-45.00,0.00) -- (-45.00,-56.00);
+\draw[dim] (-14.99,252.80) -- (-14.99,300.00) node[dimlabel]{47.2};
+\node[font=\tiny,text=muted] at (-141.00,727.89) {throat};
+\end{tikzpicture}

@@ -1,0 +1,633 @@
+% fabrication.tex — Part 1 of the build: what to buy, what to cut, and the drawings.
+% Build:  python3 tools/make_figures.py && latexmk -lualatex fabrication.tex
+\documentclass[10pt]{article}
+\newcommand{\doctitle}{Radar build, part 1: parts and fabrication drawings}
+\input{common}
+\graphicspath{{generated/}{../breadboard/assembly/steps/}{../3d/renders/radar-bench/}}
+\input{generated/parts_missing}
+
+\begin{document}
+
+% ───────────────────────────────────────────────────────────── title page
+\thispagestyle{plain}
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[accent] (current page.north west) rectangle ([yshift=-9mm]current page.north east);
+\end{tikzpicture}
+\vspace*{6mm}
+{\color{muted}\small radar-dev \quad·\quad 2.4 GHz FMCW radar \quad·\quad part 1 of 2}\par
+\vspace{2mm}
+{\fontsize{26}{30}\selectfont\bfseries Parts and fabrication\par}
+\vspace{1mm}
+{\Large\color{accent} Everything to buy, cut and drill, drawn to scale\par}
+\vspace{5mm}
+\includegraphics[width=\linewidth]{bench_view.png}\par
+{\footnotesize\color{muted} The finished bench, from the 3-D model (\code{3d/radar-bench.html}). Every size in this document comes from that model and from the horn solver, not from hand.}
+\vspace{4mm}
+
+\begin{minipage}[t]{0.48\linewidth}
+\textbf{This document} says what every part is, how big it is, and how much to buy:
+\begin{itemize}
+  \item the parts list, checked against your order
+  \item full-size cutting templates for the copper horns
+  \item the frame, with every cut and hole
+  \item cable runs, schematics, and the breadboard layout
+\end{itemize}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\linewidth}
+\textbf{Part 2, the assembly guide,} uses these parts to put it together in order, with a check at the end of every stage, ending with the radar seeing someone walk across the room.
+
+\smallskip
+{\color{muted}\small Sizes are millimetres unless marked. Print the template pages at \textbf{100\,\%, “actual size”}, never “fit to page”, and measure the 50\,mm square on each one before cutting.}
+\end{minipage}
+
+\newpage
+\tableofcontents
+\newpage
+
+% ───────────────────────────────────────────────────────────── 1 overview
+\section{The system on one page}\label{sec:overview}
+
+The radar sends out a tone that sweeps steadily up from 2400 to 2483.5\,MHz, then listens for echoes. An echo from something far away was sent earlier, so it comes back at a slightly lower pitch than what is being sent right now. Mixing the two together gives a low beat tone whose pitch says how far away the thing is. A sound card records that tone and the laptop turns pitch into distance.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  blk/.style={draw=black!65,fill=rfmod,rounded corners=1pt,minimum height=9mm,minimum width=17mm,align=center,font=\scriptsize},
+  dig/.style={blk,fill=pcb},
+  bb/.style={blk,fill=white},
+  ant/.style={draw=cuedge,fill=cuout,minimum height=9mm,minimum width=12mm,align=center,font=\scriptsize\bfseries,trapezium,trapezium angle=65,shape border rotate=270},
+  rf/.style={draw=black!80,line width=0.9pt,-{Stealth[length=2mm]}},
+  ifl/.style={draw=sig,line width=0.9pt,-{Stealth[length=2mm]}},
+  lg/.style={draw=logic,line width=0.7pt,-{Stealth[length=1.8mm]}},
+  lvl/.style={font=\tiny\bfseries,text=accent,fill=white,inner sep=1pt},
+  ]
+  \node[dig] (esp) at (0,2.1) {ESP32\\radar\_ctl};
+  \node[blk] (adf) at (0,0) {ADF4351\\PLL};
+  \node[blk] (pad) at (2.9,0) {3\,dB\\pad};
+  \node[blk] (pa)  at (5.8,0) {PA\\SPF5189Z};
+  \node[blk] (spl) at (8.7,0) {2-way\\splitter};
+  \node[ant] (tx)  at (12.0,0) {TX};
+  \node[ant,shape border rotate=90] (rx) at (0,-2.5) {RX};
+  \node[blk] (bpf) at (2.9,-2.5) {band-pass\\2.4\,GHz};
+  \node[blk] (lna) at (5.8,-2.5) {LNA\\SPF5189Z};
+  \node[blk] (mix) at (8.7,-2.5) {mixer\\ZX05-43MH};
+  \node[bb]  (amp) at (8.7,-4.9) {video amp\\(breadboard)};
+  \node[blk,fill=faint] (snd) at (11.8,-4.9) {UMC404HD\\sound card};
+  \node[blk,fill=faint] (pc)  at (14.7,-4.9) {laptop\\Python};
+  \draw[rf] (adf) -- node[lvl,above=2pt]{+5} node[font=\tiny,below=2pt]{R1} (pad);
+  \draw[rf] (pad) -- node[lvl,above=2pt]{+2} node[font=\tiny,below=2pt]{R2} (pa);
+  \draw[rf] (pa)  -- node[lvl,above=2pt]{+14} node[font=\tiny,below=2pt]{R3} (spl);
+  \draw[rf] (spl) -- node[lvl,above=2pt]{+10} node[font=\tiny,below=2pt]{R4, 1\,m} (tx);
+  \draw[rf] (spl) -- node[lvl,right=2pt]{+10.5\,LO} node[font=\tiny,left=2pt]{R5} (mix);
+  \draw[rf] (rx)  -- node[font=\tiny,below=2pt]{R6, 60\,cm} (bpf);
+  \draw[rf] (bpf) -- node[font=\tiny,below=2pt]{R7} (lna);
+  \draw[rf] (lna) -- node[font=\tiny,below=2pt]{R8} node[lvl,above=2pt]{RF} (mix);
+  \draw[ifl] (mix) -- node[font=\tiny\bfseries,text=sig,right=2pt]{R9: IF, the beat tone} (amp);
+  \draw[ifl] (amp) -- node[font=\tiny,above=1pt]{IN 1} (snd);
+  \draw[lg] (snd) -- node[font=\tiny,above=1pt]{USB} (pc);
+  \draw[lg] (esp) -- node[font=\tiny,right=2pt]{SPI: sets each step of the sweep} (adf);
+  \draw[draw=logic,line width=0.7pt] (esp.west) -- ++(-0.9,0) |- ([yshift=-6mm]snd.south) coordinate(sb);
+  \draw[lg] (sb) -- (snd.south);
+  \node[font=\tiny,text=logic,anchor=north west] at (-1.4,-6.05) {SYNC: high during each up-sweep, through the 10k/1k divider, to IN 2};
+  \draw[lg,<-] (esp.east) -- ++(1.2,0) node[right,font=\tiny,align=left]{USB serial from the laptop};
+\end{tikzpicture}
+\caption{The signal path. Thick black arrows are coax (SMA cables); numbers in red are the signal strength in dBm at that point. Green is the low-frequency beat tone; blue is logic.}
+\end{figure}
+
+\begin{minipage}[t]{0.5\linewidth}
+\begin{tabular}{@{}P{0.40\linewidth}P{0.52\linewidth}@{}}
+\toprule
+\textbf{what} & \textbf{value} \\ \midrule
+sweep & 2400–2483.5\,MHz, the whole 2.4\,GHz ISM band \\
+sweep timing & 64 steps in 6.4\,ms, repeats every 7.4\,ms \\
+distance resolution & 1.80\,m per range cell \\
+speed resolution & 0.13\,m/s \\
+transmit power & about +10\,dBm into a \gain\,dBi horn \\
+\bottomrule
+\end{tabular}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.47\linewidth}
+\begin{tabular}{@{}P{0.40\linewidth}P{0.52\linewidth}@{}}
+\toprule
+\textbf{what} & \textbf{value} \\ \midrule
+horns & 3 copper pyramidal horns, \aperW\,×\,\aperH\ mouth \\
+beam & about \hpE°\,×\,\hpH° \\
+beat amplifier & gain 1111 (61\,dB), cut-off 15.9\,kHz \\
+power in & 12\,V, 3\,A supply \\
+footprint & \boardW\,×\,\boardD\ plywood, \txTop\ tall \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+
+\enlargethispage{2\baselineskip}
+\subsection*{The four things you build}
+\begin{enumerate}
+  \item \textbf{Three copper horns} (section \ref{sec:horn}). Two face out as transmitter and receiver; the third is for the second receiver later (stage 2), and is built now so the two receivers come out as twins.
+  \item \textbf{The frame} (section \ref{sec:frame}). A plywood board with two uprights and two cross beams. The transmit horn sits on the top beam, the receive horn and an empty bay on the lower one.
+  \item \textbf{The RF chain} (section \ref{sec:rf}). Seven bought modules screwed to the board and joined with SMA cables. Nothing to make, but the cable runs matter.
+  \item \textbf{The breadboard} (section \ref{sec:bb}). The beat-tone amplifier, the power distribution and the logic wiring. Two op-amps and about sixty parts, no soldering.
+\end{enumerate}
+
+\newpage
+% ───────────────────────────────────────────────────────────── 2 parts list
+\section{What to buy}\label{sec:parts}
+
+Every part the build needs. The last column is checked against your order spreadsheet (\code{BOM\_Radar\_Build.xlsx}): \textbf{\partsMissing\ lines are not on it}. Most of those are cheap and easy to get, or you already have them; the three you cannot work around are marked in the box below.
+
+\begin{warn}[Not on your list, and the build stops without them]
+\textbf{The two long SMA cables} (R4, about 1\,m, splitter up to the transmit horn; R6, about 60\,cm, receive horn down to the band-pass filter). The 20\,cm jumpers you ordered cannot reach the horns, which sit 30 and 60\,cm above the board. \textbf{The ESP32 and the two TL072 op-amps}: without them nothing sweeps and nothing is amplified. Check also that you have \textbf{two} SPF5189Z modules (the PA and the LNA are the same part) and \textbf{three} copper sheets.
+\end{warn}
+
+{\small
+\begin{longtable}{@{}P{0.27\linewidth}P{0.075\linewidth}P{0.41\linewidth}P{0.165\linewidth}@{}}
+\toprule
+\textbf{part} & \textbf{qty} & \textbf{what it is, what it does} & \textbf{your order} \\ \midrule
+\endfirsthead
+\toprule
+\textbf{part} & \textbf{qty} & \textbf{what it is, what it does} & \textbf{your order} \\ \midrule
+\endhead
+\bottomrule
+\endfoot
+\rowsfrom{parts_rows}
+\end{longtable}}
+
+\subsection{Your order, as it stands}
+For reference, the spreadsheet as read. Lines with no price are ones the sheet leaves blank.
+
+{\small
+\begin{longtable}{@{}P{0.6\linewidth}P{0.15\linewidth}@{}}
+\toprule
+\textbf{line in BOM\_Radar\_Build.xlsx} & \textbf{price} \\ \midrule
+\endhead
+\rowsfrom{order_rows}
+\bottomrule
+\end{longtable}}
+
+\subsection{Tools}\label{sec:tools}
+{\small
+\begin{tabularx}{\linewidth}{@{}P{0.38\linewidth}L@{}}
+\toprule
+\textbf{tool} & \textbf{used for} \\ \midrule
+aviation snips or a sheet nibbler & cutting the copper \\
+steel rule, square, fine marker or scriber & marking out \\
+60–100\,W soldering iron with a big tip, or a small gas torch & the horn seams. A 25\,W electronics iron cannot heat the sheet \\
+small electronics iron, 25–40\,W & header pins, the IF pigtail, the probe into the SMA cup \\
+two lengths of angle iron or hardwood, and clamps & folding tabs on a straight line \\
+drill with 2.7, 3.5, 4.5 and 2\,mm bits; centre punch; files & connector holes, screw clearances, pilot holes, deburring \\
+hand saw and a mitre box or square & the uprights, beams and braces \\
+calipers (digital) & every horn size, and the probe \\
+multimeter & seams, rails, the buck converter's 5.00\,V \\
+8\,mm (5/16\,in) SMA spanner, or a small adjustable & SMA nuts: finger tight, then 1/8 turn \\
+flush snips, wire strippers, tweezers & the breadboard \\
+laptop with Arduino IDE (ESP32 core) and Python 3 & the firmware and the radar software \\
+gloves and safety glasses; ventilation & cut copper is sharp; flux fumes \\
+\textit{nice to have:} a VNA that reaches 2.5\,GHz & measuring the horns' match. Borrow one for twenty minutes \\
+\bottomrule
+\end{tabularx}}
+
+\newpage
+% ───────────────────────────────────────────────────────────── 3 the horns
+\section{The copper horns}\label{sec:horn}
+
+Each horn is a rectangular pipe with a flared mouth, made from nine flat pieces of 24\,gauge copper soldered along folded tabs. The pipe is \pipeW\,×\,\pipeH\ inside and \pipeL\ long; the flare opens to \aperW\,×\,\aperH\ over \flareL. A brass rod pushed through the pipe wall from an SMA connector is the feed. Make three, identical.
+
+\begin{figure}[H]
+\centering
+\input{generated/horn_iso}
+\caption{One horn seen from behind and above, as it comes off the bench before it is rolled onto its side for mounting. There are two each of A, B, C and D, and one E. The bottom C has no hole.}
+\end{figure}
+
+{\small
+\begin{tabularx}{\linewidth}{@{}p{8mm}P{0.24\linewidth}p{9mm}LP{0.2\linewidth}@{}}
+\toprule
+\textbf{piece} & \textbf{name} & \textbf{qty} & \textbf{the wall itself (tabs extra)} & \textbf{folds} \\ \midrule
+A & flare panel, top and bottom & 2 & trapezoid, edges \pipeW\ and \aperW, \hTop\ high & none \\
+B & flare panel, sides & 2 & trapezoid, edges \pipeH\ and \aperH, \hSide\ high; tabs on both slanted edges & \cornerBend° \\
+C & pipe wall, wide & 2 & \wideW\,×\,\pipeL; tabs on both long edges and the front & 90° sides, \leanTop° front \\
+D & pipe wall, narrow & 2 & \pipeH\,×\,\pipeL; tab on the front edge & \leanSide° front \\
+E & back wall & 1 & \backW\,×\,\backH; tabs on all four edges, corners notched & 90° \\
+F & SMA flange and probe & 1 & bought; brass rod cut \rodCut, trimmed to \probeLen\ inside & — \\
+\bottomrule
+\end{tabularx}}
+
+\smallskip
+Every tab is \tabW\,mm wide. The slanted edges of A and B must both come out \seam\,mm, because that is where they meet; if they differ the flare will not close. C and E are cut a little over the pipe's \pipeW\ because the sheet is 0.53\,mm thick and they lap over the other walls: the inside still comes out \pipeW\,×\,\pipeH.
+
+\begin{figure}[H]
+\centering\footnotesize
+\begin{tikzpicture}[x=1mm,y=1mm]
+  \path[wall] (0,0) rectangle (8,4); \node[right] at (9,2) {copper, outside face up};
+  \path[tab] (48,0) rectangle (56,4); \node[right] at (57,2) {tab};
+  \path[fold] (82,2) -- (92,2); \node[right] at (93,2) {fold line};
+  \path[centre] (114,2) -- (124,2); \node[right] at (125,2) {centre line};
+  \draw[cuedge,fill=white] (152,2) circle (1.6); \node[right] at (155,2) {drill};
+\end{tikzpicture}
+\end{figure}
+
+\newpage
+\subsection{The flare panels, flat}
+Drawn to scale (1\,:\,2), each as seen from its outside face. The long edge is the mouth; the short edge meets the pipe.
+
+\begin{figure}[H]
+\centering
+\input{generated/flat_A}
+\caption{Piece A, top and bottom flare panel. Cut 2. No tabs: the B tabs lap over its slanted edges.}
+\end{figure}
+\begin{figure}[H]
+\centering
+\input{generated/flat_B}
+\caption{Piece B, side flare panel. Cut 2. The tabs on its slanted edges fold \cornerBend° and wrap over the outside of A.}
+\end{figure}
+
+\newpage
+\subsection{The pipe pieces, flat}
+\begin{figure}[H]
+\centering
+\input{generated/flat_pipe}
+\caption{The pipe pieces at 1\,:\,2, back edge at the bottom. Only one C gets the feed hole: \probeZ\,mm up from the back edge, halfway across. The strips above C and D are the front tabs that become the collar the flare sits on.}
+\end{figure}
+
+\subsection{The feed: connector and probe}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[x=1.4mm,y=1.4mm,font=\scriptsize]
+  % wall cross-section
+  \fill[cuout] (-40,0) rectangle (40,0.8);
+  \draw[cuedge] (-40,0) rectangle (40,0.8);
+  \fill[cuout] (-40,-43.2) rectangle (40,-44);
+  \draw[cuedge] (-40,-43.2) rectangle (40,-44);
+  \node[text=muted] at (-30,-21) {inside the pipe};
+  % flange
+  \path[alupart] (-6.35,0.8) rectangle (6.35,2.4);
+  \path[alupart] (-3.2,2.4) rectangle (3.2,12);
+  \fill[white] (-2,0.8) rectangle (2,2.4);
+  % probe
+  \fill[accent!80!black] (-0.8,0.8) rectangle (0.8,-28);
+  \draw[dim] (9,0) -- (9,-28) node[dimlabel]{\probeLen\ inside};
+  \draw[ext] (1.5,-28) -- (11,-28);
+  \draw[dim] (-14,0) -- (-14,-43.2) node[dimlabel]{\pipeH\ inside};
+  \draw[callout] (3.2,8) -- (14,12) node[right]{SMA female, 4-hole flange};
+  \draw[callout] (5,1.6) -- (16,5) node[right]{flange bolted flat, metal to metal all round};
+  \draw[callout] (-0.8,-14) -- (-24,-10) node[left,align=right]{1/16\,in brass rod,\\cut \rodCut, soldered\\into the centre cup};
+  \draw[callout] (0,-28) -- (-12,-34) node[left]{square-cut end, open};
+  \draw[callout] (-2,1.6) -- (-18,5) node[left]{4.5\,mm hole clears the insulator};
+\end{tikzpicture}
+\caption{Section through the top wide wall at the feed, full height of the pipe shown. The flange's four 2.7\,mm holes take M2.5 or 2-56 screws (M3 is too big).}
+\end{figure}
+
+\newpage
+\subsection{One horn per sheet}\label{sec:sheet}
+Everything for one horn fits on one 12\,×\,24\,in sheet with a 3\,mm cutting gap between pieces and 4\,mm clear of the edge. Each horn uses about \sheetIn\ square inches, \sheetPct\,\% of a sheet. Two sheets do \emph{not} make three horns: what is left over is too narrow for another set of flare panels. \textbf{Three horns need three sheets}; a fourth is cheap insurance against a mis-cut.
+
+\begin{figure}[H]
+\centering
+\input{generated/sheet_layout}
+\caption{One horn's nine pieces on one sheet, to scale. Turn every second trapezoid round so the pair nest. The spare strip along the top is for practising a fold and a soldered seam first.}
+\end{figure}
+
+\subsubsection*{Marking a trapezoid accurately}
+Never mark the slanted edges by measuring along them. Draw the two parallel edges and a centre line square to them, measure half the width out each side of the centre line on each parallel, then join the points. The slant comes out right by itself; check it with the rule against \seam. The full-size templates on the next pages are half-templates for exactly this reason: trace one side, flip the template over on the centre line, trace the other.
+
+\begin{note}[Using the full-size templates]
+Print pages \pageref{tmpl:A}–\pageref{tmpl:pipe} at \textbf{100\,\% / actual size}. Measure the 50\,mm square on each page; if it is not 50.0\,mm, your printer scaled it and the cut will be wrong. Cut the paper out, tape it to the copper with the outside face up, and scribe round it. The numbers on the drawing win over the paper if they disagree.
+\end{note}
+
+% ── 1:1 templates
+\newpage
+\subsection{Template: flare panel A (full size)}\label{tmpl:A}
+\begin{center}
+\input{generated/tmpl_A}
+\end{center}
+\vfill
+\begin{center}\checksquare\end{center}
+
+\newpage
+\subsection{Template: flare panel B (full size)}\label{tmpl:B}
+\begin{center}
+\input{generated/tmpl_B}
+\end{center}
+\vfill
+\begin{center}\checksquare\end{center}
+
+\newpage
+\subsection{Template: the pipe, C, D and E (full size)}\label{tmpl:pipe}
+\begin{center}
+\input{generated/tmpl_pipe}
+\end{center}
+
+\newpage
+% ───────────────────────────────────────────────────────────── 4 the frame
+\section{The frame}\label{sec:frame}
+
+A plywood board, two square uprights, two cross beams and two diagonal braces. Wood is easiest; aluminium bar of the same section works the same way. Horns are \emph{rolled} 90° on their side: the pipe's wide walls face left and right and the long side of the mouth runs up and down. Roll all three the same way, so every connector points to the left as you sit behind the bench. (Left and right in this document are always as seen from there, the operator's seat, with the horns pointing away from you into the room.) That is what the beam heights below assume, and it makes the two receive cables follow the same path when the second receiver goes in.
+
+\begin{figure}[H]
+\centering
+\input{generated/frame_front}
+\caption{The frame from behind, from where you sit, 1\,:\,4; the horns point away from you. The receive horn and the empty bay sit side by side on the lower beam, mouths touching; the transmit horn sits centred on the top beam, \rowGap\,mm clear of them. Red dots are the horn centre lines. Braces run from the uprights down to the board \braceFootX\,mm either side of centre.}
+\end{figure}
+
+\newpage
+\begin{figure}[H]
+\centering
+\input{generated/frame_side}
+\caption{From the left side, 1\,:\,4; the horns point left in this view. The horns hang forward of the frame, each held by a saddle clamp on its pipe. The mouths are flush with each other and overhang the front edge of the board by \overhang\,mm. A foil screen 50\,mm behind the frame stops the board's electronics from seeing the backs of the horns.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\input{generated/board_plan}
+\caption{Top view of the board, 1\,:\,3: horns at the top, your seat at the bottom. Dashed outlines are the horns overhead. R1–R8 are the short SMA jumpers; R4 and R6 are the long runs to the horns.}\label{sec:plan}
+\end{figure}
+
+\newpage
+\subsection{Cut list}
+{\small
+\begin{tabularx}{\linewidth}{@{}P{0.21\linewidth}p{8mm}P{0.24\linewidth}L@{}}
+\toprule
+\textbf{part} & \textbf{qty} & \textbf{stock} & \textbf{cut and drill} \\ \midrule
+base board & 1 & 3/4\,in plywood & \boardW\,×\,\boardD\ (18\,×\,15\,in). Mark the centre line front to back \\
+upright & 2 & 18\,mm (3/4\,in) square & \upH\ long, square ends. Pilot hole in the top end for the TX beam screw; one 3.5\,mm hole through at the RX beam \\
+TX beam (top) & 1 & 12\,×\,32\,mm strip & \beamLen\ long. Two 3.5\,mm holes \upCC\ apart, centred; the TX saddle in the middle \\
+RX beam (lower) & 1 & 12\,×\,32\,mm strip & \beamRXlen\ long, fits \emph{between} the uprights. Pilot holes in both ends; saddles at ±\,96.55 from centre \\
+brace & 2 & 10\,mm dowel & about \braceLen\ long; both ends cut at \braceAngle° to the length (cut to fit) \\
+saddle clamp & 3 & PETG print, or 3\,mm aluminium & page \pageref{sec:saddle} \\
+foil screen & 1 & card + kitchen foil & \screenW\,×\,\screenH, foil side toward the horns \\
+\bottomrule
+\end{tabularx}}
+
+\begin{note}[Why the beams join the way they do]
+The 3-D model lets the beams pass through the uprights. Real wood cannot, so: the \textbf{TX beam sits on top} of both uprights, one screw down into each end; the \textbf{RX beam fits between them}, one screw in through each upright into its end. Both beam tops land exactly where the model puts them, \beamRXtop\ and \beamTXtop\ above the board. Each upright foot gets \textbf{two} L-brackets, one on its front face and one on its back, because the horns hang forward and pull the frame that way.
+\end{note}
+
+\subsection{Part drawings}
+\begin{figure}[H]
+\centering
+\input{generated/part_upright}
+\caption{Upright, 1\,:\,5, drawn lying down, foot to the left. The shaded band is where the RX beam end butts in.}
+\end{figure}
+\begin{figure}[H]
+\centering
+\input{generated/part_beam_rx}\par\bigskip
+\input{generated/part_beam_tx}
+\caption{The two beams seen from above, 1\,:\,4. Grey are the saddle footprints, red the two screws that hold each saddle down.}
+\end{figure}
+
+\newpage
+\subsection{The saddle clamp (full size)}\label{sec:saddle}
+One per horn. The pipe drops into the U, narrow wall down, and two M4 screws through the cheeks pinch it. Centre the saddle on the beam and slide the horn until the saddle is \saddleBehind\,mm behind the throat (where the flare meets the pipe) — that puts all three mouths in one line.
+
+\begin{figure}[H]
+\centering
+\input{generated/part_saddle}
+\caption{Saddle, front view at 1\,:\,1, \saddleD\,mm deep. 3-D print it in PETG at 40\,\% infill with the U opening upward, or bend it from 3\,mm aluminium strip. Holes: 4.5\,mm through both cheeks at the screw line; two 3.5\,mm holes in the base for wood screws into the beam.}
+\end{figure}
+
+\begin{warn}[Do not crush the pipe]
+The inside of the pipe is what sets the horn's frequency. Line the cheeks with a strip of rubber or foam tape and tighten the clamp screws only until the horn will not slide. A dented pipe is a detuned horn.
+\end{warn}
+
+{\centering\begin{tikzpicture}[x=0.6mm,y=0.6mm,font=\scriptsize]
+  \path[woodpart] (0,0) -- (\braceLen,0) -- ({\braceLen-3.8},10) -- (3.8,10) -- cycle;
+  \draw[dim] (0,-6) -- (\braceLen,-6) node[dimlabel]{about \braceLen\ long point to point, cut to fit};
+  \node at ({\braceLen/2},5) {brace, 10\,mm dowel, cut 2};
+  \node[anchor=west] at ({\braceLen+4},5) {ends at \braceAngle° to the length};
+\end{tikzpicture}\par}
+
+\newpage
+% ───────────────────────────────────────────────────────────── 5 the rf chain
+\section{The RF chain}\label{sec:rf}
+
+Seven bought modules, joined by SMA cables. There is nothing to make here; what matters is the order, the cable lengths, and that every connector is clean and tight. The modules go where the plan view on page \pageref{sec:plan} puts them: the transmit chain along the front edge, the receive chain behind it, so neither long cable has to cross the board.
+
+\subsection{Cable runs}
+{\small
+\begin{tabularx}{\linewidth}{@{}p{7mm}P{0.25\linewidth}P{0.25\linewidth}p{14mm}L@{}}
+\toprule
+\textbf{run} & \textbf{from} & \textbf{to} & \textbf{cable} & \textbf{note} \\ \midrule
+R1 & ADF4351, RF OUT A & 3\,dB pad & 20\,cm & the other ADF output: leave its cap on, or a 50\,Ω terminator \\
+R2 & 3\,dB pad & PA (SPF5189Z \#1) IN & 20\,cm & or screw the pad straight onto the PA input \\
+R3 & PA OUT & splitter S (input) & 20\,cm & \\
+R4 & splitter port 1 & TX horn & \textbf{1\,m} & up the middle of the frame, tied every 10\,cm \\
+R5 & splitter port 2 & mixer LO & 20\,cm & the LO must be +10 to +13\,dBm \\
+R6 & RX horn & band-pass IN & \textbf{60\,cm} & down the middle of the frame, then right along the board. If 60\,cm will not reach, 1\,m costs only 0.5\,dB \\
+R7 & band-pass OUT & LNA (SPF5189Z \#2) IN & 20\,cm & \\
+R8 & LNA OUT & mixer RF & 20\,cm & \\
+R9 & mixer IF & breadboard J1 & pigtail & SMA to two bare leads: centre to J1 pin 1, braid to pin 2 \\
+\bottomrule
+\end{tabularx}}
+
+\begin{note}[SMA connectors in one paragraph]
+Turn the nut, never the cable body. Finger tight, then an eighth of a turn with the spanner: that is all an SMA wants. Over-tightening splits the centre pin. Look into each connector before mating it; a bent pin or a fleck of solder in one ruins every measurement after it. Bend cables no tighter than a 2\,cm radius.
+\end{note}
+
+\subsection{Module power}
+The ADF4351, the PA and the LNA each take 5\,V from the breadboard through their own ferrite bead and capacitors: J6, J7 and J8. Use red and black 22\,AWG, twisted together, and keep them short. The mixer, splitter, pad and filter are passive and take no power.
+
+{\small
+\begin{tabularx}{\linewidth}{@{}P{0.2\linewidth}P{0.13\linewidth}P{0.2\linewidth}L@{}}
+\toprule
+\textbf{module} & \textbf{supply} & \textbf{from} & \textbf{note} \\ \midrule
+ADF4351 PLL & 5\,V, ~120\,mA & J6 (through FB1) & logic is 3.3\,V; the ESP32 drives it directly through 33\,Ω \\
+PA, SPF5189Z \#1 & 5\,V, ~90\,mA & J7 (through FB2) & gets warm: that is normal \\
+LNA, SPF5189Z \#2 & 5\,V, ~90\,mA & J8 (through FB3) & identical board to the PA \\
+ESP32 & USB & the laptop & also its serial link \\
+\bottomrule
+\end{tabularx}}
+
+\newpage
+% ───────────────────────────────────────────────────────────── 6 schematics
+\section{The electronics, as schematics}\label{sec:sch}
+
+Everything on the breadboard, redrawn as five small circuits. The reference numbers (R1, C9, J2…) match the breadboard layout, the pick list and the assembly steps. The op-amps run from a single +12\,V supply, so instead of ground the signal swings around \textbf{VREF}, a steady half-supply point made in figure~\ref{fig:vref}.
+
+\begin{figure}[H]
+\centering
+\begin{circuitikz}[scale=0.9,transform shape,font=\footnotesize]
+  \ctikzset{resistors/scale=0.7,capacitors/scale=0.7}
+  % ── row 1: IF input and the two gain stages
+  \draw (0,0) node[ocirc]{} node[left,align=right]{J1\\IF in} -- (1.2,0);
+  \draw (1.2,0) node[circ]{} to[R,l_={R1 49.9\,Ω}] (1.2,-2) node[ground]{};
+  \draw (1.2,0) -- (3.0,0) node[circ]{} to[C,l_={C20 1n}] (3.0,-2) node[ground]{};
+  \draw (3.0,0) to[C,l=C1,a_=100n film] (4.8,0) node[circ]{};
+  \draw (4.8,0) to[R,l_=R2,a^=10k] (4.8,-2) node[below]{VREF};
+  \node[op amp,noinv input down,anchor=+] (A) at (5.8,0) {\scriptsize U1A};
+  \draw (4.8,0) -- (A.+);
+  \draw (A.-) -- ++(-0.4,0) coordinate(an) -- ++(0,1.3) coordinate(at);
+  \draw (at) node[circ]{} to[R,l=R3,a_=100k] (at -| A.out) -- (A.out);
+  \draw (at) to[R,l_=R4,a^=1k] ++(-2.0,0) node[left]{VREF};
+  \draw (A.out) node[circ]{} to[C,l=C2,a_=100n film] ++(1.9,0) coordinate(bp) node[circ]{};
+  \draw (bp) to[R,l_=R6,a^=10k] ++(0,-2) node[below]{VREF};
+  \node[op amp,noinv input down,anchor=+] (B) at ($(bp)+(1,0)$) {\scriptsize U1B};
+  \draw (bp) -- (B.+);
+  \draw (B.-) -- ++(-0.4,0) -- ++(0,1.3) coordinate(bt);
+  \draw (bt) node[circ]{} to[R,l=R7,a_=10k] (bt -| B.out) -- (B.out);
+  \draw (bt) to[R,l_=R8,a^=1k] ++(-2.0,0) node[left]{VREF};
+  \draw (B.out) node[circ]{} -- ++(0.6,0) node[ocirc]{} node[right]{\textbf{X}};
+  \node[font=\scriptsize,text=muted,align=center] at ($(A.out)+(-1.2,-1.5)$) {gain 101};
+  \node[font=\scriptsize,text=muted,align=center] at ($(B.out)+(-1.2,-1.5)$) {gain 11};
+  % ── row 2: anti-alias filter, buffer, output
+  \begin{scope}[yshift=-4.8cm]
+  \draw (0,0) node[ocirc]{} node[left]{\textbf{X}} to[R,l=R12,a_=1k] (2,0) node[circ]{};
+  \draw (2,0) to[C,l_=C9,a^=10n] (2,-2) node[below]{VREF};
+  \node[op amp,noinv input down,anchor=+] (C) at (3,0) {\scriptsize U2B};
+  \draw (2,0) -- (C.+);
+  \draw (C.-) -- ++(-0.4,0) -- ++(0,1.0) coordinate(ct) -- (ct -| C.out) -- (C.out);
+  \draw (C.out) node[circ]{} to[R,l=R13,a_=100\,Ω] ++(2,0) to[eC,l=C10,a_=10µ] ++(2,0) coordinate(o) node[circ]{};
+  \draw (o) to[R,l_=R14,a^=100k] ++(0,-2) node[ground]{};
+  \draw (o) -- ++(1.2,0) node[ocirc]{} node[right,align=left]{J2 AUDIO L\\to UMC404HD IN 1};
+  \node[font=\scriptsize,text=muted,align=center] at ($(C.out)+(-0.9,-1.4)$) {buffer};
+  \node[font=\scriptsize,text=muted,align=left,anchor=west] at (1.0,-3.1) {R12 + C9: cut-off 15.9\,kHz};
+  \end{scope}
+\end{circuitikz}
+\caption{The beat-tone amplifier. R1 is the mixer's 50\,Ω load. C1 and C2 block DC and roll off below about 160\,Hz, where the leakage and the room's clutter live; they \emph{must} be film capacitors. Total gain 101\,×\,11 = 1111, or 61\,dB. U2B buffers the filter so the sound card's input cannot load it; C10 removes the DC so the output sits at 0\,V.}\label{fig:amp}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{minipage}[b]{0.47\linewidth}\centering
+\begin{circuitikz}[scale=0.85,transform shape,font=\footnotesize]
+  \ctikzset{resistors/scale=0.7,capacitors/scale=0.7}
+  \draw (0,3) node[above]{VANA} to[R,l_=R9,a^=10k] (0,1) node[circ]{} to[R,l_=R10,a^=10k] (0,-1) node[ground]{};
+  \draw (0,1) -- (2.0,1) node[circ]{} to[eC,l_=C5,a^=10µ] (2.0,-1) node[ground]{};
+  \node[op amp,noinv input down,anchor=+] (V) at (3.0,1) {\scriptsize U2A};
+  \draw (2.0,1) -- (V.+);
+  \draw (V.-) -- ++(-0.4,0) -- ++(0,0.9) coordinate(vt) -- (vt -| V.out) -- (V.out);
+  \draw (V.out) node[circ]{} to[R,l=R11,a_=47\,Ω] ++(1.8,0) coordinate(vr) node[circ]{};
+  \draw (vr) to[eC,l_=C6,a^=47µ] ++(0,-2) node[ground]{};
+  \draw (vr) -- ++(0.6,0) node[right]{VREF};
+\end{circuitikz}
+\caption{VREF, the half-supply reference: half of VANA, about 5.8\,V.}\label{fig:vref}
+\end{minipage}\hfill
+\begin{minipage}[b]{0.5\linewidth}\centering
+\begin{circuitikz}[scale=0.85,transform shape,font=\footnotesize]
+  \ctikzset{resistors/scale=0.7,capacitors/scale=0.7}
+  \draw (0,0) node[ocirc]{} node[left]{ESP32 GPIO25 SYNC} to[R,l=R23,a_=10k] (2.4,0) node[circ]{};
+  \draw (2.4,0) to[R,l_=R24,a^=1k] (2.4,-2) node[ground]{};
+  \draw (2.4,0) -- (3.4,0) node[ocirc]{} node[right,align=left]{J12 AUDIO R\\to IN 2};
+\end{circuitikz}
+\caption{The sync divider: the ESP32's 3.3\,V chirp marker cut to 0.3\,V, a safe line level.}\label{fig:sync}
+\end{minipage}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{circuitikz}[scale=0.85,transform shape,font=\footnotesize]
+  \ctikzset{resistors/scale=0.7,capacitors/scale=0.7,diodes/scale=0.7}
+  \draw (0,0) node[ocirc]{} node[left,align=right]{J3\\12\,V in} to[D*,l=D1,a_=1N5822] (2.4,0) node[circ]{} coordinate(vp);
+  \draw (vp) node[above=8pt]{VPROT} to[eC,l_=C11,a^=100µ] ++(0,-2) node[ground]{};
+  \draw (vp) -- (3.8,0) node[circ]{} coordinate(j4);
+  \draw (j4) -- ++(0,1.4) node[ocirc]{} node[above,align=center]{J4 to LM2596 IN};
+  \draw (j4) to[R,l=R15,a_=10\,Ω] (6.2,0) node[circ]{} coordinate(va);
+  \draw (va) to[eC,l_=C13,a^=100µ] ++(0,-2) node[ground]{};
+  \draw (va) -- ++(1.2,0) node[right,align=left]{\textbf{VANA}, op-amp supply\\(+ C3, C7 100n at the\\op-amp pins)};
+  \begin{scope}[yshift=-4.4cm]
+  \draw (0,0) node[ocirc]{} node[left,align=right]{J5\\5\,V from\\LM2596} -- (1.6,0) node[circ]{} coordinate(v5);
+  \draw (v5) to[eC,l_={C12 100µ}] ++(0,-2) node[ground]{};
+  \draw (v5) -- (12.8,0);
+  \foreach \x/\fb/\ce/\cc/\j/\who in {3.0/FB1/C14/C15/J6/ADF4351, 7.9/FB2/C16/C17/J7/PA, 12.8/FB3/C18/C19/J8/LNA}{
+    \draw (\x,0) node[circ]{} to[L,l_=\fb] (\x,-1.8) coordinate(m);
+    \draw (m) -- ++(1.0,0) node[circ]{} coordinate(m1) to[eC,l_={\ce\ 10µ}] ++(0,-1.8) node[ground]{};
+    \draw (m1) -- ++(1.9,0) node[circ]{} coordinate(m2) to[C,l_={\cc\ 100n}] ++(0,-1.8) node[ground]{};
+    \draw (m2) -- ++(1.0,0) node[ocirc]{} node[below=2pt,align=center,font=\scriptsize]{\j\\\who};
+  }
+  \end{scope}
+\end{circuitikz}
+\caption{Power. D1 blocks a backwards supply. VPROT feeds the buck converter and, through R15, the op-amps (VANA). The buck's 5\,V goes to each RF module through its own ferrite bead and a 10\,µ + 100\,n pair, so their noise stays out of each other.}\label{fig:power}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{circuitikz}[scale=0.85,transform shape,font=\footnotesize]
+  \ctikzset{resistors/scale=0.65}
+  \node[draw,fill=pcb,minimum width=22mm,minimum height=62mm,align=center] (esp) at (0,0) {\textbf{ESP32}\\radar\_ctl};
+  \node[draw,fill=rfmod,minimum width=22mm,minimum height=50mm,align=center] (adf) at (8.6,0.6) {\textbf{ADF4351}};
+  \foreach \y/\g/\r/\p in {2.6/18/R16/CLK, 1.6/23/R17/DATA, 0.6/5/R18/LE}{
+    \draw (esp.east |- 0,\y) node[left,font=\scriptsize]{GPIO\g} -- ++(0.8,0) to[R,l={\r\ 33\,Ω}] ++(2.2,0) -- (adf.west |- 0,\y) node[right,font=\scriptsize]{\p};
+  }
+  \draw (esp.east |- 0,-0.4) node[left,font=\scriptsize]{GPIO19} -- (adf.west |- 0,-0.4) node[right,font=\scriptsize]{LD};
+  \draw (adf.west |- 0,-1.2) coordinate(ce) node[right,font=\scriptsize]{CE};
+  \draw (ce) -- ++(-1.2,0) coordinate(cen) node[circ]{} to[R,l_=R19,a^=10k] ++(0,-1.6) node[ground]{};
+  \draw (cen) -- ++(-1.4,0) node[ocirc]{} node[left,align=right,font=\scriptsize]{JP3 to 3V3\\(cap on = enabled)};
+  \draw (esp.east |- 0,-2.2) node[left,font=\scriptsize]{GPIO25} -- ++(1.0,0) node[right,font=\scriptsize]{SYNC $\rightarrow$ figure \ref{fig:sync}};
+  \draw (esp.east |- 0,-2.8) node[left,font=\scriptsize]{3V3} -- ++(1.0,0) node[right,font=\scriptsize]{to JP3, J11};
+  \draw (esp.west |- 0,-2.8) node[right,font=\scriptsize]{GND} -- ++(-0.8,0) node[ground]{};
+  \draw (esp.west |- 0,2.2) node[right,font=\scriptsize]{USB} -- ++(-0.9,0) node[left,font=\scriptsize]{laptop};
+  \node[font=\scriptsize,text=muted,align=left,anchor=north west] at (-1.2,-3.6) {Optional turntable (stage 2): GPIO26 STEP, GPIO27 DIR, GPIO14 EN to the A4988 on J11,\\with R21, R22 10k pull-downs on STEP and DIR and R20 10k pull-up on EN (keeps the motor off at boot).};
+\end{circuitikz}
+\caption{The logic wiring. The 33\,Ω resistors soften the clock edges so they do not ring on the 15\,cm leads. Lock detect (LD) comes back to GPIO19 so the firmware can report \code{lock:1}.}\label{fig:logic}
+\end{figure}
+
+\newpage
+% ───────────────────────────────────────────────────────────── 7 breadboard
+\section{The breadboard}\label{sec:bb}
+
+The circuits above, laid out on one 830-point breadboard. Signal flows left to right: the IF comes in at column 2, the amplified beat leaves at column 36; power enters bottom left, the module 5\,V leaves at columns 38–45, the logic sits at the right. Part 2 builds it in seventeen steps, each with its own picture.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{breadboard.pdf}
+\caption{The finished breadboard. Columns 1–63 left to right; rows a–e on top, f–j below. Rails: top red 5\,V, top blue GND, bottom red VANA (12\,V analogue), bottom blue GND.}
+\end{figure}
+
+\subsection{The jumper colour code}\label{sec:colours}
+One colour per job, so a wire in the wrong place stands out. Nothing electrical depends on it; if your kit is short of a colour, substitute one and note it here.
+
+{\small
+\begin{tabularx}{\linewidth}{@{}p{8mm}P{0.13\linewidth}P{0.2\linewidth}p{12mm}L@{}}
+\toprule
+& \textbf{colour} & \textbf{carries} & \textbf{wires} & \\ \midrule
+\tikz\fill[black] (0,0) rectangle (5mm,2.5mm); & black & GND & 17 & \\
+\tikz\fill[red!80!black] (0,0) rectangle (5mm,2.5mm); & red & VANA, 12\,V analogue & 5 & \\
+\tikz\fill[orange] (0,0) rectangle (5mm,2.5mm); & orange & 5\,V & 2 & \\
+\tikz\fill[yellow!90!black] (0,0) rectangle (5mm,2.5mm); & yellow & 3V3 logic & 2 & \\
+\tikz\fill[green!60!black] (0,0) rectangle (5mm,2.5mm); & green & audio signal path & 9 & \\
+\tikz\fill[violet] (0,0) rectangle (5mm,2.5mm); & violet & VREF half-rail & 5 & \\
+\tikz\fill[blue!80!black] (0,0) rectangle (5mm,2.5mm); & blue & SPI to the ADF4351 & 4 & \\
+\tikz\fill[brown] (0,0) rectangle (5mm,2.5mm); & brown & stepper STEP/DIR/EN & 3 & \\
+\tikz\fill[pink] (0,0) rectangle (5mm,2.5mm); & pink & SYNC & 1 & \\
+\bottomrule
+\end{tabularx}}
+
+There is deliberately no white or grey wire: on a cream breadboard both disappear.
+
+\subsection{Pick list}\label{sec:picklist}
+Grouped by value, with how many to take from the drawer. \textbf{Bold} values set a gain, a cut-off or a termination: do not substitute those.
+
+{\small
+\begin{longtable}{@{}P{0.12\linewidth}p{9mm}p{9mm}P{0.43\linewidth}P{0.24\linewidth}@{}}
+\toprule
+\textbf{value} & \textbf{need} & \textbf{take} & \textbf{substitute?} & \textbf{refs} \\ \midrule
+\endhead
+\rowsfrom{picklist_rows}
+\multicolumn{5}{l}{\rule{0pt}{11pt}\textbf{\color{accent}Also}}\\
+4.7k & 1 & 2 & for R4 on first power-up only (gain 22 instead of 101) & R4 \\
+header strip & 41 pins & 2 strips & 0.1\,in male, snapped into 2-, 5-, 6- and 10-pin lengths & J1–J12, JP3 \\
+\bottomrule
+\end{longtable}}
+
+\subsection{Connectors}
+Every wire that leaves the breadboard lands on a header. The holes column gives pin 1 first: on J12, pin 1 is the right-hand one.
+
+{\small
+\begin{longtable}{@{}p{9mm}P{0.13\linewidth}P{0.33\linewidth}P{0.42\linewidth}@{}}
+\toprule
+\textbf{ref} & \textbf{holes} & \textbf{pins} & \textbf{goes to} \\ \midrule
+\endhead
+J1 & a2, a3 & 1 IF, 2 GND & mixer IF via the R9 pigtail \\
+J2 & f36, f37 & 1 AUDIO\_L, 2 GND & UMC404HD INPUT 1, 1/4\,in TS cable \\
+J3 & j10, j11 & 1 +12\,V, 2 GND & the 12\,V supply \\
+J4 & j13, j14 & 1 VPROT, 2 GND & LM2596 IN+ / IN− \\
+J5 & j18, j19 & 1 5\,V, 2 GND & LM2596 OUT+ / OUT− \\
+J6 & d38, d39 & 1 5\,V, 2 GND & ADF4351 VCC / GND \\
+J7 & d41, d42 & 1 5\,V, 2 GND & PA module + / − \\
+J8 & d44, d45 & 1 5\,V, 2 GND & LNA module + / − \\
+J9 & j44–j53 & 1 GND, 2 SCK, 3 MOSI, 4 LE, 5 LD, 6 SYNC, 7 STEP, 8 DIR, 9 EN, 10 3V3 & ESP32: GND, D18, D23, D5, D19, D25, D26, D27, D14, 3V3 \\
+J10 & a52–a57 & 1 GND, 2 CLK, 3 DATA, 4 LE, 5 LD, 6 CE & ADF4351 logic header, \emph{by silkscreen name}: the boards differ in pin order \\
+JP3 & d57, d58 & 1 CE, 2 3V3 & a jumper cap: on = PLL enabled \\
+J11 & j58–j62 & 1 GND, 2 3V3, 3 STEP, 4 DIR, 5 EN & A4988, optional, stage 2 \\
+J12 & d63, d62 & 1 AUDIO\_R, 2 GND & UMC404HD INPUT 2 (stage 1), 1/4\,in TS cable \\
+\bottomrule
+\end{longtable}}
+
+\end{document}

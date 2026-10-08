@@ -1,0 +1,46 @@
+\multicolumn{4}{l}{\rule{0pt}{12pt}\textbf{\color{accent}RF chain}}\\
+Mixer, double-balanced, SMA & 1 & ZX05-43MH-S+, or the generic 1.5–4.5 GHz module. IF must reach DC; LO +13 dBm & \textcolor{okgreen}{on your list}\\
+ADF4351 PLL board, SPI, SMA out & 1 & the sweep source, 25 MHz TCXO & \textcolor{okgreen}{on your list}\\
+SPF5189Z amplifier module & 2 & one is the PA, one the LNA. A 4-pack leaves spares & \textcolor{okgreen}{on your list}\newline\textcolor{warnamber}{check you have 2}\\
+2-way SMA power splitter & 1 & covers 2.4 GHz (e.g. 380–2500 MHz) & \textcolor{okgreen}{on your list}\\
+SMA attenuator, 3 dB & 1 & DC–6 GHz, between the PLL and the PA & \textcolor{okgreen}{on your list}\\
+Band-pass filter, 2.4 GHz, SMA & 1 & 2400–2500 MHz, plain SMA (not RP-SMA) & \textcolor{okgreen}{on your list}\\
+SMA M–M jumper, RG316, 20 cm & 6 & runs R1–R3, R5, R7, R8 on the board & \textcolor{okgreen}{on your list}\newline\textcolor{warnamber}{check you have 6 short}\\
+SMA M–M jumper, RG316, about 1 m & 1 & R4: splitter up to the TX horn & \textcolor{warnamber}{\textbf{not on your list}}\\
+SMA M–M jumper, RG316, about 60 cm & 1 & R6: RX horn down to the band-pass & \textcolor{warnamber}{\textbf{not on your list}}\\
+SMA adapter kit (M–M, F–F barrels) & 1 & for whatever genders your modules have & \textcolor{okgreen}{on your list}\\
+IF pigtail: SMA male to bare leads & 1 & mixer IF to breadboard J1. Or cut a spare jumper in half & \textcolor{warnamber}{\textbf{not on your list}}\\
+\multicolumn{4}{l}{\rule{0pt}{12pt}\textbf{\color{accent}Horns}}\\
+Copper sheet, 24 ga (0.021 in), 12 × 24 in & 3 & one sheet per horn, page \pageref{sec:sheet} & \textcolor{okgreen}{on your list}\newline\textcolor{warnamber}{check it is 3 sheets}\\
+SMA female 4-hole flange, solder cup & 3 & the horn feeds (plus spares) & \textcolor{okgreen}{on your list}\\
+Brass rod, 1/16 in & 100 mm & three probes, cut 32 mm, trimmed to 28 mm & \textcolor{okgreen}{on your list}\\
+Plumbing solder and paste flux & 1 & not rosin-core electronics solder & \textcolor{warnamber}{listed, no price}\\
+Screws and nuts, M2.5 or 2-56, 8 mm & 12 & four per SMA flange. M3 will not fit the flange & \textcolor{warnamber}{\textbf{not on your list}}\\
+\multicolumn{4}{l}{\rule{0pt}{12pt}\textbf{\color{accent}Baseband}}\\
+ESP32 devkit, 30-pin (WROOM-32) & 1 & runs radar\_ctl: steps the PLL, drives SYNC & \textcolor{warnamber}{\textbf{not on your list}}\\
+TL072CP op-amp, DIP-8 & 2 & the video amplifier and the half-rail reference & \textcolor{warnamber}{\textbf{not on your list}}\\
+830-point breadboard & 1 &  & \textcolor{warnamber}{\textbf{not on your list}}\\
+Resistors, capacitors, 1N5822, 3 ferrite beads & kit & full pick list on page \pageref{sec:picklist} & \textcolor{okgreen}{on your list}\\
+0.1 in male header strip, 40-pin & 2 & snapped into the 13 connectors J1–J12, JP3 & \textcolor{warnamber}{\textbf{not on your list}}\\
+Solid 22 AWG jumper wire, 9 colours & 48 links & the colour code on page \pageref{sec:colours} & \textcolor{warnamber}{\textbf{not on your list}}\\
+USB audio interface, 4-input & 1 & Behringer UMC404HD: beat on INPUT 1, sync on INPUT 2 & \textcolor{okgreen}{on your list}\\
+Shielded 1/4 in TS cable, 2 m & 2 & breadboard J2 and J12 to the UMC404HD & \textcolor{warnamber}{\textbf{not on your list}}\\
+USB cables & 2 & ESP32 (micro-USB) and UMC404HD (USB-B) to the laptop & \textcolor{warnamber}{\textbf{not on your list}}\\
+\multicolumn{4}{l}{\rule{0pt}{12pt}\textbf{\color{accent}Power}}\\
+12 V 3 A supply, barrel plug & 1 & with a barrel jack to screw terminals & \textcolor{warnamber}{\textbf{not on your list}}\\
+LM2596 buck converter module & 1 & set to 5.00 V before it touches anything & \textcolor{okgreen}{on your list}\\
+Screw terminal block, 6-way & 1 & the star ground & \textcolor{warnamber}{\textbf{not on your list}}\\
+Hook-up wire, 22 AWG red and black & 2 m each & 5 V leads to the three RF modules & \textcolor{warnamber}{\textbf{not on your list}}\\
+\multicolumn{4}{l}{\rule{0pt}{12pt}\textbf{\color{accent}Frame}}\\
+Plywood, 18 × 15 in, 3/4 in & 1 & the bench, page \pageref{sec:plan} & \textcolor{warnamber}{listed, no price}\\
+18 mm (3/4 in) square wood & 1.2 m & two uprights, 530.8 mm & \textcolor{warnamber}{\textbf{not on your list}}\\
+12 × 32 mm (1/2 × 1 1/4 in) wood strip & 1.0 m & cross beams: one 444 mm, one 408 mm & \textcolor{warnamber}{\textbf{not on your list}}\\
+10 mm (3/8 in) dowel & 0.5 m & two braces, about 242 mm & \textcolor{warnamber}{\textbf{not on your list}}\\
+Horn saddle clamps & 3 & 3-D printed (PETG) or bent 3 mm aluminium, page \pageref{sec:saddle} & \textcolor{warnamber}{\textbf{not on your list}}\\
+L-brackets 40 mm, wood screws, M4 screws & set & uprights to plywood, beams to uprights, saddles & \textcolor{warnamber}{\textbf{not on your list}}\\
+Card and kitchen foil & 1 & the 293.1 × 130 mm screen behind the horns & \textcolor{warnamber}{\textbf{not on your list}}\\
+Double-sided foam tape or small brackets & 1 & holds the RF modules down & \textcolor{warnamber}{\textbf{not on your list}}\\
+\multicolumn{4}{l}{\rule{0pt}{12pt}\textbf{\color{accent}Drone link}}\\
+RadioMaster Pocket, EdgeTX & 1 & the drone's 915 MHz radio & \textcolor{okgreen}{on your list}\\
+RadioMaster Bandit Nano 915 MHz & 1 & in the Pocket's bay & \textcolor{okgreen}{on your list}\\
+ELRS 915 MHz nano receiver & 1 & BetaFPV ELRS Nano 915 or HappyModel ES900RX & \textcolor{okgreen}{on your list}\\
