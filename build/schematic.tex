@@ -1,0 +1,238 @@
+% schematic.tex — the whole radar's breadboard and harness on one sheet.
+% Screen version (dark):  latexmk -lualatex schematic.tex
+% Print version (light):  lualatex -jobname=schematic-print "\def\printversion{}\input{schematic}"
+\documentclass{article}
+\usepackage[letterpaper,landscape,margin=6mm]{geometry}
+\usepackage{fontspec}
+\setmainfont{Roboto Condensed}[BoldFont={* Bold}]
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb,bm}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,calc,backgrounds,shapes.geometric}
+\usepackage[american,siunitx]{circuitikz}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+
+\ifdefined\printversion
+  \definecolor{bg}{HTML}{FFFFFF}\definecolor{fg}{HTML}{111111}
+  \definecolor{dim}{HTML}{6A6F76}\definecolor{hi}{HTML}{8A3B1E}
+  \definecolor{zone}{HTML}{F3F1EC}\definecolor{rf}{HTML}{1F5F8B}
+\else
+  \definecolor{bg}{HTML}{1B1A19}\definecolor{fg}{HTML}{F2F0EC}
+  \definecolor{dim}{HTML}{9A968F}\definecolor{hi}{HTML}{F2B35B}
+  \definecolor{zone}{HTML}{252422}\definecolor{rf}{HTML}{7FC4F0}
+\fi
+\pagecolor{bg}\color{fg}
+
+\ctikzset{bipoles/length=8.5mm, amplifiers/scale=0.62, monopoles/ground/width=0.5}
+\tikzset{
+  every node/.style={font=\fontsize{6.2}{7}\selectfont\bfseries},
+  lbl/.style={font=\fontsize{5.6}{6.4}\selectfont\bfseries},
+  tiny/.style={font=\fontsize{5}{5.8}\selectfont\bfseries,text=dim},
+  title/.style={font=\fontsize{9}{10}\selectfont\bfseries,text=fg},
+  stage/.style={font=\fontsize{6}{7}\selectfont\bfseries,text=hi},
+  zonebox/.style={draw=dim,line width=0.35pt,dash pattern=on 2pt off 1.5pt,rounded corners=1.5pt},
+  wire/.style={line width=0.55pt},
+  coax/.style={draw=rf,line width=1.3pt},
+  blk/.style={draw=fg,line width=0.7pt,minimum width=17mm,minimum height=8mm,align=center,font=\fontsize{6}{7}\selectfont\bfseries},
+}
+% a supply rail tag: a bar with the rail's name above it
+\newcommand{\rail}[2]{\draw[wire] (#1) -- ++(0,3) ++(-2.2,0) -- ++(4.4,0); \node[above=-0.3mm,lbl] at ($(#1)+(0,3)$) {#2};}
+% a rail tag pointing down (for a wire leaving downwards)
+\newcommand{\ra}{\,$\boldsymbol{\rightarrow}$\,}\newcommand{\la}{\,$\boldsymbol{\leftarrow}$\,}
+\newcommand{\gnd}[1]{\draw[wire] (#1) node[ground]{};}
+% an off-board terminal: open circle, its name to the right
+\newcommand{\term}[3][right]{\node[ocirc] at (#2) {}; \node[#1=1mm,lbl,align=left] at (#2) {#3};}
+
+\begin{document}
+\centering
+\begin{circuitikz}[x=1mm,y=1mm,color=fg,line width=0.55pt]
+\useasboundingbox (0,0) rectangle (267,203);
+
+% ═══════════════════════════════════════════════════════════════ title
+\node[font=\fontsize{17}{19}\selectfont\bfseries] at (133,197) {2.4 GHZ FMCW RADAR \,|\, BREADBOARD AND HARNESS — SCHEMATIC};
+\draw[line width=0.9pt] (55,191.5) -- (211,191.5);
+\node[font=\fontsize{8}{9}\selectfont\bfseries,text=dim] at (133,187.5) {STAGE 1 · ONE TX HORN, ONE RX HORN · RADAR-DEV};
+
+% ═══════════════════════════════════════════════════════════════ RF chain (off-board)
+\node[title,anchor=west] at (72,179) {RF CHAIN};
+\node[tiny,anchor=west] at (92,179) {BOUGHT MODULES ON THE PLYWOOD, JOINED BY SMA COAX (BLUE). NUMBERS ARE SIGNAL LEVELS IN dBm.};
+\node[blk] (adf) at (82,166) {ADF4351\\PLL SYNTH};
+\node[blk,minimum width=11mm] (pad) at (104,166) {3 dB\\PAD};
+\node[blk] (pa) at (126,166) {PA\\SPF5189Z};
+\node[blk] (spl) at (151,166) {2-WAY\\SPLITTER};
+\node[draw=fg,line width=0.7pt,trapezium,trapezium angle=60,shape border rotate=270,minimum height=7mm,minimum width=9mm,font=\fontsize{6}{7}\selectfont\bfseries] (tx) at (180,166) {TX};
+\node[draw=fg,line width=0.7pt,trapezium,trapezium angle=60,shape border rotate=90,minimum height=7mm,minimum width=9mm,font=\fontsize{6}{7}\selectfont\bfseries] (rx) at (82,149) {RX};
+\node[blk] (bpf) at (104,149) {BAND-PASS\\2.4 GHZ};
+\node[blk] (lna) at (126,149) {LNA\\SPF5189Z};
+\node[blk] (mix) at (151,149) {MIXER\\ZX05-43MH};
+\draw[coax,-{Stealth[length=2mm]}] (adf) -- node[above,tiny,text=rf]{R1 +5} (pad);
+\draw[coax,-{Stealth[length=2mm]}] (pad) -- node[above,tiny,text=rf]{R2 +2} (pa);
+\draw[coax,-{Stealth[length=2mm]}] (pa) -- node[above,tiny,text=rf]{R3 +14} (spl);
+\draw[coax,-{Stealth[length=2mm]}] (spl) -- node[above,tiny,text=rf]{R4 1 M} (tx);
+\draw[coax,-{Stealth[length=2mm]}] (spl) -- node[right,tiny,text=rf]{R5 LO +10.5} (mix);
+\draw[coax,-{Stealth[length=2mm]}] (rx) -- node[above,tiny,text=rf]{R6} (bpf);
+\draw[coax,-{Stealth[length=2mm]}] (bpf) -- node[above,tiny,text=rf]{R7} (lna);
+\draw[coax,-{Stealth[length=2mm]}] (lna) -- node[above,tiny,text=rf]{R8 RF} (mix);
+% where each module's power and logic come from
+\node[tiny,anchor=north] at (adf.south) {5V \la{} J6 · SPI \la{} J10};
+\node[tiny,anchor=north] at (pa.south) {5V \la{} J7};
+\node[tiny,anchor=north] at ($(lna.south)+(0,0)$) {5V \la{} J8};
+
+% IF: the mixer's output comes down to the breadboard
+\draw[coax] (mix.east) -- (170,149) -- (170,139) -- (66,139) -- (66,124);
+\node[tiny,text=rf,anchor=south west] at (171,141) {R9 IF PIGTAIL: THE BEAT TONE};
+
+% ═══════════════════════════════════════════════════════════════ amplifier
+\begin{scope}[on background layer]
+  \fill[zone,rounded corners=2pt] (60,84) rectangle (263,134);
+\end{scope}
+\node[title,anchor=west] at (192,130) {BEAT-TONE AMPLIFIER};
+\node[tiny,anchor=west] at (192,126.5) {TOTAL GAIN 1111 (61 dB), PASSES 160 HZ – 15.9 KHZ. C1, C2 MUST BE FILM.};
+% stage boxes
+\foreach \xa/\xb/\t in {62/82/TERMINATION, 84/116/{HIGH-PASS + GAIN ×101}, 118/152/{HIGH-PASS + GAIN ×11}, 154/166/{ANTI-ALIAS}, 167/187/BUFFER, 188/220/{TO SOUND CARD}}{
+  \draw[zonebox] (\xa,88) rectangle (\xb,123.5);
+  \node[stage,anchor=south] at ({(\xa+\xb)/2},88.5) {\t};
+}
+\def\Y{108}
+% J1 and the 50-ohm termination
+\term[left]{66,\Y}{J1\\MIXER IF}
+\draw[wire] (66,124) -- (66,\Y);
+\draw[wire] (66,\Y) -- (84,\Y);
+\draw[wire] (69,\Y) node[circ]{} to[R,l_={R1 49.9}] (69,99) node[ground]{};
+\draw[wire] (75,\Y) node[circ]{} to[C,l^={C20 1n}] (75,99) node[ground]{};
+% stage 1
+\draw[wire] (84,\Y) to[C,l={C1 100n}] (94,\Y) node[circ](n1){};
+\draw[wire] (n1) to[R,l_={R2 10k}] (94,97) node[below,lbl]{VREF};
+\node[op amp,noinv input down,anchor=+] (A) at (99,\Y) {\fontsize{5.5}{6}\selectfont U1A};
+\draw[wire] (n1) -- (A.+);
+\draw[wire] (A.-) -- ++(-2.5,0) coordinate(a1) -- ++(0,7) coordinate(a2);
+\draw[wire] (a2) node[circ]{} to[R,l=R3,a_=100k] (a2 -| A.out) -- (A.out);
+\draw[wire] (a2) to[R,l_=R4,a^=1k] ++(-10,0) node[left,lbl]{VREF};
+% stage 2
+\draw[wire] (A.out) node[circ]{} to[C,l={C2 100n}] ++(10,0) coordinate(n2) node[circ]{};
+\draw[wire] (n2) to[R,l_={R6 10k}] ++(0,-11) node[below,lbl]{VREF};
+\node[op amp,noinv input down,anchor=+] (B) at ($(n2)+(5,0)$) {\fontsize{5.5}{6}\selectfont U1B};
+\draw[wire] (n2) -- (B.+);
+\draw[wire] (B.-) -- ++(-2.5,0) -- ++(0,7) coordinate(b2);
+\draw[wire] (b2) node[circ]{} to[R,l=R7,a_=10k] (b2 -| B.out) -- (B.out);
+\draw[wire] (b2) to[R,l_=R8,a^=1k] ++(-10,0) node[left,lbl]{VREF};
+% anti-alias
+\draw[wire] (B.out) node[circ]{} to[R,l=R12,a_=1k] (164,\Y) coordinate(n3) node[circ]{};
+\draw[wire] (n3) to[C,l_=C9,a^=10n] (164,97) node[below,lbl]{VREF};
+% buffer
+\node[op amp,noinv input down,anchor=+] (C) at (169,\Y) {\fontsize{5.5}{6}\selectfont U2B};
+\draw[wire] (n3) -- (C.+);
+\draw[wire] (C.-) -- ++(-1.5,0) -- ++(0,6) coordinate(c2) -- (c2 -| C.out) -- (C.out);
+% output
+\draw[wire] (C.out) node[circ]{} to[R,l=R13,a_=100] ++(10,0) to[eC,l=C10,a_=10µ] ++(10,0) coordinate(o) node[circ]{};
+\draw[wire] (o) to[R,l^={R14 100k}] ++(0,-11) node[ground]{};
+\draw[wire] (o) -- ++(6,0) coordinate(j2);
+\term{j2}{J2  \ra{}  UMC404HD INPUT 1\\(1/4 IN TS, SHIELDED)}
+\node[tiny,align=left,anchor=north west] at (190,121) {~100 mV OF BEAT TONE,\\CENTRED ON 0 V};
+\node[tiny,align=left,anchor=north west] at (67,121) {~0.1 mV};
+
+% ═══════════════════════════════════════════════════════════════ power
+\node[title,anchor=west] at (3,179) {POWER};
+\node[tiny,anchor=west] at (3,175.5) {12 V IN, PROTECTED, SPLIT INTO VANA AND 5 V};
+\term[left]{10,160}{J3\\12 V IN}
+\draw[wire] (10,160) to[D*,l=D1,a_=1N5822] (24,160) node[circ](vp){} node[above=1.2mm,lbl]{VPROT} -- (34,160) node[circ](j4){};
+\draw[wire] (j4) -- (34,169) to[R,l=R15,a_={10}] (46,169) -- (49,169) node[right,lbl]{VANA};
+\node[tiny,anchor=west] at (38,164.5) {OP-AMP SUPPLY};
+\node[draw=fg,line width=0.7pt,minimum width=18mm,minimum height=10mm,align=center] (buck) at (46,147) {LM2596 BUCK\\12 V \ra{} 5 V};
+\node[tiny,anchor=north] at (buck.south) {SET TO 5.00 V FIRST};
+\draw[wire] (j4) |- ($(buck.west)+(0,2.5)$);
+\node[tiny,anchor=south east] at ($(buck.west)+(-0.5,2.6)$) {J4};
+\draw[wire] ($(buck.west)+(0,-2.5)$) -- ++(-3,0) -- ++(0,-1) node[ground]{};
+\draw[wire] ($(buck.east)+(0,2.5)$) -- ++(2.5,0) coordinate(v5) -- ++(0,6) coordinate(v5r); \rail{v5r}{+5V}
+\node[tiny,anchor=south west] at ($(buck.east)+(0.3,2.6)$) {J5};
+\draw[wire] ($(buck.east)+(0,-2.5)$) -- ++(2.5,0) -- ++(0,-1) node[ground]{};
+
+% ═══════════════════════════════════════════════════════════════ 5 V module feeds
+\begin{scope}[on background layer]
+  \fill[zone,rounded corners=2pt] (2,84) rectangle (57,134);
+\end{scope}
+\node[title,anchor=west] at (4,130) {5 V TO THE RF MODULES};
+\node[tiny,anchor=west] at (4,126.5) {ONE FERRITE BEAD + 10µ + 100n EACH};
+\draw[wire] (8,116) coordinate(bus) -- (8,90);
+\rail{bus}{+5V}
+\foreach \y/\fb/\ce/\cc/\j/\who in {112/FB1/C14/C15/J6/ADF4351 VCC, 101/FB2/C16/C17/J7/PA +5V, 90/FB3/C18/C19/J8/LNA +5V}{
+  \draw[wire] (8,\y) node[circ]{} to[L,l=\fb] (22,\y) node[circ]{} -- (32,\y);
+  \draw[wire] (22,\y) -- (22,\y-1) node[ground]{};
+  \node[tiny,anchor=north west] at (23,\y-0.5) {\ce\ 10µ, \cc\ 100n};
+  \term{32,\y}{\j  \ra{}  \who}
+}
+
+% ═══════════════════════════════════════════════════════════════ VREF
+\begin{scope}[on background layer]
+  \fill[zone,rounded corners=2pt] (2,40) rectangle (57,80);
+\end{scope}
+\node[title,anchor=west] at (4,76) {HALF-RAIL REFERENCE};
+\node[tiny,anchor=west] at (4,72.5) {VREF = VANA ÷ 2 ≈ 5.8 V: THE AMPLIFIER'S “ZERO”};
+\draw[wire] (8,64) coordinate(va2) to[R,l^={R9 10k}] (8,54) node[circ](vd){} to[R,l^={R10 10k}] (8,44) node[ground]{};
+\rail{va2}{VANA}
+\draw[wire] (vd) -- (21,54) node[circ](vd2){} to[eC,l^={C5 10µ}] (21,44) node[ground]{};
+\node[op amp,noinv input down,anchor=+] (V) at (26,54) {\fontsize{5.5}{6}\selectfont U2A};
+\draw[wire] (vd2) -- (V.+);
+\draw[wire] (V.-) -- ++(-1.5,0) -- ++(0,6) coordinate(v2) -- (v2 -| V.out) -- (V.out);
+\draw[wire] (V.out) node[circ]{} to[R,l={R11 47}] ++(9,0) coordinate(vr) node[circ]{};
+\draw[wire] (vr) to[eC,l^={C6 47µ}] ++(0,-10) node[ground]{};
+\draw[wire] (vr) -- ++(3,0) node[right,lbl]{VREF};
+
+% ═══════════════════════════════════════════════════════════════ decoupling row
+\node[title,anchor=west] at (4,33) {DECOUPLING};
+\foreach \x/\r/\c/\v/\e in {8/VPROT/C11/100µ/1, 19/VANA/C13/100µ/1, 30/+5V/C12/100µ/1, 41/VANA/C3/100n/0, 52/VANA/C7/100n/0}{
+  \coordinate (t) at (\x,25);
+  \rail{t}{\r}
+  \ifnum\e=1 \draw[wire] (t) to[eC,l^={\shortstack{\c\\\v}}] (\x,13) node[ground]{};
+  \else \draw[wire] (t) to[C,l^={\shortstack{\c\\\v}}] (\x,13) node[ground]{}; \fi
+}
+\node[tiny,anchor=west,align=left] at (4,4) {C3 AT U1 PIN 8, C7 AT U2 PIN 8. BOTH TL072: PIN 8 = VANA, PIN 4 = GND.};
+
+% ═══════════════════════════════════════════════════════════════ ESP32 and logic
+\begin{scope}[on background layer]
+  \fill[zone,rounded corners=2pt] (60,2) rectangle (263,80);
+\end{scope}
+\node[title,anchor=west] at (63,76) {CONTROL: ESP32 RUNS RADAR\_CTL};
+\node[tiny,anchor=west] at (63,72.5) {STEPS THE PLL THROUGH THE SWEEP AND MARKS EACH SWEEP ON SYNC. R16–R18 SOFTEN THE CLOCK EDGES.};
+\node[draw=fg,line width=0.9pt,minimum width=46mm,minimum height=64mm,align=center,font=\fontsize{9}{11}\selectfont\bfseries] (esp) at (128,38) {ESP32\\DEVKIT\\(WROOM-32)};
+\node[lbl,anchor=north] at ($(esp.north)+(0,-1)$) {U3};
+\def\XL{105}\def\XR{151}
+\foreach \y/\g/\n/\r/\pin in {67/18/SCK/R16/CLK, 61/23/MOSI/R17/DATA, 55/5/LE/R18/LE}{
+  \node[lbl,anchor=east] at (\XR,\y) {GPIO\g\ \n};
+  \draw[wire] (\XR,\y) -- (162,\y) to[R,l={\r\ 33}] (174,\y) -- (226,\y);
+  \term{226,\y}{J10-\pin}
+}
+\node[lbl,anchor=east] at (\XR,49) {GPIO19 LD};
+\draw[wire] (\XR,49) -- (226,49); \term{226,49}{J10-LD \,(LOCK DETECT)}
+\draw[wire] (186,43) node[ocirc]{} -- (226,43); \term{226,43}{J10-CE}
+\node[ocirc] at (182,43) {}; \draw[wire,dash pattern=on 1pt off 0.8pt] (182,44.4) -- (186,44.4);
+\node[lbl,anchor=east] at (180.5,43) {3V3};
+\node[tiny,anchor=south] at (184,45) {JP3 CAP = PLL ON};
+\draw[wire] (200,43) node[circ]{} to[R,l^={R19 10k}] (200,34) node[ground]{};
+\node[lbl,anchor=east] at (\XR,24) {GPIO25 SYNC};
+\draw[wire] (\XR,24) -- (162,24) to[R,l={R23 10k}] (174,24) node[circ](sy){} -- (226,24);
+\draw[wire] (sy) to[R,l^={R24 1k}] (174,16) node[ground]{};
+\term{226,24}{J12 \ra{} UMC404HD INPUT 2\\SYNC: 0.3 V SQUARE, ~135 HZ}
+\node[lbl,anchor=east] at (\XR,9) {3V3};
+\draw[wire] (\XR,9) -- (226,9); \term{226,9}{3V3 \ra{} JP3, J11}
+\node[title,anchor=west] at (210,74) {ADF4351 LOGIC (J10)};
+\node[tiny,anchor=west] at (210,70.5) {MATCH THE PINS BY PRINTED NAME};
+\node[lbl,anchor=west] at (\XL,67) {USB};
+\draw[wire] (\XL,67) -- (93,67) node[left,lbl,align=right]{LAPTOP\\SERIAL 115200};
+\node[lbl,anchor=west] at (\XL,52) {GPIO14 EN};
+\draw[wire] (\XL,52) -- (72,52); \term[left]{72,52}{J11-EN}
+\draw[wire] (88,52) node[circ]{} to[R,l={R20 10k}] (88,60) node[above,lbl]{3V3};
+\node[lbl,anchor=west] at (\XL,40) {GPIO26 STEP};
+\draw[wire] (\XL,40) -- (72,40); \term[left]{72,40}{J11-STEP}
+\draw[wire] (88,40) node[circ]{} to[R,l^={R21 10k}] (88,32) node[ground]{};
+\node[lbl,anchor=west] at (\XL,24) {GPIO27 DIR};
+\draw[wire] (\XL,24) -- (72,24); \term[left]{72,24}{J11-DIR}
+\draw[wire] (88,24) node[circ]{} to[R,l^={R22 10k}] (88,15) node[ground]{};
+\node[lbl,anchor=west] at (\XL,10) {GND};
+\draw[wire] (\XL,10) -- (98,10) -- (98,8) node[ground]{};
+\node[tiny,anchor=west,align=left] at (63,8) {J11: A4988 STEPPER,\\OPTIONAL (STAGE 2)};
+% ═══════════════════════════════════════════════════════════════ legend
+\node[tiny,anchor=south east,align=right] at (265,0.5) {J = HEADER ON THE BREADBOARD (OPEN CIRCLE = WIRE LEAVES THE BOARD) · BLUE = SMA COAX · GROUNDS ALL MEET AT THE STAR TERMINAL};
+\end{circuitikz}
+\end{document}

@@ -437,126 +437,24 @@ ESP32 & USB & the laptop & also its serial link \\
 
 \newpage
 % ───────────────────────────────────────────────────────────── 6 schematics
-\section{The electronics, as schematics}\label{sec:sch}
+\begin{landscape}
+\section{The electronics, on one sheet}\label{sec:sch}
+\vspace{-3mm}
+\begin{center}
+\includegraphics[width=\linewidth,height=0.86\textheight,keepaspectratio]{schematic-print.pdf}
+\end{center}
+\vspace{-2mm}
+{\small Also as a separate sheet: \code{build/schematic.pdf} (dark, for the screen) and \code{build/schematic-print.pdf}. Reference numbers (R1, C9, J2…) match the breadboard layout, the pick list and the assembly steps.}
+\end{landscape}
 
-Everything on the breadboard, redrawn as five small circuits. The reference numbers (R1, C9, J2…) match the breadboard layout, the pick list and the assembly steps. The op-amps run from a single +12\,V supply, so instead of ground the signal swings around \textbf{VREF}, a steady half-supply point made in figure~\ref{fig:vref}.
-
-\begin{figure}[H]
-\centering
-\begin{circuitikz}[scale=0.9,transform shape,font=\footnotesize]
-  \ctikzset{resistors/scale=0.7,capacitors/scale=0.7}
-  % ── row 1: IF input and the two gain stages
-  \draw (0,0) node[ocirc]{} node[left,align=right]{J1\\IF in} -- (1.2,0);
-  \draw (1.2,0) node[circ]{} to[R,l_={R1 49.9\,Ω}] (1.2,-2) node[ground]{};
-  \draw (1.2,0) -- (3.0,0) node[circ]{} to[C,l_={C20 1n}] (3.0,-2) node[ground]{};
-  \draw (3.0,0) to[C,l=C1,a_=100n film] (4.8,0) node[circ]{};
-  \draw (4.8,0) to[R,l_=R2,a^=10k] (4.8,-2) node[below]{VREF};
-  \node[op amp,noinv input down,anchor=+] (A) at (5.8,0) {\scriptsize U1A};
-  \draw (4.8,0) -- (A.+);
-  \draw (A.-) -- ++(-0.4,0) coordinate(an) -- ++(0,1.3) coordinate(at);
-  \draw (at) node[circ]{} to[R,l=R3,a_=100k] (at -| A.out) -- (A.out);
-  \draw (at) to[R,l_=R4,a^=1k] ++(-2.0,0) node[left]{VREF};
-  \draw (A.out) node[circ]{} to[C,l=C2,a_=100n film] ++(1.9,0) coordinate(bp) node[circ]{};
-  \draw (bp) to[R,l_=R6,a^=10k] ++(0,-2) node[below]{VREF};
-  \node[op amp,noinv input down,anchor=+] (B) at ($(bp)+(1,0)$) {\scriptsize U1B};
-  \draw (bp) -- (B.+);
-  \draw (B.-) -- ++(-0.4,0) -- ++(0,1.3) coordinate(bt);
-  \draw (bt) node[circ]{} to[R,l=R7,a_=10k] (bt -| B.out) -- (B.out);
-  \draw (bt) to[R,l_=R8,a^=1k] ++(-2.0,0) node[left]{VREF};
-  \draw (B.out) node[circ]{} -- ++(0.6,0) node[ocirc]{} node[right]{\textbf{X}};
-  \node[font=\scriptsize,text=muted,align=center] at ($(A.out)+(-1.2,-1.5)$) {gain 101};
-  \node[font=\scriptsize,text=muted,align=center] at ($(B.out)+(-1.2,-1.5)$) {gain 11};
-  % ── row 2: anti-alias filter, buffer, output
-  \begin{scope}[yshift=-4.8cm]
-  \draw (0,0) node[ocirc]{} node[left]{\textbf{X}} to[R,l=R12,a_=1k] (2,0) node[circ]{};
-  \draw (2,0) to[C,l_=C9,a^=10n] (2,-2) node[below]{VREF};
-  \node[op amp,noinv input down,anchor=+] (C) at (3,0) {\scriptsize U2B};
-  \draw (2,0) -- (C.+);
-  \draw (C.-) -- ++(-0.4,0) -- ++(0,1.0) coordinate(ct) -- (ct -| C.out) -- (C.out);
-  \draw (C.out) node[circ]{} to[R,l=R13,a_=100\,Ω] ++(2,0) to[eC,l=C10,a_=10µ] ++(2,0) coordinate(o) node[circ]{};
-  \draw (o) to[R,l_=R14,a^=100k] ++(0,-2) node[ground]{};
-  \draw (o) -- ++(1.2,0) node[ocirc]{} node[right,align=left]{J2 AUDIO L\\to UMC404HD IN 1};
-  \node[font=\scriptsize,text=muted,align=center] at ($(C.out)+(-0.9,-1.4)$) {buffer};
-  \node[font=\scriptsize,text=muted,align=left,anchor=west] at (1.0,-3.1) {R12 + C9: cut-off 15.9\,kHz};
-  \end{scope}
-\end{circuitikz}
-\caption{The beat-tone amplifier. R1 is the mixer's 50\,Ω load. C1 and C2 block DC and roll off below about 160\,Hz, where the leakage and the room's clutter live; they \emph{must} be film capacitors. Total gain 101\,×\,11 = 1111, or 61\,dB. U2B buffers the filter so the sound card's input cannot load it; C10 removes the DC so the output sits at 0\,V.}\label{fig:amp}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\begin{minipage}[b]{0.47\linewidth}\centering
-\begin{circuitikz}[scale=0.85,transform shape,font=\footnotesize]
-  \ctikzset{resistors/scale=0.7,capacitors/scale=0.7}
-  \draw (0,3) node[above]{VANA} to[R,l_=R9,a^=10k] (0,1) node[circ]{} to[R,l_=R10,a^=10k] (0,-1) node[ground]{};
-  \draw (0,1) -- (2.0,1) node[circ]{} to[eC,l_=C5,a^=10µ] (2.0,-1) node[ground]{};
-  \node[op amp,noinv input down,anchor=+] (V) at (3.0,1) {\scriptsize U2A};
-  \draw (2.0,1) -- (V.+);
-  \draw (V.-) -- ++(-0.4,0) -- ++(0,0.9) coordinate(vt) -- (vt -| V.out) -- (V.out);
-  \draw (V.out) node[circ]{} to[R,l=R11,a_=47\,Ω] ++(1.8,0) coordinate(vr) node[circ]{};
-  \draw (vr) to[eC,l_=C6,a^=47µ] ++(0,-2) node[ground]{};
-  \draw (vr) -- ++(0.6,0) node[right]{VREF};
-\end{circuitikz}
-\caption{VREF, the half-supply reference: half of VANA, about 5.8\,V.}\label{fig:vref}
-\end{minipage}\hfill
-\begin{minipage}[b]{0.5\linewidth}\centering
-\begin{circuitikz}[scale=0.85,transform shape,font=\footnotesize]
-  \ctikzset{resistors/scale=0.7,capacitors/scale=0.7}
-  \draw (0,0) node[ocirc]{} node[left]{ESP32 GPIO25 SYNC} to[R,l=R23,a_=10k] (2.4,0) node[circ]{};
-  \draw (2.4,0) to[R,l_=R24,a^=1k] (2.4,-2) node[ground]{};
-  \draw (2.4,0) -- (3.4,0) node[ocirc]{} node[right,align=left]{J12 AUDIO R\\to IN 2};
-\end{circuitikz}
-\caption{The sync divider: the ESP32's 3.3\,V chirp marker cut to 0.3\,V, a safe line level.}\label{fig:sync}
-\end{minipage}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\begin{circuitikz}[scale=0.85,transform shape,font=\footnotesize]
-  \ctikzset{resistors/scale=0.7,capacitors/scale=0.7,diodes/scale=0.7}
-  \draw (0,0) node[ocirc]{} node[left,align=right]{J3\\12\,V in} to[D*,l=D1,a_=1N5822] (2.4,0) node[circ]{} coordinate(vp);
-  \draw (vp) node[above=8pt]{VPROT} to[eC,l_=C11,a^=100µ] ++(0,-2) node[ground]{};
-  \draw (vp) -- (3.8,0) node[circ]{} coordinate(j4);
-  \draw (j4) -- ++(0,1.4) node[ocirc]{} node[above,align=center]{J4 to LM2596 IN};
-  \draw (j4) to[R,l=R15,a_=10\,Ω] (6.2,0) node[circ]{} coordinate(va);
-  \draw (va) to[eC,l_=C13,a^=100µ] ++(0,-2) node[ground]{};
-  \draw (va) -- ++(1.2,0) node[right,align=left]{\textbf{VANA}, op-amp supply\\(+ C3, C7 100n at the\\op-amp pins)};
-  \begin{scope}[yshift=-4.4cm]
-  \draw (0,0) node[ocirc]{} node[left,align=right]{J5\\5\,V from\\LM2596} -- (1.6,0) node[circ]{} coordinate(v5);
-  \draw (v5) to[eC,l_={C12 100µ}] ++(0,-2) node[ground]{};
-  \draw (v5) -- (12.8,0);
-  \foreach \x/\fb/\ce/\cc/\j/\who in {3.0/FB1/C14/C15/J6/ADF4351, 7.9/FB2/C16/C17/J7/PA, 12.8/FB3/C18/C19/J8/LNA}{
-    \draw (\x,0) node[circ]{} to[L,l_=\fb] (\x,-1.8) coordinate(m);
-    \draw (m) -- ++(1.0,0) node[circ]{} coordinate(m1) to[eC,l_={\ce\ 10µ}] ++(0,-1.8) node[ground]{};
-    \draw (m1) -- ++(1.9,0) node[circ]{} coordinate(m2) to[C,l_={\cc\ 100n}] ++(0,-1.8) node[ground]{};
-    \draw (m2) -- ++(1.0,0) node[ocirc]{} node[below=2pt,align=center,font=\scriptsize]{\j\\\who};
-  }
-  \end{scope}
-\end{circuitikz}
-\caption{Power. D1 blocks a backwards supply. VPROT feeds the buck converter and, through R15, the op-amps (VANA). The buck's 5\,V goes to each RF module through its own ferrite bead and a 10\,µ + 100\,n pair, so their noise stays out of each other.}\label{fig:power}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\begin{circuitikz}[scale=0.85,transform shape,font=\footnotesize]
-  \ctikzset{resistors/scale=0.65}
-  \node[draw,fill=pcb,minimum width=22mm,minimum height=62mm,align=center] (esp) at (0,0) {\textbf{ESP32}\\radar\_ctl};
-  \node[draw,fill=rfmod,minimum width=22mm,minimum height=50mm,align=center] (adf) at (8.6,0.6) {\textbf{ADF4351}};
-  \foreach \y/\g/\r/\p in {2.6/18/R16/CLK, 1.6/23/R17/DATA, 0.6/5/R18/LE}{
-    \draw (esp.east |- 0,\y) node[left,font=\scriptsize]{GPIO\g} -- ++(0.8,0) to[R,l={\r\ 33\,Ω}] ++(2.2,0) -- (adf.west |- 0,\y) node[right,font=\scriptsize]{\p};
-  }
-  \draw (esp.east |- 0,-0.4) node[left,font=\scriptsize]{GPIO19} -- (adf.west |- 0,-0.4) node[right,font=\scriptsize]{LD};
-  \draw (adf.west |- 0,-1.2) coordinate(ce) node[right,font=\scriptsize]{CE};
-  \draw (ce) -- ++(-1.2,0) coordinate(cen) node[circ]{} to[R,l_=R19,a^=10k] ++(0,-1.6) node[ground]{};
-  \draw (cen) -- ++(-1.4,0) node[ocirc]{} node[left,align=right,font=\scriptsize]{JP3 to 3V3\\(cap on = enabled)};
-  \draw (esp.east |- 0,-2.2) node[left,font=\scriptsize]{GPIO25} -- ++(1.0,0) node[right,font=\scriptsize]{SYNC $\rightarrow$ figure \ref{fig:sync}};
-  \draw (esp.east |- 0,-2.8) node[left,font=\scriptsize]{3V3} -- ++(1.0,0) node[right,font=\scriptsize]{to JP3, J11};
-  \draw (esp.west |- 0,-2.8) node[right,font=\scriptsize]{GND} -- ++(-0.8,0) node[ground]{};
-  \draw (esp.west |- 0,2.2) node[right,font=\scriptsize]{USB} -- ++(-0.9,0) node[left,font=\scriptsize]{laptop};
-  \node[font=\scriptsize,text=muted,align=left,anchor=north west] at (-1.2,-3.6) {Optional turntable (stage 2): GPIO26 STEP, GPIO27 DIR, GPIO14 EN to the A4988 on J11,\\with R21, R22 10k pull-downs on STEP and DIR and R20 10k pull-up on EN (keeps the motor off at boot).};
-\end{circuitikz}
-\caption{The logic wiring. The 33\,Ω resistors soften the clock edges so they do not ring on the 15\,cm leads. Lock detect (LD) comes back to GPIO19 so the firmware can report \code{lock:1}.}\label{fig:logic}
-\end{figure}
+\subsection*{Reading the sheet}
+\begin{itemize}
+  \item \textbf{Top: where the signals come from.} The RF chain is bought modules on SMA coax (blue). The mixer's output, the beat tone, comes down the R9 pigtail into J1, the left end of the amplifier.
+  \item \textbf{Middle: the beat-tone amplifier, left to right.} R1 is the mixer's 50\,Ω load. C1 and C2 block DC and roll off below about 160\,Hz, where the leakage and the room's clutter live; they \emph{must} be film capacitors. U1A gains 101, U1B gains 11: 1111 in all, 61\,dB. R12 and C9 cut off above 15.9\,kHz. U2B buffers that filter so the sound card cannot load it, and C10 removes the DC so J2's output sits at 0\,V.
+  \item \textbf{VREF.} The op-amps run from a single 12\,V supply, so instead of ground the signal swings around VREF, half of VANA (about 5.8\,V), made by R9, R10 and the U2A buffer.
+  \item \textbf{Power, left.} D1 blocks a backwards supply. VPROT feeds the buck converter and, through R15, the op-amps (VANA). The buck's 5\,V goes to each RF module through its own ferrite bead and a 10\,µ + 100\,n pair, so their noise stays out of each other.
+  \item \textbf{Bottom: control.} The ESP32 steps the PLL over SPI (R16–R18 soften the clock edges), reads lock detect back on GPIO19, and marks each sweep on SYNC, which the 10k/1k divider cuts to 0.3\,V for the sound card's INPUT 2. JP3 enables the PLL; R19 holds it off otherwise. The stepper lines on the left are only for the optional turntable; their pull resistors keep the motor off at boot.
+\end{itemize}
 
 \newpage
 % ───────────────────────────────────────────────────────────── 7 breadboard

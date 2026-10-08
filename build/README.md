@@ -5,6 +5,7 @@ Two printable PDFs that take the radar from a pile of parts to a working bench:
 | file | what it is |
 |---|---|
 | [`fabrication.pdf`](fabrication.pdf) | **Part 1, parts and fabrication.** The parts list checked against `BOM_Radar_Build.xlsx`, tools, the copper horn pieces flat and laid out on the sheet, full-size cutting templates (print at 100 %), the frame drawings and cut list, the saddle clamp, the cable runs, schematics of everything on the breadboard, the pick list and the connector table. |
+| [`schematic.pdf`](schematic.pdf) | **The whole circuit on one sheet**, dark, for the screen: where every signal comes from (RF chain at the top, the beat tone down into the amplifier), power, the half-rail reference, and the ESP32 wired pin by pin to every header. [`schematic-print.pdf`](schematic-print.pdf) is the same sheet in black on white; it is also page 21 of part 1. |
 | [`assembly.pdf`](assembly.pdf) | **Part 2, assembly and bring-up.** The build in stages, each ending in a gate you measure: horns, frame, the seventeen breadboard steps, power, firmware, mounting and cabling, then first light, the walk test, clutter cancellation and the drone link. |
 
 Nothing in the drawings is typed by hand. `tools/make_figures.py` takes the horn
@@ -18,4 +19,6 @@ TikZ and circuitikz; `rsvg-convert`):
 
     cd build
     python3 tools/make_figures.py
+    lualatex schematic.tex
+    lualatex -jobname=schematic-print "\def\printversion{}\input{schematic}"
     latexmk -lualatex fabrication.tex assembly.tex
