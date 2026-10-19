@@ -157,7 +157,7 @@ This amplifier runs on a single supply, so 'zero' has to be manufactured: R9 and
 | R10 | 10k | 1→**b31**, 2→**TR-@33** |
 | C5 | 10u | 1→**c31**, 2→**TR-@35** |
 | R11 | 47 | 1→**c33**, 2→**c29** |
-| C6 | 47u | 1→**d26**, 2→**TR-@26** |
+| C6 | 3300u | 1→**d26**, 2→**TR-@26** |
 
 | wire | colour | from → to | what it does |
 |---|---|---|---|

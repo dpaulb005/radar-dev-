@@ -12,20 +12,14 @@ video amplifier, half-rail reference, 12 V input, sync divider.
 | [`layout/`](layout/) | the board: [`WIRING.md`](layout/WIRING.md) gives every part's lead → hole, every jumper and every net, verified against the schematic netlist; [`breadboard.html`](layout/breadboard.html) is the interactive version (hover or click any part, wire, net or hole) |
 | [`assembly/`](assembly/) | [`ASSEMBLY.md`](assembly/ASSEMBLY.md): the build in 17 pictured steps, each ending with a check |
 | [`parts/`](parts/) | [`PARTS.md`](parts/PARTS.md), the stockroom pick list (every value, how many, what may be substituted), and [`MODULES.md`](parts/MODULES.md), the pinouts of the TL072, ESP32, A4988, ADF4351 and the interface |
-| [`multisim/`](multisim/) | the SPICE netlists for each block, ready for File ▸ Open in Multisim, with the reading each should give |
+| [`multisim/`](multisim/) | the Multisim projects for each block and the whole board, with the simulated results |
 
 ## Multisim status
 
-The netlists in `multisim/import/` open directly in Multisim and each header
-says which analysis to run and what number to expect. The saved Multisim
-projects (`.ms14`) and the bench measurements go in `multisim/` beside them (the `.sub` black-box blocks for Route B are in `multisim/blocks/`)
-once each block has been run.
+All eight blocks have been simulated in Multisim with library parts and every check passes.
+The projects, plots and numbers are in [`multisim/`](multisim/README.md).
 
-| block | file | expect |
-|---|---|---|
-| 1 video amplifier | `import/01_video_amp.cir` | 54.5 dB at 1 kHz; 0.5 mVpk in → 0.27 Vpk out |
-| 2 half-rail reference | `import/02_vref_bias.cir` | vref 5.58–5.70 V |
-| 3 12 V input | `import/03_power_in.cir` | vana 11.58 V |
-| 4 reverse polarity | `import/04_power_reverse.cir` | vprot −0.11 mV |
-| 5 sync divider | `import/05_sync_div.cir` | sync 283 mV |
-| 6 IF input network | `import/06_if_input.cir` | −6.7 dB at 417 Hz, −57.7 dB at 2.44 GHz |
+One change came out of it: **C6 is now 3.3 mF (was 47 µF)**. With the whole board on one sheet,
+the half-rail reference moved with the signal and cost up to 6.4 dB of gain. The layout, wiring
+list, build steps, parts list and schematics all have the new value. The schematic PNGs still
+show 47u until I re-export them from KiCad.

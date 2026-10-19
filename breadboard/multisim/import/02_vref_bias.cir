@@ -19,7 +19,7 @@ R10   vdiv 0    10k
 C5    vdiv 0    10u
 XU2A  vdiv vbuf vana 0 vbuf TL072X
 R11   vbuf vref 47
-C6    vref 0    47u
+C6    vref 0    3300u
 C7    vana 0    100n
 RL    vref 0    2.2k
 .op

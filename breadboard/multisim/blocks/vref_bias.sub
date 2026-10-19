@@ -6,6 +6,6 @@ R10   vdiv gnd  10k
 C5    vdiv gnd  10u
 XU2A  vdiv vbuf vana gnd vbuf TL072X
 R11   vbuf vref 47
-C6    vref gnd  47u
+C6    vref gnd  3300u
 C7    vana gnd  100n
 .ends

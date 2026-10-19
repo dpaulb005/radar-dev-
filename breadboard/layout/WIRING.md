@@ -43,7 +43,7 @@ Rails are assumed split at columns 31|32; four bridge wires are included (harmle
 | R10 | 10k (res) | 1→**b31**, 2→**TR-@33** | VDIV (col 31) -> GND rail |
 | C5 | 10u (elec) | 1→**c31**, 2→**TR-@35** | + at VDIV (col 31), - bent up to the GND rail |
 | R11 | 47 (res) | 1→**c33**, 2→**c29** | VBUF (U2 pin 1, col 33) -> col 29, then a wire on to the VREF node (col 26) |
-| C6 | 47u (elec) | 1→**d26**, 2→**TR-@26** | + at VREF |
+| C6 | 3300u (elec) | 1→**d26**, 2→**TR-@26** | + at VREF (was 47 µF, raised after the card 8 simulation) |
 | J3 | 12V IN (hdr2) | 1→**j10**, 2→**j11** | 1=VIN12 / 2=GND |
 | D1 | 1N5822 (diode) | A→**i10**, K→**i13** | band (cathode) toward col 13 = VPROT |
 | C11 | 100u (elec) | 1→**h13**, 2→**BR-@13** | + at VPROT |

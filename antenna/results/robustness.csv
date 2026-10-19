@@ -1,0 +1,5 @@
+case,label,tets,solved_tets,passes,dS,worst_s11_dB,realized_gain_dBi,gain_dBi,hpbw_E,hpbw_H
+mesh_coarse,"coarse mesh (ΔS 0.05, ≤4 passes)",10117,8773,4,0.023843,-22.06,13.28,13.3,33.0,36.0
+final,final (ΔS 0.01),13274,11909,7,0.0026156,-24.26,13.24,13.25,34.0,36.0
+mesh_fine,"fine mesh (λ/0.20 seed, ΔS 0.002)",30219,28825,8,0.0010492,-23.5,13.14,13.15,34.0,36.0
+copper,copper walls + probe (ΔS 0.01),14918,13553,7,0.0037014,-24.1,13.25,13.25,34.0,36.0

@@ -1128,7 +1128,7 @@
   )
   (symbol (lib_id "Device:C_Polarized") (at 76 122 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "f273858e-e94e-4936-9c77-fb431e4727a2")
     (property "Reference" "C6" (at 78.5 120.5 0) (effects (font (size 1.27 1.27)) (justify left)))
-    (property "Value" "47u" (at 78.5 123.5 0) (effects (font (size 1.27 1.27)) (justify left)))
+    (property "Value" "3300u" (at 78.5 123.5 0) (effects (font (size 1.27 1.27)) (justify left)))
     (property "Footprint" "" (at 76 122 0) (effects (font (size 1.27 1.27)) hide))
     (property "Datasheet" "" (at 76 122 0) (effects (font (size 1.27 1.27)) hide))
     (pin "1" (uuid "f1bc25f9-d50a-46e1-bad9-67748f0f40e4"))
