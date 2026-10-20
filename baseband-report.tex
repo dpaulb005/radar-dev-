@@ -1,0 +1,141 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{siunitx}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\setlist{nosep}
+\hypersetup{colorlinks=true,linkcolor=black,urlcolor=blue}
+
+\newcommand{\pass}{\textcolor{green!50!black}{\textbf{PASS}}}
+\newcommand{\fail}{\textcolor{red!70!black}{\textbf{FAIL}}}
+
+\title{2.4\,GHz FMCW Radar --- Baseband Circuit Simulation}
+\author{David Brown}
+\date{October 2026}
+
+\begin{document}
+\maketitle
+
+\noindent The baseband circuitry (video amplifier and filtering, half-rail reference, power input, sync and IF input) was simulated in NI Multisim 14.2 using library parts, one block per card and then all of it on one sheet (card 8). Nothing has been built yet. Plots are in Section~\ref{sec:figs}.
+
+\section{Results}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{2.3cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{3.1cm}>{\raggedright\arraybackslash}p{3.1cm}l}
+\toprule
+Card & Check & Result & Requirement & \\
+\midrule
+1 Video amp & Outputs at half rail (DC) & 1.07\,mV off & $\le 150$\,mV & \pass \\
+ & Gain at 159\,Hz / 1\,kHz / 15.9\,kHz & 48.7 / 54.5 / 50.9\,dB & 48.7 / 54.5 / 50.6\,dB & \pass \\
+ & 0.5\,mV, 1\,kHz in & 0.266\,V out & 0.27\,V & \pass \\
+ & First power-up gain, 10\,mV in & 106.8\,mV out & 107\,mV & \pass \\
+ & Clipping & $\pm4.06$\,V & about $\pm4.2$\,V & \pass \\
+ & Two-tone: 417 / 870\,Hz lines & 19.1 / 21.1\,mV & 19.0 / 21.2\,mV & \pass \\
+2 Half-rail ref & Divider / buffered output & 5.70 / 5.58\,V & 5.70 / 5.58--5.72\,V & \pass \\
+ & 150\,kHz ripple reaching vref & $-162$\,dB & $\le -100$\,dB & \pass \\
+3 12\,V input & Protected / analog rail & 11.72 / 11.62\,V & 11.68 / 11.58\,V & \pass \\
+ & Ripple on analog rail & 3.2\,mVpp & about 4\,mVpp & \pass \\
+4 Reverse supply & $-12$\,V applied & $-11$\,mV gets through & $< 0.5$\,V & \pass \\
+5 Sync divider & Sync pulse level & 275\,mV & 270--300\,mV & \pass \\
+6 IF input & At 417\,Hz / 2.44\,GHz & $-6.6$ / $-57.7$\,dB & $-6.6$ / $-57.7$\,dB & \pass \\
+7 Scaled radar & Beat tone at 5 / 10 / 15\,m & 435.0 / 870.7 / 1305.8\,Hz & 435.2 / 870.4 / 1305.6\,Hz & \pass \\
+ & Beat tone with leakage on & 872.7\,Hz & stays at 870\,Hz & \pass \\
+8 All blocks (as built) & Outputs at half rail (DC) & 4.36\,V off & $\le 150$\,mV & \fail \\
+8 All blocks (fixed) & Outputs at half rail (DC) & 1.08\,mV off & $\le 150$\,mV & \pass \\
+ & Gain vs.\ card 1 (C6 = 47\,\textmu F) & 6.4\,dB low & within 0.3\,dB & \fail \\
+ & Gain vs.\ card 1 (C6 = 3.3\,mF) & 0.15\,dB & within 0.3\,dB & \pass \\
+ & Two-tone 870\,Hz line & 21.0\,mV & 21.2\,mV & \pass \\
+ & 150\,kHz ripple at output & 0.06\,\textmu V & $< 1$\,mV & \pass \\
+ & Power-up from 6\,V & settles in 0.53\,s & $< 1$\,s & \pass \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent\textbf{Changes made on card 8:}
+\begin{itemize}
+  \item Wired U1A's $V-$ and U1B's $V+$ pins. They were left unconnected when the blocks were
+        copied onto one sheet, which latched the amp at the rail.
+  \item C6 raised from 47\,\textmu F to 3.3\,mF. The half-rail reference was moving with the
+        signal and the first stage amplified it.
+\end{itemize}
+
+\noindent\textbf{Notes:}
+\begin{itemize}
+  \item Card 8's analog rail reads 11.49\,V because the TI op-amp model draws 5.7\,mA per amp
+        (datasheet: 1.4\,mA typ.). Expected about 11.6\,V on the real circuit.
+  \item The op-amp model can't run below about 4.4\,V supply, so power-up starts at 6\,V.
+\end{itemize}
+
+\section{Summary}
+All cards pass. Card 8 passes after the wiring fix and the C6 change.
+
+\clearpage
+\section{Figures}\label{sec:figs}
+
+\subsection*{Card 1: video amp}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/01_video_amp/01_schematic}\caption{Multisim schematic}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/01_video_amp/01_bode}\caption{Gain vs. frequency}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/01_video_amp/01_grapher_ac}\caption{Multisim grapher, AC sweep}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/01_video_amp/01_grapher_dcop}\caption{Multisim grapher, DC operating point}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/01_video_amp/01_grapher_tran}\caption{Multisim grapher, transient}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/01_video_amp/01_tran}\caption{1 kHz transient}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/01_video_amp/01b_powerup}\caption{First power-up gain}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/01_video_amp/01c_clipping}\caption{Clipping at 10 mV in}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/01_video_amp/01d_twotone_spectrum}\caption{Two-tone spectrum (leakage + echo)}\end{figure}
+\clearpage
+\subsection*{Card 2: half-rail reference}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/02_vref_bias/02_schematic}\caption{Multisim schematic}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/02_vref_bias/02_dc_table}\caption{DC operating point}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/02_vref_bias/02_grapher_ac}\caption{Multisim grapher, AC sweep}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/02_vref_bias/02_grapher_dcop}\caption{Multisim grapher, DC operating point}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/02_vref_bias/02_grapher_tran}\caption{Multisim grapher, transient}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/02_vref_bias/02_rejection}\caption{150 kHz rejection to vref}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/02_vref_bias/02_ripple}\caption{Ripple on vref}\end{figure}
+\clearpage
+\subsection*{Card 3: 12 V input}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/03_power_in/03_schematic}\caption{Multisim schematic}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/03_power_in/03_ac_filter}\caption{Input filter response}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/03_power_in/03_grapher_ac}\caption{Multisim grapher, AC sweep}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/03_power_in/03_grapher_dcop}\caption{Multisim grapher, DC operating point}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/03_power_in/03_grapher_tran}\caption{Multisim grapher, transient}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/03_power_in/03_ripple}\caption{Ripple on the analog rail}\end{figure}
+\clearpage
+\subsection*{Card 4: reverse supply}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/04_power_reverse/04_schematic}\caption{Multisim schematic}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/04_power_reverse/04_grapher_dcop}\caption{Multisim grapher, DC operating point}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/04_power_reverse/04_reverse_dc}\caption{Reverse supply DC}\end{figure}
+\clearpage
+\subsection*{Card 5: sync divider}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/05_sync_div/05_schematic}\caption{Multisim schematic}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/05_sync_div/05_grapher_tran}\caption{Multisim grapher, transient}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/05_sync_div/05_sync_sc}\caption{Sync pulse into the sound card}\end{figure}
+\clearpage
+\subsection*{Card 6: IF input}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/06_if_input/06_schematic}\caption{Multisim schematic}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/06_if_input/06_grapher_ac}\caption{Multisim grapher, AC sweep}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/06_if_input/06_if_input}\caption{IF input response}\end{figure}
+\clearpage
+\subsection*{Card 7: scaled radar}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/07_fmcw_radar/07_schematic}\caption{Multisim schematic}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/07_fmcw_radar/07_beat_vs_range}\caption{Beat frequency vs. range}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/07_fmcw_radar/07_beat_waveform}\caption{Beat waveform}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/07_fmcw_radar/07_grapher_tran_design10m}\caption{Multisim grapher, transient (10 m)}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/07_fmcw_radar/07_leak_on_off}\caption{Spectrum with leakage on/off}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/07_fmcw_radar/07_spectra_by_range}\caption{Spectra at each range}\end{figure}
+\clearpage
+\subsection*{Card 8: all blocks together}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/08_baseband_system/08_schematic}\caption{Multisim schematic (screenshot from before the supply-pin fix)}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/08_baseband_system/08_ac_vs_card1}\caption{Gain vs. card 1, C6 47 \textmu F and 3.3 mF}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/08_baseband_system/08_dc_table}\caption{DC operating point, all blocks (fixed)}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/08_baseband_system/08_powerup}\caption{Power-up from 6 V}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=0.85\linewidth,height=0.4\textheight,keepaspectratio]{figures/multisim/08_baseband_system/08_twotone_spectrum}\caption{Two-tone spectrum, all blocks}\end{figure}
+\clearpage
+\end{document}
