@@ -617,7 +617,7 @@ PARTS = [
     ("Horns", "Copper sheet, 24 ga (0.021 in), 12 × 24 in", "3", "one sheet per horn, page \\pageref{sec:sheet}",
      "copper", "check it is 3 sheets"),
     ("Horns", "SMA female 4-hole flange, solder cup", "3", "the horn feeds (plus spares)", "flange", ""),
-    ("Horns", "Brass rod, 1/16 in", "100 mm", "three probes, cut 32 mm, trimmed to 28 mm", "brass", ""),
+    ("Horns", "Brass rod, 1/16 in", "100 mm", "three probes, cut %.0f mm, trimmed to %.0f mm" % (G["rod_cut"], G["probe_len"]), "brass", ""),
     ("Horns", "Plumbing solder and paste flux", "1", "not rosin-core electronics solder", "solder", ""),
     ("Horns", "Screws and nuts, M2.5 or 2-56, 8 mm", "12", "four per SMA flange. M3 will not fit the flange", None, ""),
     ("Baseband", "ESP32 devkit, 30-pin (WROOM-32)", "1", "runs radar\\_ctl: steps the PLL, drives SYNC", None, ""),

@@ -3,7 +3,8 @@
 One file cuts all nine pieces of one horn from one 12 × 24 in sheet of 24 ga
 (0.021 in, 0.53 mm) copper. Run it three times, on three sheets, for the three
 horns. Made by `../tools/make_waterjet.py` from the same horn geometry as the
-printed templates, so the parts match the fabrication guide exactly.
+printed templates, so the parts match the fabrication guide exactly. The 4.5 mm feed hole is at the
+HFSS probe position: 17.7 mm from the back edge of piece C, halfway across.
 
 ![what the cut file contains](preview.png)
 

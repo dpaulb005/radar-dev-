@@ -62,8 +62,11 @@ def geometry():
     g.update(Lg=115.0,          # pipe length, back wall to throat (anything >= 100 works)
              t=0.533,           # 24 gauge copper, 0.021 in
              tab=6.0,           # every solder tab
-             probe_z=43.7,      # probe centre from the inside face of the back wall
-             probe_len=28.0,    # probe length inside the pipe
+             # probe: HFSS 1 mm probe scan, 2026-10-10.
+             # The old 43.7 / 28.0 (back wall at lambda_g/4) gave |S11| -5.2 dB: the probe saw ~95-76j ohm.
+             # 17.7 / 27.0 gives -24.4 dB worst in 2400-2483.5 MHz, and -14.5 dB worst anywhere within +-1 mm.
+             probe_z=17.7,      # probe centre from the inside face of the back wall
+             probe_len=27.0,    # probe length inside the pipe
              rod_cut=32.0,      # cut the rod long, trim to length
              gain=10 * math.log10(0.51 * 4 * math.pi * a1 * b1 / lam ** 2),
              hp_e=54 * lam / b1, hp_h=78 * lam / a1)
@@ -730,7 +733,9 @@ def _section(kind):
     # part letters
     lw = "C" if side else "D"
     lf = "A" if side else "B"
-    sh.text((-Lg * 0.72, hin + 5), lw, 9.5, ACC, bold=True)
+    # top-wall letter, moved clear of the connector's "F" when the probe sits near the back wall
+    xc = -Lg * 0.72 if not side or abs(zp + 9 - (-Lg * 0.72)) > 16 else -Lg * 0.45
+    sh.text((xc, hin + 5), lw, 9.5, ACC, bold=True)
     sh.text((-Lg * 0.72, -hin - 11), lw, 9.5, ACC, bold=True)
     mid = ((L / 2), (hin + hout) / 2)
     sh.text((mid[0] - 12, mid[1] + 8), lf, 9.5, ACC, bold=True)
@@ -1356,7 +1361,8 @@ def build():
               callout("The probe is the one part worth tuning",
                       "Its length and its distance from the back wall decide how much of the signal "
                       "gets into the horn instead of bouncing back down the cable. The HFSS simulation "
-                      "sweeps both. If it settles on different numbers, use its numbers. To trim the "
+                      "sweeps both, and these numbers are its answer: the back wall closer than a quarter "
+                      "wavelength is deliberate. Within 1 mm either way the horn still matches. To trim the "
                       "rod later, unbolt the connector and lift it out with the rod attached."),
               keep(step(7, "Add the flare"),
                    numbered([
