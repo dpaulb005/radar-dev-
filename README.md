@@ -60,9 +60,9 @@ distance within 0.05 %. Card 8 is the one that caught real problems:
   the blocks together. Wiring them fixed it.
 - After that, the gain was up to 6.4 dB low around 200 Hz. The half-rail reference was moving
   with the signal and the first stage amplified it. Raising **C6 from 47 µF to 3.3 mF** fixed it.
-  That change is in the breadboard layout, parts list and schematics.
+  The Multisim projects have the new value.
 
-More in [`breadboard/multisim/`](breadboard/multisim/).
+More in [`multisim/`](multisim/).
 
 ## How to set it up (from the numbers above)
 
@@ -79,7 +79,7 @@ More in [`breadboard/multisim/`](breadboard/multisim/).
 |---|---|
 | [`report/`](report/) | the simulation write-up (LaTeX + PDF) and its figures |
 | [`antenna/`](antenna/) | horn design, HFSS results, the build guide and the waterjet cut files |
-| [`breadboard/`](breadboard/) | schematics, hole-by-hole wiring, build steps, parts list, Multisim projects and results |
+| [`multisim/`](multisim/) | the Multisim projects, exported data, plots and results table |
 | [`3d/`](3d/) | 3D models of the radar bench and the drone |
 | [`BOM_Radar_Build.xlsx`](BOM_Radar_Build.xlsx) | parts list with prices |
 
