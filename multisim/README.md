@@ -1,13 +1,13 @@
-# Multisim — baseband board simulation
+# Multisim results
 
-Each block of the breadboard drawn in NI Multisim 14.2 with library parts (TL072CP, 1N5822,
-real resistor and capacitor values), plus one sheet with everything together (card 8).
-The projects are in [`projects/`](projects/), the exported data and plots in [`results/`](results/),
-and every check is in [`results/multisim-measurements.csv`](results/multisim-measurements.csv).
+Each block of the baseband board in NI Multisim 14.2 with library parts (TL072CP, 1N5822),
+plus one sheet with everything together (card 8). Each card's folder has the Multisim
+screenshots, the plots and the exported data (`raw/`). Every check is in
+[`multisim-measurements.csv`](multisim-measurements.csv).
 
 ## Results
 
-| card | project | what I checked | result | expected |
+| card | folder | what I checked | result | expected |
 |---|---|---|---|---|
 | 1 | `01_video_amp` | DC: outputs sit at the half rail | within 1.1 mV | within 150 mV |
 | 1 | `01_video_amp` | gain at 159 Hz / 1 kHz / 15.9 kHz | 48.7 / 54.5 / 50.9 dB | 48.7 / 54.5 / 50.6 dB |
@@ -44,7 +44,7 @@ and every check is in [`results/multisim-measurements.csv`](results/multisim-mea
   - Then the gain was up to 6.4 dB low around 200 Hz (2.8 dB at 1 kHz). The signal current was
     moving the half-rail reference, and the first stage amplified that because its 1 kΩ gain
     resistor returns to it. Raising **C6 from 47 µF to 3.3 mF** brings it within 0.15 dB of card 1.
-    [`results/08_baseband_system/08_ac_vs_card1.png`](results/08_baseband_system/08_ac_vs_card1.png)
+    [`08_baseband_system/08_ac_vs_card1.png`](08_baseband_system/08_ac_vs_card1.png)
     shows both.
 
 ## Notes
@@ -53,10 +53,9 @@ and every check is in [`results/multisim-measurements.csv`](results/multisim-mea
   model draws 5.7 mA per amp, while the TL072 datasheet says 1.4 mA typical. With real chips it
   should be about 11.6 V.
 - The op-amp model can't be solved below about 4.4 V of supply, so power-up starts at 6 V
-  instead of 0 V. Worth power-cycling the real board a few times.
+  instead of 0 V.
 - For the long card 8 runs I set the 150 kHz ripple source to 0 V (Multisim otherwise shrinks
   the time step to fit 150 kHz and the run fails). The ripple check is its own 2 ms run.
 - `08_schematic.png` is the screenshot from before the two supply wires were added.
 - The longest transient exports (card 7 and the 1 s+ runs) are too big for GitHub and aren't
   in `raw/`.
-- [`import/`](import/) and [`blocks/`](blocks/) are the SPICE netlists I started from.
